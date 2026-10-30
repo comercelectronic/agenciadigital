@@ -187,11 +187,12 @@ exports.handler = async function (event) {
   const prev = rev.tasks[task] || {};
   // Cada versió es corregeix una sola vegada, i mai per sobre d'una revisió del professor
   if ((prev.autoV || 0) >= v || (prev.by === 'teacher' && prev.v >= v) || prev.status === 'approved') return;
-  const save = async (fields) => {
+  // retry: un error del servei d'IA no gasta la versió, perquè el joc pugui tornar-ho a demanar més tard
+  const save = async (fields, retry) => {
     const cur = (await revStore.get(key, { type: 'json' }).catch(() => null)) || { tasks: {} };
     const before = cur.tasks[task] || {};
     if (before.by === 'teacher' && before.v >= v) return; // el professor s'hi ha avançat
-    cur.tasks[task] = Object.assign({}, before, fields, { autoV: v });
+    cur.tasks[task] = Object.assign({}, before, fields, retry ? {} : { autoV: v });
     await revStore.setJSON(key, cur);
   };
 
@@ -213,7 +214,7 @@ exports.handler = async function (event) {
     out = await grade(p, sub, docs, lang);
   } catch (e) {
     console.error('Correcció automàtica fallida:', e && e.message);
-    await save({ autoError: { v, reason: 'ai', at: new Date().toISOString() }, at: new Date().toISOString() });
+    await save({ autoError: { v, reason: 'ai', at: new Date().toISOString() }, at: new Date().toISOString() }, true);
     return;
   }
   if (!out.document_readable) {

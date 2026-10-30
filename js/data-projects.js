@@ -1,17 +1,18 @@
 /* Agència Digital — Projectes reals: lliuraments que l'alumne fa de veritat i que el professorat revisa.
-   Cada projecte s'activa en acabar el capítol «after» i bloqueja el capítol següent fins que el professor l'aprova.
+   Cada projecte s'activa en acabar el capítol «after» i cal entregar-lo per jugar el capítol següent. La IA el corregeix i el professor
+   en revisa la nota; si cal millorar-lo, l'alumne rep un avís però no queda bloquejat.
    La guia completa de cada projecte es pot consultar a guia.html. */
 window.GD = window.GD || {};
 
 GD.projGuide = {
-  intro: T("Al llarg del joc, els clients de l'agència et demanaran feines reals: plans, campanyes, anuncis, informes i propostes. No n'hi ha prou de respondre preguntes: les has de fer de veritat, entregar-les i esperar que el professor les aprovi per continuar la campanya."),
+  intro: T("Al llarg del joc, els clients de l'agència et demanaran feines reals: plans, campanyes, anuncis, informes i propostes. No n'hi ha prou de respondre preguntes: les has de fer de veritat i entregar-les per continuar la campanya."),
   how: [
     { h: T("1. Llegeix l'encàrrec i la guia"), d: T("Cada projecte té una guia amb el que ha de contenir, els passos, les eines recomanades i com s'avaluarà. Llegeix-la sencera abans de començar.") },
     { h: T("2. Fes servir les dades del joc"), d: T("Les empreses són fictícies, però el que has descobert jugant (problemes, pressupostos, públics, resultats) és la teva informació de partida. Completa-la amb dades reals del mercat (Idescat, INE, Google Trends, competidors reals de la zona) i marca com a «supòsit» tot el que t'inventis.") },
     { h: T("3. Crea el document"), d: T("Fes-lo amb Google Docs, Google Slides, Canva, Word o PowerPoint en línia. Segueix l'estructura de la guia: pots copiar-ne la plantilla des del joc o des d'aquesta pàgina.") },
     { h: T("4. Comparteix-lo bé"), d: T("Obre l'opció de compartir i tria «Qualsevol persona que tingui l'enllaç pot veure». Si el professor no el pot obrir, te'l retornarà sense revisar.") },
     { h: T("5. Entrega'l des del joc"), d: T("Pestanya 📋 Projectes: enganxa l'enllaç, marca les seccions que inclou i escriu un resum de la teva proposta. Necessites el codi de classe del professor.") },
-    { h: T("6. Correcció i revisió"), d: T("En pocs minuts, una correcció automàtica amb IA llegeix el document, el puntua amb la rúbrica i et dona comentaris. El professor la pot revisar i canviar en qualsevol moment. Si cal millorar-lo, corregeix el document i torna'l a entregar. Mentrestant pots fer encàrrecs, lliçons i el Taller web.") }
+    { h: T("6. Correcció i revisió"), d: T("En pocs minuts, una correcció automàtica amb IA llegeix el document, el puntua amb la rúbrica i et dona comentaris. Ja pots continuar la campanya mentrestant. El professor pot revisar i canviar la nota en qualsevol moment. Si cal millorar-lo, rebràs un avís al joc: corregeix el document i torna'l a entregar. La recompensa del client arriba quan s'aprova.") }
   ],
   ai: T("Pots fer servir la IA per buscar idees, revisar textos o generar esborranys, però la feina ha de ser teva i adaptada al client: indica al final del document quines eines d'IA has fet servir i per a què. Un document genèric copiat d'una IA es retornarà."),
   ads: T("Quan un projecte demana anuncis reals, crea'ls de veritat: dissenya les peces (Canva, Adobe Express, CapCut...) i munta la campanya a l'eina real (Meta Ads Manager, Google Ads, LinkedIn Campaign Manager) fins al pas abans de publicar, i fes-ne captures. No cal publicar ni gastar diners. Si no pots crear un compte, fes servir les vistes prèvies oficials i explica-ho a la nota."),

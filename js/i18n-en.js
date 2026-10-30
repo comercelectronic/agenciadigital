@@ -5854,5 +5854,17 @@ Object.assign(I18N, {
 "13cge36": "(Auto: changes with your rank)",
 "1wamcgc": "Accessories",
 "1k28rk9": "(you can combine several)",
-"1lvt22y": "No accessories"
+"1lvt22y": "No accessories",
+"d1w300": "Students carry on with the campaign once they hand in the project: the AI grades it within minutes and you can confirm or change the grade here whenever you like. If you ask for changes, they'll get a notice in the game, see your comments and can hand it in again without being held up.",
+"1nzjas": "✏️ Projects to improve ({0})",
+"1o439aq": "You can keep playing, but fix them and hand them in again: the client's reward only comes once they're approved.",
+"a1czvb": "📋 Real project · hand it in to continue",
+"11lruia": "Clients ask you for real work: plans, campaigns, ads, reports... You have to do it yourself (with Google Docs, Canva, ad tools...), hand in the link and carry on with the campaign. The AI grades it within minutes and the teacher reviews the grade. If one needs improving, you'll get a notice.",
+"zh4hfg": "You can carry on with the campaign now. The automatic grading will score it within minutes and the teacher will review the grade. If anything needs improving, you'll get a notice; the reward comes once it's approved.",
+"16ma1ey": "✏️ The teacher has asked for changes to \"{0}\" (grade {1}).",
+"mypjfh": "✏️ \"{0}\" needs improving (grade {1}).",
+"8lctzr": "You can keep playing: fix it in 📋 Projects.",
+"4q74rq": "✏️ You have projects to improve ({0}): {1}. You'll find them in 📋 Projects.",
+"1fgga5l": "Throughout the game, the agency's clients will ask you for real work: plans, campaigns, ads, reports and proposals. Answering questions isn't enough: you have to actually do them and hand them in to carry on with the campaign.",
+"x1n4uz": "Within minutes, an AI grader reads the document, scores it against the rubric and gives you comments. You can carry on with the campaign meanwhile. The teacher can review and change the grade at any time. If it needs improving, you'll get a notice in the game: fix the document and hand it in again. The client's reward comes once it's approved."
 });

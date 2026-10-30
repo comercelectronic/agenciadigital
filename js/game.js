@@ -333,6 +333,7 @@
     const next = Object.keys(GD.chapters).find(c => chapterState(c) === 'open');
     el.innerHTML = `
       ${S.ending ? `<div class="card ending-mini"><b>${T("Has arribat a un final:")} ${esc(GD.endings[S.ending].title)}</b><p>${T("Pots continuar en mode lliure amb els encàrrecs o començar una partida nova amb una altra estratègia.")}</p><button class="btn" data-act="showEnding">${T("Tornar a veure el final")}</button></div>` : ''}
+      ${fixesCard()}
       ${next ? `<button class="next-mission" data-ch="${next}">
           <span class="nm-ava">${ART.portrait(GD.chapters[next].who || 'pau', 'n', { rank: rank() })}</span>
           <span class="nm-txt"><small>${T("Següent missió · Capítol")} ${next}</small><b>${txt(GD.chapters[next].title)}</b><i>${txt(GD.chapters[next].blurb || '')}</i></span>
@@ -343,7 +344,7 @@
         const ps = projStatus(gp);
         return `<button class="next-mission proj-gate" data-proj="${gp.id}">
           <span class="nm-ava">${ART.portrait(gp.who, ps === 'changes' ? 't' : 'n')}</span>
-          <span class="nm-txt"><small>${T('📋 Projecte real · cal l\'aprovació del professor')}</small><b>${txt(gp.title)}</b><i>${ps === 'sent' ? T('Entregat: esperant la revisió del professor. Mentrestant, pots fer encàrrecs i el Taller web.') : ps === 'changes' ? T('El professor hi ha demanat canvis. Corregeix-lo i torna\'l a entregar.') : T('Per continuar amb el capítol {0}, fes aquest projecte i entrega\'l.', [gc])}</i></span>
+          <span class="nm-txt"><small>${T('📋 Projecte real · entrega\'l per continuar')}</small><b>${txt(gp.title)}</b><i>${T('Per continuar amb el capítol {0}, fes aquest projecte i entrega\'l.', [gc])}</i></span>
           <span class="nm-go">${PST()[ps][0]}</span></button>`;
       })() : ''}
       <div class="stages">
@@ -696,11 +697,22 @@
     if (r.review && r.review.status === 'changes' && r.review.v >= r.v) return 'changes';
     return 'sent';
   }
-  // Projecte que cal tenir aprovat per poder jugar aquest capítol
+  // Projecte que cal haver entregat per poder jugar aquest capítol. No cal esperar la revisió:
+  // la IA el corregeix de seguida i, si cal millorar-lo, l'alumne rep un avís però pot continuar.
   function projGate(chId) {
     const i = CH_ORDER.indexOf(chId);
     const p = i > 0 ? GD.projectAfter(CH_ORDER[i - 1]) : null;
-    return p && projStatus(p) !== 'approved' ? p : null;
+    return p && ['locked', 'todo'].includes(projStatus(p)) ? p : null;
+  }
+  // Projectes entregats que cal arreglar: canvis demanats o document que la IA no ha pogut llegir
+  function projFixes() {
+    return GD.projects.filter(p => { const s = projStatus(p), r = projRec(p.id), ae = r && r.review && r.review.autoError;
+      return s === 'changes' || (s === 'sent' && ae && ae.v >= r.v && ae.reason !== 'ai'); });
+  }
+  function fixesCard() {
+    const F = projFixes();
+    return F.length ? `<div class="card warn fixes"><b>${T('✏️ Projectes per millorar ({0})', [F.length])}</b><p class="small">${T('Pots continuar jugant, però corregeix-los i torna\'ls a entregar: la recompensa del client només arriba quan s\'aproven.')}</p>
+      <div class="row-btns">${F.map(p => `<button class="btn small" data-proj="${p.id}">${txt(p.title)}</button>`).join('')}</div></div>` : '';
   }
   const PST = () => ({
     locked: ['🔒', T('Bloquejat')], todo: ['📝', T('Per fer')], sent: ['⏳', T('En revisió')],
@@ -714,7 +726,7 @@
     el.innerHTML = `
       <div class="card web-head">
         <h3>${T('📋 Projectes reals')}</h3>
-        <p>${T('Els clients et demanen feines de veritat: plans, campanyes, anuncis, informes... Les has de fer tu (amb Google Docs, Canva, les eines d\'anuncis...), entregar-ne l\'enllaç i esperar que el professor les aprovi per continuar la campanya.')}</p>
+        <p>${T('Els clients et demanen feines de veritat: plans, campanyes, anuncis, informes... Les has de fer tu (amb Google Docs, Canva, les eines d\'anuncis...), entregar-ne l\'enllaç i continuar la campanya. La IA els corregeix en pocs minuts i el professor en revisa la nota. Si cal millorar-ne algun, rebràs un avís.')}</p>
         <div class="row-btns"><a class="btn small primary" href="${guideUrl()}" target="_blank" rel="noopener">${T('📘 Guia dels projectes')}</a>
           ${S.classe ? `<button class="btn small" data-act="checkReviews">${T('🔄 Comprovar revisions')}</button>` : ''}</div>
         <p class="muted small">${T('Aprovats: {0} de {1}', [n('approved'), GD.projects.length])} · ${T('En revisió: {0}', [n('sent')])} · ${T('Per millorar: {0}', [n('changes')])}</p>
@@ -807,7 +819,7 @@
           playLines([[p.who + '.h', T('Rebut! Ho miraré amb calma, {nom}. T\'ho tornaré revisat.')]], () => {
             panel(`<div class="reward"><div class="rw-h"><small>${txt(p.kind)}</small><h2>📤 ${T('Projecte entregat!')}</h2></div>
               <p><a href="${safeUrl(url)}" target="_blank" rel="noopener">${esc(url)}</a></p>
-              <p>${ok ? T('El professor el revisarà. Quan l\'aprovi, rebràs la recompensa i es desbloquejarà el capítol següent. Mentrestant, pots fer encàrrecs, repassar lliçons o avançar al Taller web.') : T('No s\'ha pogut enviar ara (sense connexió?). S\'enviarà automàticament quan tornis a tenir connexió; també ho pots fer des d\'Empresa → Enviar resultats ara.')}</p>
+              <p>${ok ? T('Ja pots continuar la campanya. La correcció automàtica el puntuarà en pocs minuts i el professor en revisarà la nota. Si cal millorar alguna cosa, rebràs un avís; la recompensa arriba quan s\'aprova.') : T('No s\'ha pogut enviar ara (sense connexió?). S\'enviarà automàticament quan tornis a tenir connexió; també ho pots fer des d\'Empresa → Enviar resultats ara.')}</p>
               <button class="btn primary big" data-act="hubProj">${T('Tornar als projectes')}</button></div>`);
           });
         };
@@ -836,8 +848,9 @@
   let lastReviewCheck = 0;
   async function checkReviews(manual) {
     if (!S || !S.classe || !S.proj) return;
-    const waiting = GD.projects.some(p => projStatus(p) === 'sent');
-    if (!manual && (!waiting || Date.now() - lastReviewCheck < 12000)) return;
+    // Mentre hi ha correccions en curs es comprova sovint; després, cada minut per si el professor canvia alguna revisió
+    const waiting = GD.projects.some(p => projStatus(p) === 'sent'), delivered = GD.projects.some(p => S.proj[p.id] && S.proj[p.id].v);
+    if (!manual && (!delivered || Date.now() - lastReviewCheck < (waiting ? 12000 : 60000))) return;
     lastReviewCheck = Date.now();
     let reviews;
     try {
@@ -848,6 +861,10 @@
     let changed = false;
     for (const p of GD.projects) {
       const r = S.proj[p.id], rv = reviews[p.id];
+      // Si el servei d'IA ha fallat, es torna a demanar la correcció (fins a 3 vegades, cada 5 minuts)
+      if (r && rv && rv.autoError && rv.autoError.reason === 'ai' && rv.autoError.v >= r.v && !rv.status && (r.aiRetry || 0) < 3 && Date.now() - (r.aiRetryAt || 0) > 300000) {
+        r.aiRetry = (r.aiRetry || 0) + 1; r.aiRetryAt = Date.now(); requestAutograde(p.id, r.v); changed = true;
+      }
       if (!r || !rv || (r.review && r.review.at === rv.at)) continue;
       r.review = rv; changed = true;
       if (rv.status === 'approved' && !r.rewarded) {
@@ -856,7 +873,7 @@
         applyFx({ xp: R.xp, money: R.money, fee: true, rep: R.rep, trust: R.trust ? { [R.trust]: 1 } : null, log: T('Projecte aprovat: «{0}».', [txt(p.title)]), key: true }, true);
         RUN = keep;
         toast(T('✅ Projecte aprovat: {0} (+{1} EXP)', [txt(p.title), R.xp]), 'good');
-      } else if (rv.status === 'changes' && rv.v >= r.v) toast(T('✏️ Cal millorar «{0}» (nota {1}). Mira els comentaris.', [txt(p.title), rv.grade != null ? rv.grade : '—']), 'bad');
+      } else if (rv.status === 'changes' && rv.v >= r.v) toast((rv.by === 'teacher' ? T('✏️ El professor demana canvis a «{0}» (nota {1}).', [txt(p.title), rv.grade != null ? rv.grade : '—']) : T('✏️ Cal millorar «{0}» (nota {1}).', [txt(p.title), rv.grade != null ? rv.grade : '—'])) + ' ' + T('Pots continuar jugant: corregeix-lo a 📋 Projectes.'), 'bad');
       else if (rv.autoError && rv.autoError.v >= r.v) toast(T('🤖 No s\'ha pogut corregir automàticament «{0}». Obre el projecte per veure-ne el motiu.', [txt(p.title)]), 'bad');
     }
     if (changed) { save(); queueSync(); if ($('.hub')) hubScreen(); }
@@ -1712,6 +1729,8 @@
       hubScreen: (tab) => hubScreen(tab), chapterState, projGate, projStatus,
       speed: () => settings.speed, hudRefresh: () => WORLD.refresh()
     });
+    const F = projFixes();
+    if (F.length) toast(T('✏️ Tens projectes per millorar ({0}): {1}. Els trobaràs a 📋 Projectes.', [F.length, F.map(p => txt(p.title)).join(', ')]), 'bad');
   }
 
   function newGame() {

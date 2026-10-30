@@ -5765,5 +5765,17 @@ Object.assign(I18N, {
 "13cge36": "(Auto: cambia con tu rango)",
 "1wamcgc": "Complementos",
 "1k28rk9": "(puedes combinar varios)",
-"1lvt22y": "Sin complementos"
+"1lvt22y": "Sin complementos",
+"d1w300": "Los alumnos continúan la campaña al entregar el proyecto: la IA lo corrige en pocos minutos y aquí puedes validar o cambiar la nota cuando quieras. Si pides cambios, recibirán un aviso en el juego, verán tus comentarios y podrán volver a entregarlo sin quedarse parados.",
+"1nzjas": "✏️ Proyectos por mejorar ({0})",
+"1o439aq": "Puedes seguir jugando, pero corrígelos y vuelve a entregarlos: la recompensa del cliente solo llega cuando se aprueban.",
+"a1czvb": "📋 Proyecto real · entrégalo para continuar",
+"11lruia": "Los clientes te piden trabajos de verdad: planes, campañas, anuncios, informes... Los tienes que hacer tú (con Google Docs, Canva, las herramientas de anuncios...), entregar el enlace y continuar la campaña. La IA los corrige en pocos minutos y el profesor revisa la nota. Si hay que mejorar alguno, recibirás un aviso.",
+"zh4hfg": "Ya puedes continuar la campaña. La corrección automática lo puntuará en pocos minutos y el profesor revisará la nota. Si hay que mejorar algo, recibirás un aviso; la recompensa llega cuando se aprueba.",
+"16ma1ey": "✏️ El profesor pide cambios en «{0}» (nota {1}).",
+"mypjfh": "✏️ Hay que mejorar «{0}» (nota {1}).",
+"8lctzr": "Puedes seguir jugando: corrígelo en 📋 Proyectos.",
+"4q74rq": "✏️ Tienes proyectos por mejorar ({0}): {1}. Los encontrarás en 📋 Proyectos.",
+"1fgga5l": "A lo largo del juego, los clientes de la agencia te pedirán trabajos reales: planes, campañas, anuncios, informes y propuestas. No basta con responder preguntas: los tienes que hacer de verdad y entregarlos para continuar la campaña.",
+"x1n4uz": "En pocos minutos, una corrección automática con IA lee el documento, lo puntúa con la rúbrica y te da comentarios. Mientras tanto ya puedes continuar la campaña. El profesor puede revisar y cambiar la nota en cualquier momento. Si hay que mejorarlo, recibirás un aviso en el juego: corrige el documento y vuelve a entregarlo. La recompensa del cliente llega cuando se aprueba."
 });
