@@ -51,6 +51,11 @@
       case 'long': return `<path d="M72 150 C68 80 108 48 150 48 C192 48 232 80 228 150 L240 380 L60 380 Z" fill="${f}" stroke="${INK}" stroke-width="2.5"/>`;
       case 'pony': return `<path d="M210 110 C262 120 268 200 246 262 C240 236 232 200 214 170 Z" fill="${f}" stroke="${INK}" stroke-width="2.5"/><path d="M80 160 C74 92 110 56 150 56 C190 56 226 92 220 160 Z" fill="${f}" stroke="${INK}" stroke-width="2.5"/>`;
       case 'slick': return `<path d="M80 160 C72 88 112 54 156 56 C198 58 228 92 220 160 Z" fill="${f}" stroke="${INK}" stroke-width="2.5"/>`;
+      case 'side': return `<path d="M80 166 C72 92 110 56 152 56 C196 56 230 92 220 166 Z" fill="${f}" stroke="${INK}" stroke-width="2.5"/>`;
+      case 'curly': return `<g fill="${f}" stroke="${INK}" stroke-width="2.5">${[[78, 196, 26], [222, 196, 26], [76, 150, 30], [224, 150, 30], [88, 106, 32], [212, 106, 32], [116, 74, 32], [184, 74, 32], [150, 62, 34]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>`;
+      case 'afro': return `<g fill="${f}" stroke="${INK}" stroke-width="2.5">${Array.from({ length: 14 }, (_, i) => { const a = Math.PI * (0.92 + i * 1.16 / 13); return `<circle cx="${Math.round(150 + 104 * Math.cos(a))}" cy="${Math.round(132 + 100 * Math.sin(a))}" r="28"/>`; }).join('')}</g><circle cx="150" cy="132" r="100" fill="${f}"/>`;
+      case 'braids': return `<path d="M82 160 C76 92 112 60 150 60 C188 60 224 92 218 160 Z" fill="${f}" stroke="${INK}" stroke-width="2.5"/><g fill="${f}" stroke="${INK}" stroke-width="2.2">${[0, 1, 2, 3, 4].map(i => `<ellipse cx="80" cy="${222 + i * 24}" rx="13" ry="14"/><ellipse cx="220" cy="${222 + i * 24}" rx="13" ry="14"/>`).join('')}</g><circle cx="80" cy="344" r="6" fill="#e45a7a" stroke="${INK}" stroke-width="1.5"/><circle cx="220" cy="344" r="6" fill="#e45a7a" stroke="${INK}" stroke-width="1.5"/>`;
+      case 'twintails': return `<path d="M82 160 C76 92 112 60 150 60 C188 60 224 92 218 160 Z" fill="${f}" stroke="${INK}" stroke-width="2.5"/><path d="M90 106 C38 116 26 220 52 312 C64 258 76 206 98 160 Z M210 106 C262 116 274 220 248 312 C236 258 224 206 202 160 Z" fill="${f}" stroke="${INK}" stroke-width="2.5"/><circle cx="92" cy="110" r="8" fill="#e45a7a" stroke="${INK}" stroke-width="1.8"/><circle cx="208" cy="110" r="8" fill="#e45a7a" stroke="${INK}" stroke-width="1.8"/>`;
     }
     return '';
   }
@@ -68,6 +73,11 @@
       case 'long': return `<path d="M150 62 C112 62 84 96 84 162 L94 262 C98 190 116 120 150 84 C184 120 202 190 206 262 L216 162 C216 96 188 62 150 62 Z" fill="${f}" stroke="${INK}" stroke-width="2.5"/>` + shine('M114 86 Q150 68 186 86');
       case 'pony': return `<path d="M86 156 C80 90 116 62 150 62 C188 62 222 90 214 156 C200 120 180 100 150 98 L128 124 L118 104 C104 116 94 134 86 156 Z" fill="${f}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>` + shine('M116 80 Q150 68 184 80');
       case 'slick': return `<path d="M88 142 C84 86 124 62 160 64 C196 66 216 92 214 136 C192 100 150 92 112 104 C100 112 92 126 88 142 Z" fill="${f}" stroke="${INK}" stroke-width="2.5"/>` + shine('M120 80 Q160 66 196 86');
+      case 'side': return `<path d="M86 156 C80 92 114 62 152 62 C192 62 220 92 214 140 C200 110 170 98 140 104 C118 110 100 128 86 156 Z" fill="${f}" stroke="${INK}" stroke-width="2.5"/><path d="M90 158 C98 112 140 92 186 98 C150 110 120 128 90 158 Z" fill="${f}" stroke="${INK}" stroke-width="2.2"/>` + shine('M120 80 Q156 66 190 84');
+      case 'curly': return `<g fill="${f}" stroke="${INK}" stroke-width="2.2">${[[96, 126, 16], [204, 126, 16], [110, 100, 20], [190, 100, 20], [136, 88, 22], [164, 88, 22]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>` + shine('M124 78 Q150 70 176 78');
+      case 'afro': return `<path d="M88 146 C86 96 116 72 150 72 C184 72 214 96 212 146 C196 112 104 112 88 146 Z" fill="${f}" stroke="${INK}" stroke-width="2.5"/>` + shine('M96 70 Q150 40 204 70');
+      case 'braids': return `<path d="M86 152 C84 90 116 64 150 64 C184 64 216 90 214 152 C206 110 180 94 154 96 L150 70 L146 96 C120 94 94 110 86 152 Z" fill="${f}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>` + shine('M114 82 Q130 72 144 72');
+      case 'twintails': return `<path d="M84 150 C82 86 116 60 150 60 C184 60 218 86 216 150 L206 142 L196 150 L186 140 L174 150 L162 140 L150 150 L138 140 L126 150 L114 140 L102 150 L94 142 Z" fill="${f}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>` + shine('M110 82 Q150 64 190 82');
     }
     return '';
   }
@@ -148,6 +158,13 @@
       if (a === 'beret') s += `<path d="M86 96 C90 44 210 40 222 92 C190 78 120 80 86 96 Z" fill="#f2b134" stroke="${INK}" stroke-width="2.5"/><circle cx="160" cy="48" r="6" fill="#d8901a" stroke="${INK}" stroke-width="2"/>`;
       if (a === 'earrings') s += `<circle cx="86" cy="196" r="5" fill="#f5c542" stroke="${INK}" stroke-width="1.5"/><circle cx="214" cy="196" r="5" fill="#f5c542" stroke="${INK}" stroke-width="1.5"/>`;
       if (a === 'sunglasses') s += `<path d="M98 76 L146 76 L142 92 Q122 100 102 92 Z M154 76 L202 76 L198 92 Q178 100 158 92 Z" fill="#1d1d26" stroke="${INK}" stroke-width="2"/><path d="M146 80 L154 80" stroke="${INK}" stroke-width="3"/>`;
+      if (a === 'freckles') s += `<g fill="#b9744f" opacity=".7">${[[100, 204], [110, 199], [112, 210], [200, 204], [190, 199], [188, 210]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.2"/>`).join('')}</g>`;
+      if (a === 'beard') s += `<path d="M88 176 C88 240 116 272 150 278 C184 272 212 240 212 176 C206 212 192 232 172 238 Q150 246 128 238 C108 232 94 212 88 176 Z" fill="${shade(c.hair, -10)}" stroke="${INK}" stroke-width="2.2"/><path d="M132 218 Q150 208 168 218 Q150 222 132 218 Z" fill="${shade(c.hair, -10)}" stroke="${INK}" stroke-width="1.8"/>`;
+      if (a === 'headband') s += `<path d="M88 122 C96 70 204 70 212 122" fill="none" stroke="#e45a7a" stroke-width="9" stroke-linecap="round"/>`;
+      if (a === 'bow') s += `<path d="M196 82 L174 66 L176 100 Z M196 82 L218 66 L216 100 Z" fill="#e45a7a" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><circle cx="196" cy="83" r="6" fill="#c23a5a" stroke="${INK}" stroke-width="1.8"/>`;
+      if (a === 'cap') s += `<path d="M82 112 C84 46 216 46 218 112 Z" fill="#3e7bd6" stroke="${INK}" stroke-width="2.5"/><path d="M150 106 C192 100 238 108 252 122 C222 126 190 118 150 114 Z" fill="#2c5ca8" stroke="${INK}" stroke-width="2.2"/><circle cx="150" cy="54" r="5" fill="#2c5ca8" stroke="${INK}" stroke-width="1.5"/>`;
+      if (a === 'headphones') s += `<path d="M76 168 C66 54 234 54 224 168" fill="none" stroke="#2a2a35" stroke-width="9" stroke-linecap="round"/><rect x="62" y="148" width="24" height="46" rx="10" fill="#e45a7a" stroke="${INK}" stroke-width="2.2"/><rect x="214" y="148" width="24" height="46" rx="10" fill="#e45a7a" stroke="${INK}" stroke-width="2.2"/>`;
+      if (a === 'scarf') s += `<path d="M104 272 Q150 300 196 272 L202 294 Q150 322 98 294 Z" fill="#c8424b" stroke="${INK}" stroke-width="2.2"/><path d="M174 296 L184 350 L166 352 L160 300 Z" fill="#a8323b" stroke="${INK}" stroke-width="2"/>`;
     });
     return s;
   }
@@ -164,7 +181,7 @@
     const base = CHARS[id] || CHARS.client;
     const c = Object.assign({}, base);
     let o = { outfit: c.outfit, oc: c.oc };
-    if (id === 'pau') o = PAU_OUTFITS[Math.max(0, Math.min(PAU_OUTFITS.length - 1, opt.rank || 0))];
+    if (id === 'pau') o = Object.assign({}, PAU_OUTFITS[Math.max(0, Math.min(PAU_OUTFITS.length - 1, opt.rank || 0))], c.cloth ? { oc: c.cloth } : {});
     const uid = 'u' + (++uidCounter);
     const skinS = shade(c.skin, -22);
     const blushOp = e === 'h' ? 0.55 : (e === 'a' ? 0.5 : 0.32);
@@ -283,17 +300,20 @@
   }
 
   // Aspecte escollit pel jugador per al protagonista
-  const PLAYER_DEFAULT = { style: 'spiky', hair: '#3b2a24', eye: '#c47a28', skin: '#f8dcc6', acc: [] };
+  // cloth: color de la roba triat (buit = el del rang)
+  const PLAYER_DEFAULT = { style: 'spiky', hair: '#3b2a24', eye: '#c47a28', skin: '#f8dcc6', acc: [], cloth: '' };
   function setPlayer(look) {
     const l = Object.assign({}, PLAYER_DEFAULT, look || {});
-    Object.assign(CHARS.pau, { style: l.style, hair: l.hair, hi: shade(l.hair, 50), eye: l.eye, skin: l.skin, acc: (l.acc || []).slice() });
+    Object.assign(CHARS.pau, { style: l.style, hair: l.hair, hi: shade(l.hair, 50), eye: l.eye, skin: l.skin, acc: (l.acc || []).slice(), cloth: l.cloth || '' });
   }
   const LOOK_OPTIONS = {
-    style: [['spiky', T('Punxegut')], ['neat', T('Curt clàssic')], ['buzz', T('Molt curt')], ['slick', T('Pentinat enrere')], ['bob', T('Mitja melena')], ['long', T('Llarg')], ['pony', T('Cua')], ['wavy', T('Ondulat')], ['bun', T('Monyo')]],
-    hair: ['#3b2a24', '#141414', '#6b4226', '#a3451f', '#e9c25a', '#d8d8d8', '#e2577a', '#3a6fd6', '#2f9a6e', '#7a5ac8'],
-    eye: ['#c47a28', '#5a3a20', '#2a6fb0', '#2f9a6e', '#8a3fd1', '#c8424b'],
-    skin: ['#fbe1cf', '#f8dcc6', '#eec7a6', '#d9a57e', '#b97f57', '#8a5a3c'],
-    acc: [['', T('Cap')], ['glassesRound', T('Ulleres rodones')], ['glassesRect', T('Ulleres quadrades')], ['earrings', T('Arracades')]]
+    style: [['spiky', T('Punxegut')], ['neat', T('Curt clàssic')], ['buzz', T('Molt curt')], ['slick', T('Pentinat enrere')], ['side', T('Clenxa al costat')], ['curly', T('Arrissat')], ['afro', T('Afro')], ['bob', T('Mitja melena')], ['long', T('Llarg')], ['wavy', T('Ondulat')], ['pony', T('Cua')], ['twintails', T('Dues cues')], ['braids', T('Trenes')], ['bun', T('Monyo')]],
+    hair: ['#3b2a24', '#141414', '#6b4226', '#a3451f', '#d9772e', '#e9c25a', '#f3e2b0', '#d8d8d8', '#e2577a', '#c8a0e8', '#7a5ac8', '#3a6fd6', '#3ab0b0', '#2f9a6e'],
+    eye: ['#c47a28', '#5a3a20', '#d6a02a', '#2a6fb0', '#3a8a9a', '#2f9a6e', '#7a7a8a', '#8a3fd1', '#c8424b'],
+    skin: ['#fff0e6', '#fbe1cf', '#f8dcc6', '#eec7a6', '#d9a57e', '#b97f57', '#8a5a3c', '#5e3a26'],
+    cloth: ['', '#3e7bd6', '#25b3a3', '#2f9a6e', '#f2b134', '#ee7b30', '#c8424b', '#e45a7a', '#7a5ac8', '#2c3e70', '#5a5a66', '#1d1b2b'],
+    // Complements: se'n poden combinar diversos, però només un de cada grup
+    acc: [['glassesRound', T('Ulleres rodones'), 'ulls'], ['glassesRect', T('Ulleres quadrades'), 'ulls'], ['sunglasses', T('Ulleres de sol al cap'), 'cap'], ['cap', T('Gorra'), 'cap'], ['beret', T('Boina'), 'cap'], ['headband', T('Diadema'), 'cap'], ['bow', T('Llaç'), 'llac'], ['headphones', T('Auriculars'), 'orelles'], ['earrings', T('Arracades'), 'arracades'], ['scarf', T('Bufanda'), 'coll'], ['freckles', T('Pigues'), 'pigues'], ['beard', T('Barba'), 'barba']]
   };
 
   window.ART = { portrait, background, CHARS, PAU_OUTFITS, setPlayer, LOOK_OPTIONS, PLAYER_DEFAULT };

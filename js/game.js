@@ -1543,8 +1543,10 @@
 
   function setupScreen(editing) {
     const base = editing ? S : newState();
-    const d = { name: editing ? S.player.name : '', surname: editing ? S.player.surname : '', g: base.player.g, classe: base.classe, look: JSON.parse(JSON.stringify(base.player.look)) };
+    const d = { name: editing ? S.player.name : '', surname: editing ? S.player.surname : '', g: base.player.g, classe: base.classe, look: Object.assign({}, ART.PLAYER_DEFAULT, JSON.parse(JSON.stringify(base.player.look))) };
     const O = ART.LOOK_OPTIONS;
+    // Mostres de color i un selector lliure per triar qualsevol altre color
+    const swatches = (k, list, label) => `<div class="swatches" id="s_${k}">${list.map(c => c ? `<button data-${k}="${c}" style="background:${c}" aria-label="${label} ${c}"></button>` : `<button data-${k}="" class="sw-auto" title="${T('Segons el rang')}">${T('Auto')}</button>`).join('')}<label class="sw-custom" title="${T('Color personalitzat')}">🎨<input type="color" data-custom="${k}" aria-label="${T('Color personalitzat')}"></label></div>`;
     app().innerHTML = `<section class="setup">
       <div class="setup-preview"><div class="setup-ava" id="sAva"></div><p class="setup-example" id="sEx"></p></div>
       <div class="setup-form card">
@@ -1558,13 +1560,15 @@
         <p class="lbl">${T("Pentinat")}</p>
         <div class="styles" id="sStyle">${O.style.map(([k, n]) => `<button data-style="${k}" title="${n}"><span></span><small>${n}</small></button>`).join('')}</div>
         <p class="lbl">${T("Color dels cabells")}</p>
-        <div class="swatches" id="sHair">${O.hair.map(c => `<button data-hair="${c}" style="background:${c}" aria-label="Color ${c}"></button>`).join('')}</div>
+        ${swatches('hair', O.hair, T('Color'))}
         <p class="lbl">${T("Color dels ulls")}</p>
-        <div class="swatches" id="sEye">${O.eye.map(c => `<button data-eye="${c}" style="background:${c}" aria-label="Color ${c}"></button>`).join('')}</div>
+        ${swatches('eye', O.eye, T('Color'))}
         <p class="lbl">${T("To de pell")}</p>
-        <div class="swatches" id="sSkin">${O.skin.map(c => `<button data-skin="${c}" style="background:${c}" aria-label="To ${c}"></button>`).join('')}</div>
-        <p class="lbl">${T("Complement")}</p>
-        <div class="seg" id="sAcc">${O.acc.map(([k, n]) => `<button data-acc="${k}">${n}</button>`).join('')}</div>
+        <div class="swatches" id="s_skin">${O.skin.map(c => `<button data-skin="${c}" style="background:${c}" aria-label="${T('To')} ${c}"></button>`).join('')}</div>
+        <p class="lbl">${T("Color de la roba")} <small>${T("(Auto: canvia amb el teu rang)")}</small></p>
+        ${swatches('cloth', O.cloth, T('Color'))}
+        <p class="lbl">${T("Complements")} <small>${T("(en pots combinar diversos)")}</small></p>
+        <div class="seg acc-grid" id="sAcc"><button data-acc="">${T('Sense complements')}</button>${O.acc.map(([k, n]) => `<button data-acc="${k}">${n}</button>`).join('')}</div>
         <p class="lbl">${T("Codi de classe")} <small>${T("(opcional, te'l dona el professor)")}</small></p>
         <input class="inp" id="sClass" maxlength="32" value="${esc(d.classe)}" placeholder="Per exemple: 4ESO-B">
         <p class="muted small">${T("Si poses un codi de classe, el teu nom i els resultats del joc s'enviaran al teu professor.")}</p>
@@ -1580,8 +1584,9 @@
       $('#sEx').innerHTML = txt(T('«{En} torna a Vic amb una idea: muntar una agència de màrqueting digital.»'));
       S = prevS;
       document.querySelectorAll('#sG [data-g]').forEach(b => b.classList.toggle('on', b.dataset.g === d.g));
-      document.querySelectorAll('#sAcc [data-acc]').forEach(b => b.classList.toggle('on', (d.look.acc[0] || '') === b.dataset.acc));
-      ['style', 'hair', 'eye', 'skin'].forEach(k => document.querySelectorAll(`[data-${k}]`).forEach(b => b.classList.toggle('on', b.dataset[k] === d.look[k])));
+      document.querySelectorAll('#sAcc [data-acc]').forEach(b => b.classList.toggle('on', b.dataset.acc ? d.look.acc.includes(b.dataset.acc) : !d.look.acc.length));
+      ['style', 'hair', 'eye', 'skin', 'cloth'].forEach(k => document.querySelectorAll(`button[data-${k}]`).forEach(b => b.classList.toggle('on', b.dataset[k] === (d.look[k] || ''))));
+      ['hair', 'eye', 'cloth'].forEach(k => { const i = document.querySelector(`[data-custom="${k}"]`), own = d.look[k] && !O[k].includes(d.look[k]); i.parentNode.classList.toggle('on', !!own); if (own) i.value = d.look[k]; });
       document.querySelectorAll('#sStyle [data-style]').forEach(b => {
         const look = Object.assign({}, d.look, { style: b.dataset.style, acc: [] });
         ART.setPlayer(look); b.querySelector('span').innerHTML = ART.portrait('pau', 'n', { rank: 0 });
@@ -1594,14 +1599,21 @@
     document.querySelector('.setup').addEventListener('click', (e) => {
       const b = e.target.closest('button'); if (!b) return;
       if (b.dataset.g) d.g = b.dataset.g;
-      else if (b.dataset.acc != null) d.look.acc = b.dataset.acc ? [b.dataset.acc] : [];
+      else if (b.dataset.acc != null) {
+        const k = b.dataset.acc, grp = (x) => (O.acc.find(a => a[0] === x) || [])[2];
+        if (!k) d.look.acc = [];
+        else if (d.look.acc.includes(k)) d.look.acc = d.look.acc.filter(x => x !== k);
+        else d.look.acc = d.look.acc.filter(x => grp(x) !== grp(k)).concat(k);
+      }
       else if (b.dataset.style) d.look.style = b.dataset.style;
       else if (b.dataset.hair) d.look.hair = b.dataset.hair;
       else if (b.dataset.eye) d.look.eye = b.dataset.eye;
       else if (b.dataset.skin) d.look.skin = b.dataset.skin;
+      else if (b.dataset.cloth != null) d.look.cloth = b.dataset.cloth;
       else return;
       draw();
     });
+    document.querySelectorAll('[data-custom]').forEach(i => i.oninput = () => { d.look[i.dataset.custom] = i.value; draw(); });
     $('#sBack').onclick = () => editing ? hubScreen('pau') : titleScreen();
     $('#sGo').onclick = () => {
       if (!d.name) { $('#sName').focus(); toast(T('Escriu el teu nom'), 'bad'); return; }

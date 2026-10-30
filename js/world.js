@@ -211,7 +211,7 @@
   function palette(id, extra) {
     if (extra) return extra;
     const c = ART.CHARS[id] || ART.CHARS.client;
-    const oc = id === 'pau' ? PAU_COLS[API ? API.rank() : 0] : (c.oc || '#6a7a8a');
+    const oc = id === 'pau' ? (c.cloth || PAU_COLS[API ? API.rank() : 0]) : (c.oc || '#6a7a8a');
     return { hair: c.hair, skin: c.skin, eye: c.eye || '#3a2a20', cloth: oc === '#ffffff' ? '#f4f4f4' : oc, style: c.style, acc: c.acc || [], apron: c.outfit === 'apron', chef: c.outfit === 'chef', pants: c.outfit === 'suit' || c.outfit === 'blazer' ? shade(oc, -20) : '#3a4a6a' };
   }
   function charSprite(key, P, dir, frame) {
@@ -220,7 +220,7 @@
     const [c, g] = mk(16, 24);
     const side = dir === 'left' || dir === 'right';
     const step = frame === 1 ? 1 : frame === 2 ? -1 : 0;
-    const long = ['long', 'wavy', 'bob', 'pony'].includes(P.style);
+    const long = ['long', 'wavy', 'bob', 'pony', 'braids', 'twintails', 'curly'].includes(P.style);
     // cames
     if (!side) {
       R(g, 5, 18, 2, step === 1 ? 3 : 4, P.pants); R(g, 9, 18, 2, step === -1 ? 3 : 4, P.pants);
@@ -266,6 +266,14 @@
     if (P.style === 'bun') { R(g, 6, -1 + 1, 4, 2, H); R(g, 5, 0, 6, 1, Hd); }
     if (P.style === 'pony' && dir !== 'down') R(g, dir === 'right' ? 1 : dir === 'left' ? 13 : 7, 6, 2, 7, H);
     if (P.style === 'spiky') { R(g, 3, 0, 2, 1, Hd); R(g, 7, 0, 2, 1, Hd); R(g, 11, 0, 2, 1, Hd); }
+    if (P.style === 'afro') { R(g, 1, 0, 14, 4, H); R(g, 0, 2, 2, 7, H); R(g, 14, 2, 2, 7, H); }
+    if (P.style === 'twintails' && dir !== 'up') { R(g, 0, 3, 2, 8, H); R(g, 14, 3, 2, 8, H); }
+    if (P.acc.includes('beard') && dir !== 'up') { if (dir === 'down') { R(g, 3, 9, 1, 2, Hd); R(g, 12, 9, 1, 2, Hd); R(g, 4, 11, 8, 1, Hd); } else R(g, dir === 'right' ? 7 : 4, 10, 5, 2, Hd); }
+    if (P.acc.includes('scarf')) R(g, 4, 12, 8, 2, '#c8424b');
+    if (P.acc.includes('headband')) R(g, 2, 3, 12, 1, '#e45a7a');
+    if (P.acc.includes('bow')) { R(g, 10, 0, 4, 2, '#e45a7a'); R(g, 11, 0, 2, 2, '#c23a5a'); }
+    if (P.acc.includes('headphones')) { R(g, 2, 0, 12, 1, '#2a2a35'); if (dir !== 'left') R(g, 1, 5, 2, 4, '#e45a7a'); if (dir !== 'right') R(g, 13, 5, 2, 4, '#e45a7a'); }
+    if (P.acc.includes('cap')) { R(g, 2, 0, 12, 3, '#3e7bd6'); if (dir === 'down') R(g, 3, 3, 10, 1, '#2c5ca8'); else if (dir !== 'up') R(g, dir === 'right' ? 12 : 0, 2, 4, 1, '#2c5ca8'); }
     if (P.acc.includes('beret')) { R(g, 2, 0, 12, 2, '#e2577a'); R(g, 7, -1 + 1, 2, 1, '#e2577a'); }
     if (P.chef) { R(g, 3, 0, 10, 2, '#ffffff'); R(g, 4, -1 + 1, 8, 1, '#ffffff'); }
     outline(c);
@@ -1128,7 +1136,7 @@
     map.objs.forEach(o => { if (o.floor || (o.wall && o.deco)) return; const s = objSprite(o, ph); if (s) L.push({ y: (o.y + o.h) * TS, s, x: o.x * TS + (o.w * TS - s.width) / 2, top: (o.y + o.h) * TS - s.height + (o.t === 'tree' || o.t === 'pine' ? 2 : 0) }); });
     const ent = (e, key, P) => { const [x, y] = pos(e); const s = charSprite(key, P, e.dir, e.mv > 0 ? e.frame : 0); L.push({ y: y + TS, s, x, top: y + TS - 24, e }); };
     npcs.forEach(n => { if (n.marker) return; ent(n, n.pal ? 'town:' + n.id.replace(/\d+$/, '') + (n.icon || '') : n.id, palette(n.id, n.pal)); });
-    ent(player, 'pau' + API.rank(), palette('pau'));
+    const PL = palette('pau'); ent(player, ['pau', API.rank(), PL.style, PL.hair, PL.skin, PL.cloth, PL.acc.join('+')].join(':'), PL);
     L.sort((a, b) => a.y - b.y);
     // ombres
     L.forEach(d => { if (d.e) { ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(Math.round(d.x * z + 3 * z - cx), Math.round((d.y - 2) * z - cy), 10 * z, 2 * z); } });
