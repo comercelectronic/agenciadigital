@@ -76,19 +76,19 @@
       { t: 'lesson', id: 'L_posicionament' },
       { t: 'choice', key: 'posic', prompt: T('Com et diferencies davant la cooperativa?'), opts: [
         { t: T('Coneixement local i servei proper: «Coneixem Osona, venim a la cooperativa i responem el mateix dia.»'), v: 'local', fx: { money: 1200, fee: true, rep: 3, trust: { laia: 1 }, log: T('Es va diferenciar per coneixement local i proximitat.'), key: true } },
-        { t: T('Especialització tècnica: analítica i resultats mesurables setmana a setmana.'), v: 'tecnic', fx: (S) => S.skills.analitica >= 2 ? { money: 1200, fee: true, rep: 3, trust: { laia: 1 }, log: T('Es va diferenciar per rigor analític.'), key: true } : { rep: 1, trust: { laia: 1 }, flags: { perdutCoop: true } } },
+        { t: T('Especialització tècnica: analítica i resultats mesurables setmana a setmana.'), v: 'tecnic', fx: (S) => GD.sk('analitica') >= 2 ? { money: 1200, fee: true, rep: 3, trust: { laia: 1 }, log: T('Es va diferenciar per rigor analític.'), key: true } : { rep: 1, trust: { laia: 1 }, flags: { perdutCoop: true } } },
         { t: T('Preu: fer-ho per la meitat que la Laia.'), v: 'preu', fx: { money: 600, fee: true, rep: -1, flags: { preuBaix: true }, log: T('Va guanyar un projecte competint en preu.') } },
         { t: T('Prometre el que la Laia no s\'atreveix: «Doblarem les vendes en un mes.»'), v: 'promesa', fx: { money: 1200, fee: true, trust: { laia: -2 }, flags: { promesa: true }, log: T('Va prometre doblar les vendes de la cooperativa en un mes.'), key: true } }
       ] },
       { t: 'dlg', lines: (S) => {
         const v = S.f.posic;
         if (v === 'local') return [['', T('La cooperativa tria {agencia}. «Volem algú que conegui el territori i que puguem trucar.»')], ['laia.h', T('Ben jugat. Escolta: hi ha projectes on necessitaria algú d\'aquí. Si mai vols col·laborar, truca\'m.')], ['pau.h', T('Ho tindré en compte, Laia.')]];
-        if (v === 'tecnic' && S.skills.analitica >= 2) return [['', T('La cooperativa tria {agencia}: el pla de mesura setmanal els ha convençut.')], ['laia.t', T('Interessant. Tens un perfil més tècnic del que em pensava. Potser algun dia col·laborarem.')]];
+        if (v === 'tecnic' && GD.sk('analitica') >= 2) return [['', T('La cooperativa tria {agencia}: el pla de mesura setmanal els ha convençut.')], ['laia.t', T('Interessant. Tens un perfil més tècnic del que em pensava. Potser algun dia col·laborarem.')]];
         if (v === 'tecnic') return [['', T('La cooperativa tria Vidal & Co. «La proposta tècnica era bona, però no ens ha quedat clar com ho faríeu.»')], ['pau.w', T('Em falta solidesa analítica per defensar-ho. Ho he d\'aprendre millor.')], ['laia.n', T('No t\'ho prenguis malament. Has fet una bona presentació.')]];
         if (v === 'preu') return [['', T('La cooperativa tria {agencia}... pel preu.')], ['laia.t', T('Si competeixes en preu, sempre hi haurà algú més barat. Fins i tot nosaltres, si volem.')], ['pau.w', T('(Guanyo el projecte, però amb aquest preu gairebé no hi guanyo res.)')]];
         return [['', T('La cooperativa tria {agencia}: la promesa els ha enlluernat.')], ['laia.a', T('Doblar les vendes en un mes? Això és irresponsable. Quan no ho aconsegueixis, el sector sencer en pagarà les conseqüències.')], ['pau.w', T('(Potser m\'he passat...)')]];
       } },
-      { t: 'fx', silent: true, fx: (S) => (S.f.posic === 'local' || (S.f.posic === 'tecnic' && S.skills.analitica >= 2)) ? { flags: { laiaAliada: true } } : null }
+      { t: 'fx', silent: true, fx: (S) => (S.f.posic === 'local' || (S.f.posic === 'tecnic' && GD.sk('analitica') >= 2)) ? { flags: { laiaAliada: true } } : null }
     ]
   });
 
@@ -134,9 +134,9 @@
       ] },
       { t: 'lesson', id: 'L_planificacio' },
       { t: 'choice', key: 'pla34', prompt: T('Com organitzes la setmana?'), opts: [
-        { t: T('Fer-ho tot jo, treballant de nit.'), v: 'nit', fx: { rep: -2, flags: { cansament: 1 }, log: T('Va intentar fer-ho tot {g:sol|sola|sol} treballant de nit.') }, say: [['', T('Tres nits sense dormir. La presentació de Miquel arriba amb dues errades a les xifres.')], ['miquel.a', T('{nom}, aquesta xifra està malament. Davant del client, quedo fatal.')], ['pau.w', T('El cansament es paga.')]] },
+        { t: T('Fer-ho tot jo, treballant de nit.'), v: 'nit', fx: { money: -400, rep: -2, flags: { cansament: 1 }, log: T('Va intentar fer-ho tot {g:sol|sola|sol} treballant de nit i va haver de descomptar 400 € per errors.') }, say: [['', T('Tres nits sense dormir. La presentació de Miquel arriba amb dues errades a les xifres.')], ['miquel.a', T('{nom}, aquesta xifra està malament. Davant del client, quedo fatal.')], ['pau.w', T('El cansament es paga.')]] },
         { t: T('Prioritzar per urgència i impacte: primer el pagament de la Núria, després la presentació de Miquel; parlar amb el tercer per moure el termini i subcontractar el disseny.'), v: 'prio', fx: (S) => ({ money: -250, rep: 3, xp: 30, trust: { miquel: 1, quim: S.f.quimMal ? -1 : 0 }, log: T('Va prioritzar per urgència i impacte i va comunicar els nous terminis.'), key: true }), say: (S) => [['', T('Dilluns a migdia, la botiga de la Núria torna a cobrar. Dijous, la presentació de Miquel és impecable.')], S.f.quimMal ? ['quim.a', T('Com que dilluns? Jo vull els vídeos ara! Pago per «tot», no?')] : has(S, 'quim') ? ['quim.n', T('Està al contracte: dos vídeos al mes. La resta a part? Bé, d\'acord, per dilluns.')] : ['jordi.h', T('Cap problema, {nom}. Gràcies per avisar.')], ['pau.h', T('Planificar i comunicar. Sembla fàcil, però marca la diferència.')]] },
-        { t: T('Ajornar el client més petit sense avisar.'), v: 'amagar', fx: { rep: -3, trust: { carme: -1 }, log: T('Va ajornar un client sense avisar.') }, say: [['', T('El client petit s\'assabenta per la Carme que {en} «estava massa ocupat».')], ['carme.w', T('{nom}, la gent parla. Si no pots, digues-ho, {g:home|dona|maco}.')]] }
+        { t: T('Ajornar el client més petit sense avisar.'), v: 'amagar', fx: { money: -500, rep: -3, trust: { carme: -1 }, log: T('Va ajornar un client sense avisar i va pagar 500 € de penalització per incompliment.') }, say: [['', T('El client petit s\'assabenta per la Carme que {en} «estava massa ocupat».')], ['carme.w', T('{nom}, la gent parla. Si no pots, digues-ho, {g:home|dona|maco}.')]] }
       ] }
     ]
   });
@@ -284,7 +284,7 @@
       ], fx: (S, g) => ({ xp: g * 12, tools: S.tools + 80, flags: { crm: true } }) },
       { t: 'dlg', lines: [['', T('Al cap d\'uns dies, un client proposa una «drecera».')], ['sergi.n', T('{nom}, puc comprar una base de 20.000 correus d\'empreses per 200 €. Els enviem el butlletí i llestos!')]] },
       { t: 'choice', key: 'dades44', prompt: T('Què li respons al Sergi?'), opts: [
-        { t: T('Comprar-la: és barata i ràpida.'), v: 'comprar', fx: { rep: -4, flags: { rgpdRisk: true }, log: T('Va acceptar enviar correus a una base de dades comprada.'), key: true }, say: [['', T('El 40 % dels correus reboten. Arriben queixes i el domini de correu queda marcat com a brossa.')], ['julia.a', T('T\'ho vaig dir. A més, sense consentiment és un risc legal.')]] },
+        { t: T('Comprar-la: és barata i ràpida.'), v: 'comprar', fx: { money: -1800, rep: -4, flags: { rgpdRisk: true }, log: T('Va comprar una base de dades i en va rebre una sanció de protecció de dades (−1.800 €).'), key: true }, say: [['', T('El 40 % dels correus reboten. Arriben queixes i el domini de correu queda marcat com a brossa.')], ['julia.a', T('T\'ho vaig dir. A més, sense consentiment és un risc legal.')]] },
         { t: T('Rebutjar-la i proposar captació amb consentiment: fitxes descarregables i butlletí.'), v: 'consent', fx: { rep: 2, xp: 30, log: T('Va rebutjar comprar una base de dades i va proposar captació amb consentiment.') }, say: [['sergi.t', T('Més lent... però si ho dius tu.')], ['julia.h', T('Tres mesos després, la llista pròpia té 900 contactes que obren els correus.')]] }
       ] }
     ]
@@ -339,7 +339,7 @@
         { t: T('Aturar-la definitivament: no funciona.'), v: 'aturar' },
         { t: T('Canviar l\'anunci i la segmentació.'), v: 'canviar' },
         { t: T('Pausar-la 48 h, arreglar el pagament en Android i l\'etiqueta de compra, i reprendre-la.'), v: 'arreglar', hide: (S) => !(S.f.d_mobil || S.f.d_track), fx: { xp: 40 } },
-        { t: T('Gastar més per compensar.'), v: 'mes' }
+        { t: T('Gastar més per compensar.'), v: 'mes', fx: { money: -1200, log: T('Va gastar més en una campanya trencada i va haver d\'assumir 1.200 € de pèrdues.') } }
       ] },
       { t: 'sim', calc: (S, H) => {
         const v = S.f.acc51;
@@ -377,7 +377,7 @@
       ] },
       { t: 'lesson', id: 'L_crisi' },
       { t: 'choice', key: 'crisi52', prompt: T('Com gestiones la crisi?'), opts: [
-        { t: T('Esborrar els comentaris de les xarxes i denunciar les ressenyes'), v: 'esborrar', fx: { rep: -5, log: T('Va esborrar crítiques en una crisi de reputació.'), key: true } },
+        { t: T('Esborrar els comentaris de les xarxes i denunciar les ressenyes'), v: 'esborrar', fx: { money: -800, rep: -5, log: T('Va esborrar crítiques en una crisi de reputació i el client va retenir 800 € de la quota.'), key: true } },
         { t: T('Respondre defensant el restaurant: «Els clients no entenen la nova cuina»'), v: 'defensa', fx: { rep: -3 } },
         { t: T('Fer un sorteig de sopars per tapar les crítiques'), v: 'sorteig', fx: { rep: -2 } },
         { t: T('Escoltar, reconèixer el que és cert i actuar: recuperar els canelons, explicar els preus, formar la sala i pausar la promoció fins que estigui resolt'), v: 'honest', fx: { rep: 5, xp: 40, log: T('Va gestionar una crisi de reputació amb transparència i mesures reals.'), key: true } }
@@ -418,7 +418,7 @@
         { t: T('Retallar el canal amb pitjor ROAS segons les plataformes'), v: 'retallar' },
         { t: T('Sumar-ho tot: «La campanya ha generat 250 vendes»'), v: 'sumar', fx: { rep: -3 }, say: [['sergi.a', T('250? Si a la botiga n\'hem fet 160! {nom}, m\'estàs prenent el pèl?')]] },
         { t: T('Explicar les limitacions de l\'atribució i fer servir les vendes reals com a referència'), v: 'explicar', fx: { rep: 2, xp: 25 } },
-        { t: T('Proposar un experiment geogràfic: pausar Meta tres setmanes a Lleida i Girona i comparar-les amb Barcelona i Tarragona'), v: 'experiment', req: (S, H) => S.skills.analitica >= 2 || H.teamHas('julia'), fx: { rep: 4, xp: 50, log: T('Va proposar un experiment d\'incrementalitat per decidir la inversió.'), key: true } }
+        { t: T('Proposar un experiment geogràfic: pausar Meta tres setmanes a Lleida i Girona i comparar-les amb Barcelona i Tarragona'), v: 'experiment', req: (S, H) => GD.sk('analitica') >= 2 || H.teamHas('julia'), fx: { rep: 4, xp: 50, log: T('Va proposar un experiment d\'incrementalitat per decidir la inversió.'), key: true } }
       ] },
       { t: 'sim', calc: (S, H) => {
         const v = S.f.atr53;
@@ -465,7 +465,7 @@
         { t: T('Fer servir la reserva i pactar amb el client un calendari de pagament'), v: 'reserva', req: (S) => S.reserve >= 500, fx: (S) => ({ money: S.reserve + 3000, reserve: -0, xp: 40, log: T('La reserva per a imprevistos va salvar la tresoreria.'), key: true }), say: [['pau.h', T('La reserva que vaig guardar fa temps ens salva. I el client pagarà en dos terminis.')]] },
         { t: T('Pactar un calendari (50 % ara, 50 % en 30 dies) i aturar la feina nova fins que es compleixi'), v: 'calendari', fx: { money: 3000, xp: 30, rep: 1 }, say: [['', T('Una conversa tensa però respectuosa. El client paga la meitat dilluns i la resta al cap d\'un mes.')]] },
         { t: T('Amenaçar amb advocats el primer dia'), v: 'advocats', fx: { money: 1500, trust: { quim: -3 }, dropClient: 'quim', rep: -1 }, say: [['quim.a', T('Advocats? Doncs adeu. T\'envio la meitat i no em tornis a trucar.')]] },
-        { t: T('Demanar un préstec ràpid amb interès alt'), v: 'prestec', fx: { money: 3000, flags: { prestec: true }, log: T('Va demanar un préstec ràpid per pagar nòmines.') }, say: [['pau.w', T('Problema resolt... de moment. Caldrà tornar-lo amb interessos.')]] }
+        { t: T('Demanar un préstec ràpid amb interès alt'), v: 'prestec', fx: { money: 3000, flags: { prestec: true }, log: T('Va demanar un préstec ràpid per pagar nòmines: el tornarà amb un 30 % d\'interessos.') }, say: [['pau.w', T('Problema resolt... de moment. Caldrà tornar-lo amb interessos.')]] }
       ] },
       { t: 'fx', silent: true, fx: (S) => S.f.pag54 === 'reserva' ? { flags: { usedReserve: true } } : null },
       { t: 'fx', silent: true, fx: (S) => { if (S.f.pag54 === 'reserva') { S.reserve = 0; } return null; } },

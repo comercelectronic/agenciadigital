@@ -29,8 +29,9 @@
       <h3>${T('Passos recomanats')}</h3>
       <ol class="steps">${p.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
       <h3>${T('Eines')}</h3><p>${esc(p.tools)}</p>
-      <h3>${T('Com s\'avaluarà')}</h3>
-      <ul class="req-list">${p.rubric.map(s => `<li>☐ ${esc(s)}</li>`).join('')}</ul>
+      <h3>${T('Rúbrica: com s\'avaluarà')}</h3>
+      <div class="table-wrap"><table class="tbl rubric"><thead><tr><th>${T('Criteri')}</th>${GD.rubricLevels.map((l, i) => `<th>${i} · ${esc(l.n)}</th>`).join('')}</tr></thead><tbody>
+        ${p.rubric.map(s => `<tr><td>${esc(s)}</td>${GD.rubricLevels.map(() => '<td></td>').join('')}</tr>`).join('')}</tbody></table></div>
       <div class="errors"><b>💡 ${T('Consells')}</b><ul class="tips">${p.tips.map(s => `<li>${esc(s)}</li>`).join('')}</ul></div>
       <div class="row-btns"><button class="btn primary" data-tpl="${p.id}">${T('📄 Copiar la plantilla')}</button><a class="btn ghost" href="#top">${T('↑ Índex')}</a></div>
     </article>`;
@@ -49,6 +50,7 @@
         <h3>${T('🤖 Ús de la IA')}</h3><p>${esc(G.ai)}</p>
         <h3>${T('📣 Anuncis reals')}</h3><p>${esc(G.ads)}</p>
         <h3>${T('✅ Avaluació')}</h3><p>${esc(G.grading)}</p>
+        <div class="table-wrap"><table class="tbl rubric"><thead><tr>${GD.rubricLevels.map((l, i) => `<th>${i} · ${esc(l.n)}</th>`).join('')}</tr></thead><tbody><tr>${GD.rubricLevels.map(l => `<td>${esc(l.d)}</td>`).join('')}</tr></tbody></table></div>
         <div class="row-btns noprint"><a class="btn" href="./">${T('🎮 Tornar al joc')}</a><button class="btn" id="print">${T('🖨️ Imprimir o desar en PDF')}</button></div></section>
       <nav class="card toc"><h3>${T('Índex de projectes')}</h3><ol>${GD.projects.map(p => `<li><a href="#${p.id}">${esc(p.title)}</a> <small class="muted">(${T('cap. {0}', [p.after])})</small></li>`).join('')}</ol></nav>
       ${byStage.map(({ st, ps }) => `<h2 class="stage-t">${T('Etapa {0}', [st.id])} · ${esc(clean(st.title))}</h2>${ps.map(p => project(p, ++n)).join('')}`).join('')}`;

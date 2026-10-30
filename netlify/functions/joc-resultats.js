@@ -8,7 +8,8 @@
 //   es fa servir ADMIN_PASSWORD).
 //
 // - Projectes reals: l'alumne els entrega dins del seu resum; el professor els
-//   revisa (action: 'review') i l'alumne consulta l'estat (action: 'reviews').
+//   revisa (action: 'review') i l'alumne consulta l'estat (action: 'reviews'). La correcció
+//   automàtica la fa joc-correccio-background.js; la revisió del professor sempre la sobreescriu.
 //
 // Es desa a Netlify Blobs: magatzem 'joc-resultats' (resums) i 'joc-revisions'
 // (revisions del professor), amb la clau "<CLASSE>/<id de l'alumne>".
@@ -88,11 +89,15 @@ exports.handler = async function (event) {
     if (grade !== null && !(grade >= 0 && grade <= 10)) return json(400, { error: 'La nota ha de ser de 0 a 10.' });
     const key = `${body.classe}/${body.id}`;
     const rev = (await revStore.get(key, { type: 'json' }).catch(() => null)) || { tasks: {} };
-    rev.tasks[task] = {
-      status: body.status, grade,
+    const prev = rev.tasks[task] || {};
+    const scores = Array.isArray(body.scores) && body.scores.length <= 20 && body.scores.every(x => [0, 1, 2, 3].includes(x)) ? body.scores : prev.scores;
+    // La revisió del professor sempre preval sobre la correcció automàtica
+    rev.tasks[task] = Object.assign({}, prev, {
+      status: body.status, grade, scores,
       feedback: String(body.feedback || '').slice(0, 4000),
-      v: Number(body.v) || 1, at: new Date().toISOString()
-    };
+      v: Number(body.v) || 1, at: new Date().toISOString(), by: 'teacher', autoError: null,
+      comments: prev.by === 'auto' && JSON.stringify(scores) === JSON.stringify(prev.scores) ? prev.comments : null
+    });
     await revStore.setJSON(key, rev);
     return json(200, { ok: true, review: rev.tasks[task] });
   }

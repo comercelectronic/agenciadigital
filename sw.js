@@ -1,8 +1,8 @@
 /* Agència Digital — service worker: permet jugar sense connexió i instal·lar el joc com a app */
-const CACHE = 'agencia-digital-v5';
+const CACHE = 'agencia-digital-v6';
 const ASSETS = [
   './', './index.html', './style.css', './manifest.webmanifest',
-  './js/i18n.js', './js/i18n-es.js', './js/i18n-en.js', './js/art.js', './js/data-lessons.js', './js/data-story1.js', './js/data-story2.js', './js/data-story3.js', './js/data-web.js', './js/data-projects.js', './js/game.js', './guia.html', './js/guia.js',
+  './js/i18n.js', './js/i18n-es.js', './js/i18n-en.js', './js/art.js', './js/data-lessons.js', './js/data-story1.js', './js/data-story2.js', './js/data-story3.js', './js/data-web.js', './js/data-projects.js', './js/data-upgrades.js', './js/world.js', './js/game.js', './guia.html', './js/guia.js',
   './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png'
 ];
 

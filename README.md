@@ -24,6 +24,32 @@ El joc i el panell del professor es poden fer servir en **català, castellà i a
 - **Contrasenya:** variable d'entorn `TEACHER_PASSWORD` del lloc de Netlify (obligatòria perquè funcioni el panell).
 - **Dades personals:** només s'envia el nom i cognom que escrigui l'alumne i els resultats del joc. No es demana correu ni cap altra dada.
 
+## Món explorable (estil RPG)
+
+En sortir d'una missió, l'alumne es mou per **Vic** en vista zenital (fletxes o WASD, tocar el mapa o la creu de control al mòbil; A/Espai per parlar i mirar, B per a la llibreta, Esc per al menú). Pot entrar al despatx, al forn de la Carme, a la cansaladeria, al súper, al bar, a la merceria, a Cim Trail, al recinte firal i, en bus, a Tona (Can Jordi) i al polígon de Gurb (Mecanitzats Bellmunt).
+
+- **Missions:** el capítol següent apareix marcat amb ❗ o ✦ (amb una fletxa si és fora de la pantalla); en parlar-hi comença l'escena cara a cara. Els projectes pendents es marquen amb 📋.
+- **Pistes:** mirant coses dels negocis i parlant amb la gent es descobreix informació útil (la fitxa de Google errònia, la lleixa plena a la tarda, el súper nou, el polígon de Tona...). A les investigacions dels capítols ja surt com a sabuda i no gasta temps.
+- **Botiguers amb ❗:** petits encàrrecs de consultoria; les bones recomanacions es cobren i les dolentes fan perdre diners.
+- **Accions de màrqueting reals:** corregir la fitxa de Google del forn, fer fotos de producte, repartir cupons a la sortida de l'escola (minijoc de 40 s), demanar ressenyes a Can Jordi i dissenyar el cartell de la cansaladeria.
+- **Despatx:** l'ordinador obre campanya, projectes, millores, taller i finances; el prestatge, la biblioteca; el telèfon, els encàrrecs; la pissarra, la llibreta.
+- Codi a `js/world.js` (mapes, art en píxel generat amb codi i contingut del món).
+
+## Millores de l'agència
+
+A Empresa → 🛒 **Millores**: eines (Canva Pro, analítica, CRM, gestor de projectes, certificacions), equip (becari, videògraf, comercial), publicitat de l'agència (fitxa de Google, web, LinkedIn, patrocini) i local (rètol, cafetera, ordinador, despatx renovat). Tenen cost inicial i, sovint, quota mensual. Les bonificacions d'habilitat compten a les missions (desbloquegen opcions i milloren els resultats de les campanyes); d'altres pugen els honoraris, els encàrrecs, l'experiència o la reputació. Les millores es veuen al despatx del món. Dades a `js/data-upgrades.js`.
+
+## Economia exigent i fallida
+
+Els errors econòmics costen diners: treballar gratis, acceptar feines sense capacitat, comprar bases de dades, campanyes fallides (compensació al client), encàrrecs mal resolts (devolució), préstecs amb interessos... Si la liquiditat (diners + reserva) queda en negatiu, **l'agència fa fallida** i cal començar de zero (es conserven el personatge, el codi de classe, els projectes reals i les webs del Taller). El professorat veu el nombre de fallides de cada alumne.
+
+## Correcció automàtica dels projectes (IA)
+
+Quan l'alumne entrega un projecte, la funció `netlify/functions/joc-correccio-background.js` descarrega el document (Google Docs, Slides, Sheets, fitxers de Drive, PDF, imatges o webs públiques), el fa corregir a Claude amb la **rúbrica** del projecte (cada criteri de 0 a 3 punts; nota sobre 10; s'aprova amb un 5) i desa la nota, el nivell de cada criteri i la retroacció. L'alumne la veu al joc en pocs minuts i, si aprova, pot continuar. **El professor sempre la pot modificar** des del panell (llista «Corregits automàticament», on pot validar-la o canviar nivells, nota i comentaris). Si el document és privat, és una carpeta o no es pot llegir, el projecte queda pendent del professor i l'alumne en veu el motiu.
+
+- Fa servir el **Netlify AI Gateway** (cal un pla de Netlify basat en crèdits i almenys un desplegament de producció) o, si ho prefereixes, la variable d'entorn `ANTHROPIC_API_KEY` amb una clau pròpia.
+- Si la IA no està disponible, tot continua funcionant amb revisió manual del professor.
+
 ## Projectes reals (obligatoris, revisats pel professorat)
 
 Pestanya 📋 **Projectes**: 17 lliuraments de feina real repartits per tota la campanya (pla de màrqueting i campanya amb anuncis del forn, SEO local, campanya B2B, botiga en línia i correus, quadre de comandament, pitch, proposta comercial, calendari de continguts, sistema de treball, auditoria, gestió de crisi, informe executiu, manual de marca, llançament a França, pla d'IA i portafoli final).

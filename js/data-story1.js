@@ -60,7 +60,7 @@ CH('1.1', {
       { t: T('«Ajudem els negocis d\'Osona a aconseguir més clients amb accions mesurables i pressupostos petits.»'), v: 'resultat', fx: { xp: 20, rep: 2 }, say: [['pau.h', T('Això sí! Per a qui, quin problema i com ho mesurarem.')]] }
     ] },
     { t: 'choice', key: 'serveis', prompt: T('Quins serveis oferiràs al principi?'), sub: T('Aquesta decisió determina quines oportunitats arriben amb més facilitat.'), opts: [
-      { t: T('Tots: web, xarxes, anuncis, SEO, disseny i vídeo'), d: T('Més portes d\'entrada, però és difícil fer-ho tot bé tu {g:sol|sola|sol}.'), v: 'tots', fx: { log: T('Va decidir oferir tots els serveis des del primer dia.'), key: true } },
+      { t: T('Tots: web, xarxes, anuncis, SEO, disseny i vídeo'), d: T('Més portes d\'entrada, però és difícil fer-ho tot bé tu {g:sol|sola|sol}.'), v: 'tots', fx: { money: -300, log: T('Va decidir oferir tots els serveis des del primer dia i va pagar llicències d\'eines que no faria servir (−300 €).'), key: true } },
       { t: T('Especialitzar-me en 2 o 3: màrqueting local, Google i analítica'), d: T('Menys encàrrecs, però més fàcils de fer bé i de recomanar.'), v: 'espec', fx: { log: T('Va decidir especialitzar-se en màrqueting local, Google i analítica.'), key: true, skill: { estrategia: 0 } } },
       { t: T('Generalista que primer estudia cada cas i després proposa'), d: T('Atraus clients que valoren l\'anàlisi abans de l\'acció.'), v: 'diagnosi', fx: { log: T('Es va presentar com un professional que primer diagnostica i després proposa.'), key: true } }
     ] },
@@ -182,7 +182,7 @@ CH('1.3', {
     } },
     { t: 'fx', silent: true, fx: (S) => ({ trust: { carme: ((S.f.bud || {}).reserva > 0 ? 1 : 0) + (S.f.mesura ? 1 : 0) - ((S.f.bud || {}).fotos >= 150 ? 1 : 0) } }) },
     { t: 'choice', key: 'feeCarme', who: 'carme', prompt: T('Quins honoraris demanes pel pla i el seguiment de 4 setmanes?'), opts: [
-      { t: T('Res: és el primer client i vull referències.'), v: 0, fx: { log: T('Va treballar gratis per al primer client.') }, say: [['carme.t', T('Gratis? Res és gratis, {g:noi|noia|maco}. Bé... t\'ho pagaré en pa. I parlaré bé de tu.')]] },
+      { t: T('Res: és el primer client i vull referències.'), v: 0, fx: { money: -150, log: T('Va treballar gratis per al primer client i va pagar de la seva butxaca la impressió dels cupons (−150 €).') }, say: [['carme.t', T('Gratis? Res és gratis, {g:noi|noia|maco}. Bé... t\'ho pagaré en pa. I parlaré bé de tu.')]] },
       { t: T('450 €: pla, execució i informe final.'), v: 450, say: [['carme.n', T('És just. Si funciona, n\'estaré contenta.')]] },
       { t: T('900 €: és el preu habitual a Barcelona.'), v: 450, fx: { trust: { carme: -1 } }, say: [['carme.a', T('Aquí no som a Barcelona. Tres-cents de campanya i nou-cents per a tu? Ho deixem en 450 i gràcies.')]] }
     ] }
@@ -277,7 +277,7 @@ CH('1.5', {
       ['pau.t', T('(400 € em vindrien molt bé... però de publicitat de pagament en sé poca cosa.)')]
     ] },
     { t: 'choice', key: 'toni', who: 'toni', prompt: T('Què li dius al Toni?'), opts: [
-      { t: T('Acceptar i muntar-la de seguida, tal com ho demana.'), v: 'rapid', fx: { log: T('Va acceptar muntar una campanya d\'anuncis a corre-cuita.') }, say: [['pau.h', T('Fet! Divendres la tens activa.')], ['', T('{En} la munta divendres a la nit, a corre-cuita, copiant passos d\'un vídeo.')], ['', T('Una setmana després...')], ['toni.a', T('{nom}! He gastat 300 € i no s\'ha apuntat ningú. Ni un! Això sí, tinc 140 m\'agrada...')], ['pau.w', T('Deixa\'m revisar la configuració. Ara mateix.')]] },
+      { t: T('Acceptar i muntar-la de seguida, tal com ho demana.'), v: 'rapid', fx: { money: -300, log: T('Va acceptar muntar una campanya d\'anuncis a corre-cuita i va haver de compensar el Toni pels 300 € malgastats.') }, say: [['pau.h', T('Fet! Divendres la tens activa.')], ['', T('{En} la munta divendres a la nit, a corre-cuita, copiant passos d\'un vídeo.')], ['', T('Una setmana després...')], ['toni.a', T('{nom}! He gastat 300 € i no s\'ha apuntat ningú. Ni un! Això sí, tinc 140 m\'agrada...')], ['pau.w', T('Deixa\'m revisar la configuració. Ara mateix.')]] },
       { t: T('Acceptar, però abans definir l\'objectiu i com mesurarem les inscripcions.'), v: 'pla', fx: { xp: 20, log: T('Va condicionar la campanya del gimnàs a definir objectiu i mesura.') }, say: [['toni.t', T('Uf, d\'acord, però ràpid. Ah, i ja en tinc una de prova que vaig activar jo mateix. Mira-la.')], ['pau.n', T('Perfecte: abans de fer res, la reviso.')]] },
       { t: T('Declinar: encara no domino prou la publicitat.'), v: 'no', say: [['toni.w', T('Bé, ja m\'ho farà el meu cosí.')], ['', T('Dues setmanes després...')], ['toni.a', T('{nom}, el meu cosí m\'ho ha muntat i no s\'ha apuntat ningú! Ho pots mirar? Et pago 300 €.')], ['pau.n', T('Això sí que ho puc fer: revisar-ho amb calma.')]] }
     ] },
@@ -549,7 +549,7 @@ CH('2.5', {
       return L;
     } },
     { t: 'choice', key: 'recom', prompt: T('Què fas amb tots els encàrrecs?'), opts: [
-      { t: T('Acceptar-ho tot: és el moment de fer diners.'), v: 'tot', fx: { money: 1400, rep: -3, flags: { sobrecarrega: 1 }, log: T('Va acceptar tots els encàrrecs tot i no tenir capacitat.'), key: true }, say: [['', T('Tres setmanes de nits sense dormir. Dues entregues arriben tard i una amb errors.')], ['pau.w', T('He guanyat diners... però he perdut qualitat. I la gent ho nota.')]] },
+      { t: T('Acceptar-ho tot: és el moment de fer diners.'), v: 'tot', fx: { money: 600, rep: -3, flags: { sobrecarrega: 1 }, log: T('Va acceptar tots els encàrrecs tot i no tenir capacitat: va haver de refer feines i descomptar-ne una part (només 600 € nets).'), key: true }, say: [['', T('Tres setmanes de nits sense dormir. Dues entregues arriben tard i una amb errors.')], ['pau.w', T('He guanyat diners... però he perdut qualitat. I la gent ho nota.')]] },
       { t: T('Acceptar els que encaixen amb la meva especialitat i capacitat; derivar o ajornar la resta amb una data clara.'), v: 'filtre', fx: (S) => ({ money: 800, rep: 4, trust: { carme: S.trust.carme >= 2 ? 1 : 0, miquel: S.trust.miquel >= 2 ? 1 : 0 }, log: T('Va acceptar només els encàrrecs que podia fer bé.'), key: true }), say: [['pau.h', T('Menys diners ara, però feina ben feta. I els que he ajornat m\'esperen.')]] },
       { t: T('No acceptar-ne cap més fins a tenir equip.'), v: 'cap', fx: { trust: { carme: -1, miquel: -1 }, log: T('Va rebutjar totes les recomanacions.') }, say: [['carme.w', T('Ah... bé. La Pilar buscarà algú altre, doncs.')]] }
     ] },

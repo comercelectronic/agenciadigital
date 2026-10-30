@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "Agència Digital — joc educatiu de màrqueting digital (PWA estàtica + funció de resultats a Netlify).",
   "dependencies": {
-    "@netlify/blobs": "^11.1.6"
+    "@netlify/blobs": "^11.1.6",
+    "@anthropic-ai/sdk": "^1.3.0"
   }
 }

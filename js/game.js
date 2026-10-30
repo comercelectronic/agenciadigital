@@ -5,7 +5,8 @@
   const GD = window.GD;
   const SAVE_KEY = 'agencia-digital-partida-v1';
   const $ = (s, r) => (r || document).querySelector(s);
-  const app = () => $('#app');
+  // Qualsevol pantalla nova tanca el món explorable (si estava obert)
+  const app = () => { if (window.WORLD) WORLD.close(); return $('#app'); };
 
   /* ================= Constants de joc ================= */
   const SKILLS = {
@@ -34,7 +35,7 @@
     return {
       v: 1, agency: T('Píxel d\'Osona'), profile: null,
       player: { id: uid(), name: 'Pau', surname: 'Riera', g: 'm', look: Object.assign({}, ART.PLAYER_DEFAULT) },
-      classe: '', quizLog: {}, syncPending: false, lastSync: 0, web: { platforms: [], levels: {} }, proj: {},
+      classe: '', quizLog: {}, syncPending: false, lastSync: 0, web: { platforms: [], levels: {} }, proj: {}, upgrades: {},
       level: 1, xp: 0, sp: 0,
       skills: { estrategia: 0, creativitat: 0, analitica: 0, comercial: 0, gestio: 0 },
       money: 3000, reserve: 0, week: 1, rep: 5,
@@ -89,10 +90,16 @@
   function stagesDone() { return GD.stages.filter(st => st.chapters.every(c => S.done[c])).length; }
   function rank() { return Math.min(4, Math.floor(stagesDone() / 2)); }
   function title() { const L = RANKS[(S && S.player && S.player.g) || 'm']; return L[Math.min(L.length - 1, stagesDone())]; }
-  function sk(k) { return S.skills[k] || 0; }
+  // Habilitat efectiva: punts del personatge + bonificacions de les millores comprades
+  function sk(k) { return Math.min(SKILL_MAX, (S.skills[k] || 0) + upSkill(k)); }
+  GD.sk = (k) => (S ? sk(k) : 0);
+  const owned = () => Object.keys(S.upgrades || {}).map(GD.upgradeById).filter(Boolean);
+  function upSkill(k) { return owned().reduce((a, u) => a + ((u.bonus.skill || {})[k] || 0), 0); }
+  function upBonus(kind) { return owned().reduce((a, u) => a + (u.bonus[kind] || 0), 0); }
+  function upMonthly() { return owned().reduce((a, u) => a + (u.monthly || 0), 0); }
   function weeklyIncome() { return S.clients.reduce((a, c) => a + c.fee, 0) / 4; }
   function weeklyCost() {
-    const base = S.rent + S.tools + S.team.reduce((a, t) => a + t.salary, 0);
+    const base = S.rent + S.tools + upMonthly() + S.team.reduce((a, t) => a + t.salary, 0);
     return base * (1 - 0.04 * sk('gestio')) / 4;
   }
   function knowTotal() { return Object.values(S.know).reduce((a, b) => a + b, 0); }
@@ -128,7 +135,7 @@
     const notes = [];
     if (fx.money) {
       let m = fx.money;
-      if (m > 0 && fx.fee) m = Math.round(m * (1 + 0.05 * sk('comercial')));
+      if (m > 0 && fx.fee) m = Math.round(m * (1 + 0.05 * sk('comercial') + upBonus('fee') / 100));
       S.money += m; if (m > 0) S.stats.income += m; else S.stats.expenses -= m;
       if (RUN) RUN.money += m;
       notes.push((m > 0 ? '+' : '') + eur(m));
@@ -157,6 +164,7 @@
 
   function addXP(n) {
     if (S.level >= MAX_LEVEL) return;
+    n = Math.round(n * (1 + upBonus('xp') / 100));
     S.xp += n; if (RUN) RUN.xp += n;
     let up = 0;
     while (S.level < MAX_LEVEL && S.xp >= xpNeed(S.level)) { S.xp -= xpNeed(S.level); S.level++; S.sp++; up++; }
@@ -166,10 +174,52 @@
 
   function advanceWeeks(n) {
     let inc = 0, cost = 0;
-    for (let i = 0; i < n; i++) { inc += weeklyIncome(); cost += weeklyCost(); }
+    for (let i = 0; i < n; i++) {
+      inc += weeklyIncome(); cost += weeklyCost();
+      // Préstec ràpid: 3.000 € que es tornen amb un 30 % d'interessos en 26 setmanes
+      if (S.f.prestec && (S.f.prestecPagat || 0) < 26) { cost += 150; S.f.prestecPagat = (S.f.prestecPagat || 0) + 1; }
+    }
     S.week += n; S.money += inc - cost; S.stats.income += inc; S.stats.expenses += cost;
     if (S.money < 0) S.f.numerosVermells = (S.f.numerosVermells || 0) + 1;
     return { inc, cost, n };
+  }
+
+  /* ================= Fallida ================= */
+  // Si la liquiditat (diners + reserva) queda en negatiu, l'agència tanca i cal començar de zero.
+  function bankrupt() {
+    if (!S || S.ending || S.money >= 0) return false;
+    if (S.money + S.reserve >= 0) {
+      const m = -S.money; S.reserve -= m; S.money = 0; save();
+      toast(T('⚠️ Has hagut de fer servir {0} de la reserva per pagar les despeses.', [eur(m)]), 'bad');
+      return false;
+    }
+    bankruptScreen(); return true;
+  }
+  function bankruptScreen() {
+    const losses = S.history.filter(h => /−|-\d|€/.test(h.t)).slice(-6).reverse();
+    app().innerHTML = `<section class="ending bankrupt">
+      <div class="bg">${ART.background('despatx:night')}</div>
+      <div class="ending-box">
+        <small>${T('Fi de la partida')}</small>
+        <h1>${T('💸 L\'agència ha fet fallida')}</h1>
+        <div class="ending-cast"><span>${ART.portrait('pau', 'w', { rank: rank() })}</span></div>
+        <p>${T('La liquiditat ha quedat en {0}. Sense diners per pagar el lloguer, les eines i els sous, {agencia} ha de tancar.', [eur(S.money + S.reserve)]).replace('{agencia}', esc(S.agency))}</p>
+        ${losses.length ? `<h4>${T('Les decisions que més han pesat')}</h4><ul class="history">${losses.map(h => `<li class="key"><small>${T('Cap.')} ${h.ch} · S${h.week}</small>${esc(h.t)}</li>`).join('')}</ul>` : ''}
+        <p class="muted">${T('Recorda: el pressupost dels clients no és teu, cada error es paga i cal tenir una reserva per als mesos dolents.')}</p>
+        <p class="muted small">${T('Començaràs de zero: es perden el nivell, els diners, els clients i els capítols. Es conserven el teu personatge, el codi de classe, els projectes reals entregats i les webs del Taller.')}</p>
+        <div class="row-btns center"><button class="btn primary big" id="restart">${T('🔁 Tornar a començar de zero')}</button></div>
+      </div></section>`;
+    $('#restart').onclick = () => {
+      const keep = {
+        player: S.player, classe: S.classe, proj: S.proj, web: S.web, quizLog: S.quizLog,
+        fallides: (S.fallides || 0) + 1,
+        fallidesLog: (S.fallidesLog || []).concat([{ at: new Date().toISOString(), setmana: S.week, nivell: S.level, capitols: Object.keys(S.done).length }])
+      };
+      S = Object.assign(newState(), keep);
+      applyPlayer(); save(); queueSync();
+      goWorld();
+      toast(T('Nova oportunitat. Aquesta vegada, vigila els diners!'), 'good');
+    };
   }
 
   /* ================= Interfície general ================= */
@@ -253,6 +303,7 @@
     app().innerHTML = `
       <header id="hud"></header>
       <main class="hub">
+        <button class="to-world" data-act="world">🗺️ ${T('Sortir a explorar Vic')}</button>
         <div class="hub-body" id="hubBody"></div>
       </main>
       <nav class="tabs">
@@ -336,7 +387,7 @@
       <div class="skills">
         ${Object.entries(SKILLS).map(([k, s]) => `
           <div class="skill">
-            <div class="sk-h"><span class="sk-i">${s.i}</span><b>${s.n}</b><span class="pips">${Array.from({ length: SKILL_MAX }, (_, i) => `<i class="${i < S.skills[k] ? 'on' : ''}"></i>`).join('')}</span></div>
+            <div class="sk-h"><span class="sk-i">${s.i}</span><b>${s.n}</b><span class="pips">${Array.from({ length: SKILL_MAX }, (_, i) => `<i class="${i < S.skills[k] ? 'on' : i < sk(k) ? 'up' : ''}"></i>`).join('')}</span>${upSkill(k) ? `<em class="up-b" title="${T('Bonificació de les millores')}">+${upSkill(k)} 🛒</em>` : ''}</div>
             <p>${s.d}</p>
             <button class="btn small" data-skill="${k}" ${S.sp && S.skills[k] < SKILL_MAX ? '' : 'disabled'}>${S.skills[k] >= SKILL_MAX ? T('Màxim') : T('+ Millorar')}</button>
           </div>`).join('')}
@@ -358,9 +409,53 @@
         }).join('')}</div>` : '').join('')}`;
   }
 
+  /* ================= Millores de l'agència ================= */
+  function upgradesCard() {
+    const st = curStage(), mine = S.upgrades || {};
+    const fx = (u) => [
+      ...Object.entries(u.bonus.skill || {}).map(([k, v]) => `${SKILLS[k].i} +${v} ${SKILLS[k].n}`),
+      u.bonus.fee ? T('💶 +{0} % honoraris', [u.bonus.fee]) : '', u.bonus.gig ? T('📨 +{0} % encàrrecs', [u.bonus.gig]) : '',
+      u.bonus.xp ? T('✨ +{0} % EXP', [u.bonus.xp]) : '', u.rep ? T('⭐ +{0} reputació', [u.rep]) : ''
+    ].filter(Boolean).join(' · ');
+    return `<div class="card upgrades" id="millores"><h3>${T("🛒 Millores de l'agència")}</h3>
+      <p class="muted small">${T("Inverteix en eines, equip, publicitat i local. Les bonificacions d'habilitat compten a les missions (desbloquegen opcions i milloren els resultats), però les quotes mensuals s'afegeixen a les despeses fixes: si gastes massa, pots fer fallida.")}</p>
+      <p class="small">${T('Quotes mensuals actuals de millores: <b>{0}</b>', [eur(upMonthly())])}</p>
+      ${GD.upgradeCats.map(c => `<h4>${c.i} ${esc(c.n)}</h4><div class="up-grid">${GD.upgrades.filter(u => u.cat === c.id).map(u => {
+        const has = !!mine[u.id], lock = (u.stage || 1) > st, poor = S.money < u.price;
+        return `<div class="up ${has ? 'has' : ''} ${lock ? 'locked' : ''}">
+          <div class="up-h"><span class="up-i">${u.i}</span><b>${esc(u.n)}</b></div>
+          <small>${esc(u.d)}</small>
+          <small class="up-use">🎯 ${esc(u.use)}</small>
+          <small class="up-fx">${fx(u)}</small>
+          <div class="up-f"><span>${u.price ? eur(u.price) : T('Sense cost inicial')}${u.monthly ? ` + ${eur(u.monthly)}${T('/mes')}` : ''}</span>
+          ${has ? (u.monthly ? `<button class="btn small" data-unbuy="${u.id}">${T('Donar de baixa')}</button>` : `<em>✔ ${T('Comprada')}</em>`)
+            : lock ? `<em>🔒 ${T('Etapa {0}', [u.stage])}</em>` : `<button class="btn small primary" data-buy="${u.id}" ${poor ? 'disabled' : ''}>${poor ? T('Sense diners') : T('Comprar')}</button>`}</div>
+        </div>`;
+      }).join('')}</div>`).join('')}</div>`;
+  }
+  function buyUpgrade(id) {
+    const u = GD.upgradeById(id); if (!u || S.upgrades[id]) return;
+    const newMonthly = (weeklyCost() * 4) + (u.monthly || 0);
+    confirmBox(T("Comprar «{0}» per {1}{2}? Les despeses fixes passaran a {3} al mes.", [esc(u.n), eur(u.price), u.monthly ? ` + ${eur(u.monthly)}${T('/mes')}` : '', eur(newMonthly)]), () => {
+      if (S.money < u.price) return toast(T('No tens prou liquiditat.'), 'bad');
+      S.money -= u.price; S.stats.expenses += u.price;
+      S.upgrades[id] = { week: S.week };
+      applyFx({ rep: u.rep || 0, log: T("Va invertir en «{0}» ({1}).", [u.n, eur(u.price)]) }, true);
+      save(); queueSync(); toast(`${u.i} ${esc(u.n)} ✔`, 'good');
+      if (!bankrupt()) hubScreen('empresa');
+    });
+  }
+  function unbuyUpgrade(id) {
+    const u = GD.upgradeById(id); if (!u) return;
+    confirmBox(T("Donar de baixa «{0}»? Estalviaràs {1} al mes, però en perdràs els avantatges.", [esc(u.n), eur(u.monthly)]), () => {
+      delete S.upgrades[id]; save(); queueSync(); hubScreen('empresa');
+    });
+  }
+
   function tabEmpresa(el) {
     const inc = weeklyIncome() * 4, cost = weeklyCost() * 4;
     el.innerHTML = `
+      ${upgradesCard()}
       <div class="grid2">
         <div class="card"><h3>${T("💶 Finances")}</h3>
           <dl class="kv"><dt>${T("Liquiditat")}</dt><dd class="${S.money < 0 ? 'neg' : ''}">${eur(S.money)}</dd>
@@ -617,15 +712,19 @@
     sceneShell(p.bg);
     const back = () => hubScreen('projectes');
     const s = projStatus(p), r = projRec(p.id) || {}, rv = r.review;
-    const fb = rv ? `<div class="${rv.status === 'approved' ? 'info' : 'errors'}"><b>${rv.status === 'approved' ? T('✅ Aprovat pel professor') : T('✏️ El professor demana canvis')}${rv.grade != null ? ' · ' + T('Nota: {0}', [rv.grade]) : ''}</b>${rv.feedback ? `<p class="pre">${esc(rv.feedback)}</p>` : ''}</div>` : '';
+    const auto = rv && rv.by === 'auto';
+    const ae = rv && rv.autoError && rv.autoError.v >= (r.v || 0) && s === 'sent' ? rv.autoError : null;
+    const fb = (rv && rv.status && !(s === 'sent')) ? `<div class="${rv.status === 'approved' ? 'info' : 'errors'}"><b>${rv.status === 'approved' ? (auto ? T('✅ Aprovat per la correcció automàtica') : T('✅ Aprovat pel professor')) : (auto ? T('✏️ La correcció automàtica demana canvis') : T('✏️ El professor demana canvis'))}${rv.grade != null ? ' · ' + T('Nota: {0}', [rv.grade]) : ''}</b>
+        ${auto ? `<p class="muted small">${T('El professor pot revisar i modificar aquesta nota i els comentaris.')}</p>` : ''}${rv.feedback ? `<p class="pre">${esc(rv.feedback)}</p>` : ''}</div>`
+      : s === 'sent' ? `<div class="warn small">${ae ? `<b>${T('🤖 No s\'ha pogut fer la correcció automàtica.')}</b> ${autoErrorText(ae.reason)} ${T('El professor el revisarà igualment.')}` : T('⏳ Correcció automàtica en curs: pot trigar uns minuts. Després, el professor la pot revisar.')}</div>` : '';
     const brief = () => panel(`<div class="pn-h"><b>📋 ${txt(p.title)}</b><small>${txt(p.kind)} · ${T('Capítol {0}', [p.after])} · ${PST()[s].join(' ')}</small></div>
       ${fb}
       <p><b>${T('Objectiu:')}</b> ${txt(p.goal)}</p>
       <p><b>${T('Format:')}</b> ${txt(p.format)}</p>
       <h4>${T('Què ha de contenir')}</h4>
       <ol class="req-list">${p.sections.map(x => `<li><b>${txt(x.h)}.</b> ${txt(x.d)}</li>`).join('')}</ol>
-      <h4>${T('Com s\'avaluarà')}</h4>
-      <ul class="req-list">${p.rubric.map(x => `<li>${txt(x)}</li>`).join('')}</ul>
+      <h4>${T('Rúbrica: com s\'avaluarà')}</h4>
+      ${rubricTable(p, rv && rv.scores && !(s === 'sent') ? rv : null)}
       ${r.url ? `<p class="small">${T('La teva entrega (versió {0}):', [r.v])} <a href="${safeUrl(r.url)}" target="_blank" rel="noopener">${esc(r.url)}</a></p>` : ''}
       <div class="row-btns">
         <a class="btn primary" href="${guideUrl(p)}" target="_blank" rel="noopener">${T('📘 Guia pas a pas')}</a>
@@ -677,6 +776,7 @@
           save();
           const btn = pn.querySelector('#send'); btn.disabled = true; btn.textContent = T('Enviant…');
           const ok = await doSync(false);
+          if (ok) requestAutograde(p.id, rec.v); else { rec.autoPending = true; save(); }
           showActors(p.who, 'h');
           playLines([[p.who + '.h', T('Rebut! Ho miraré amb calma, {nom}. T\'ho tornaré revisat.')]], () => {
             panel(`<div class="reward"><div class="rw-h"><small>${txt(p.kind)}</small><h2>📤 ${T('Projecte entregat!')}</h2></div>
@@ -690,11 +790,28 @@
     if (skipIntro || s === 'approved') brief(); else playLines(p.brief, brief);
   }
 
+  function autoErrorText(reason) {
+    return reason === 'private' ? T('El document és privat: obre «Compartir», tria «Qualsevol persona que tingui l\'enllaç pot veure» i torna\'l a entregar.')
+      : reason === 'folder' ? T('Has entregat una carpeta: entrega l\'enllaç del document principal i posa la carpeta a l\'enllaç addicional.')
+      : reason === 'ai' ? T('El servei de correcció no està disponible ara mateix.')
+      : T('No se n\'ha pogut llegir el contingut (Canva, vídeo o format no compatible). Entrega també un Google Docs o un PDF.');
+  }
+  // Taula de la rúbrica; si hi ha revisió, marca el nivell de cada criteri i el comentari
+  function rubricTable(p, rv) {
+    const L = GD.rubricLevels;
+    return `<div class="table-wrap"><table class="tbl rubric"><thead><tr><th>${T('Criteri')}</th>${L.map((l, i) => `<th title="${esc(l.d)}">${i} · ${esc(l.n)}</th>`).join('')}</tr></thead><tbody>
+      ${p.rubric.map((c, i) => `<tr><td>${txt(c)}${rv && rv.comments && rv.comments[i] ? `<br><small class="muted">${esc(rv.comments[i])}</small>` : ''}</td>${L.map((l, k) => `<td class="${rv && rv.scores[i] === k ? 'hit' : ''}">${rv && rv.scores[i] === k ? '●' : ''}</td>`).join('')}</tr>`).join('')}
+      </tbody></table></div><p class="muted small">${L.map((l, i) => `<b>${i} ${esc(l.n)}:</b> ${esc(l.d)}`).join(' · ')} ${T('Nota = punts obtinguts ÷ punts possibles × 10. S\'aprova amb un {0}.', [GD.PASS_GRADE])}</p>`;
+  }
+  function requestAutograde(task, v) {
+    fetch('/.netlify/functions/joc-correccio-background', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ classe: S.classe, id: S.player.id, task, v }) }).catch(() => { });
+  }
+
   let lastReviewCheck = 0;
   async function checkReviews(manual) {
     if (!S || !S.classe || !S.proj) return;
     const waiting = GD.projects.some(p => projStatus(p) === 'sent');
-    if (!manual && (!waiting || Date.now() - lastReviewCheck < 20000)) return;
+    if (!manual && (!waiting || Date.now() - lastReviewCheck < 12000)) return;
     lastReviewCheck = Date.now();
     let reviews;
     try {
@@ -713,7 +830,8 @@
         applyFx({ xp: R.xp, money: R.money, fee: true, rep: R.rep, trust: R.trust ? { [R.trust]: 1 } : null, log: T('Projecte aprovat: «{0}».', [txt(p.title)]), key: true }, true);
         RUN = keep;
         toast(T('✅ Projecte aprovat: {0} (+{1} EXP)', [txt(p.title), R.xp]), 'good');
-      } else if (rv.status === 'changes') toast(T('✏️ El professor demana canvis a «{0}».', [txt(p.title)]), 'bad');
+      } else if (rv.status === 'changes' && rv.v >= r.v) toast(T('✏️ Cal millorar «{0}» (nota {1}). Mira els comentaris.', [txt(p.title), rv.grade != null ? rv.grade : '—']), 'bad');
+      else if (rv.autoError && rv.autoError.v >= r.v) toast(T('🤖 No s\'ha pogut corregir automàticament «{0}». Obre el projecte per veure-ne el motiu.', [txt(p.title)]), 'bad');
     }
     if (changed) { save(); queueSync(); if ($('.hub')) hubScreen(); }
     else if (manual) toast(T('Encara no hi ha revisions noves.'));
@@ -742,19 +860,20 @@
       root.querySelectorAll('.opt').forEach(b => b.onclick = () => {
         const o = t.opts[+b.dataset.k];
         const ok = o.q >= 0.7;
-        const mult = o.q >= 0.7 ? 1 : o.q >= 0.4 ? 0.6 : 0.3;
+        const mult = o.q >= 0.7 ? 1 : o.q >= 0.4 ? 0.5 : 0;
         const finish = (bonus) => {
-          const money = Math.round(g.pay * mult);
+          const money = o.q < 0.4 ? -Math.round(g.pay * 0.4) : Math.round(g.pay * mult * (1 + upBonus('gig') / 100));
           const xp = Math.round(g.xp * mult * bonus);
-          applyFx({ money, fee: true, xp, rep: ok ? 1 : (o.q < 0.4 ? -1 : 0), know: { [t.area]: ok ? 1 : 0 } }, true);
+          applyFx({ money, fee: money > 0, xp, rep: ok ? 1 : (o.q < 0.4 ? -2 : 0), know: { [t.area]: ok ? 1 : 0 }, log: money < 0 ? T('Encàrrec mal resolt: «{0}». Va haver de retornar {1}.', [t.title, eur(-money)]) : null }, true);
           const w = advanceWeeks(1);
           S.stats.gigs++; queueSync();
           S.gigs.splice(i, 1);
           save();
           panel(`<div class="pn-h"><b>${ok ? T('✨ Bona feina!') : o.q >= 0.4 ? T('🙂 Correcte, però millorable') : T('😓 No ha funcionat')}</b></div>
             <p>${esc(o.r)}</p>
-            <dl class="kv"><dt>${T("Honoraris cobrats")}</dt><dd>${eur(money * (1 + 0.05 * sk('comercial')))}</dd><dt>${T("Experiència")}</dt><dd>+${xp} ${T("EXP")}</dd><dt>${T("Balanç de la setmana")}</dt><dd>+${eur(w.inc)} / −${eur(w.cost)}</dd></dl>
+            <dl class="kv">${money < 0 ? `<dt>${T("Devolució al client")}</dt><dd class="neg">−${eur(-money)}</dd>` : `<dt>${T("Honoraris cobrats")}</dt><dd>${eur(money * (1 + 0.05 * sk('comercial')))}</dd>`}<dt>${T("Experiència")}</dt><dd>+${xp} ${T("EXP")}</dd><dt>${T("Balanç de la setmana")}</dt><dd>+${eur(w.inc)} / −${eur(w.cost)}</dd></dl>
             <button class="btn primary" data-act="hubGigs">${T("Tornar al despatx")}</button>`);
+          if (bankrupt()) return;
         };
         if (extra) {
           const q = extra.q;
@@ -950,12 +1069,14 @@
       const key = 'inv_' + S.cur.step;
       const used = S.cur.cache[key] = S.cur.cache[key] || [];
       const left = st.time - used.reduce((a, i) => a + (st.opts[i].cost || 1), 0);
+      const known = (o) => o.flag && S.f['wclue_' + o.flag];
       if (st.who) showActors(st.who, 'n');
       panel(`<div class="pn-h"><b>${txt(st.prompt)}</b><small>${T("⏳ Temps disponible:")} ${'●'.repeat(Math.max(0, left))}${'○'.repeat(Math.max(0, st.time - left))}</small></div>
         ${st.info ? `<p class="muted">${txt(st.info)}</p>` : ''}
         <div class="opts">${st.opts.map((o, i) => {
-          const done = used.includes(i); const ok = reqOk(o.req); const can = !done && ok && (o.cost || 1) <= left;
-          return `<button class="opt ${done ? 'done' : ''} ${ok ? '' : 'locked'}" data-i="${i}" ${can ? '' : 'disabled'}><b>${done ? '✔ ' : '🔍 '}${txt(o.t)}</b>${done && o.note ? `<small>${txt(o.note)}</small>` : ''}${!ok ? `<em>🔒 ${reqLabel(o.req)}</em>` : ''}</button>`;
+          const kn = known(o) && !used.includes(i);
+          const done = used.includes(i) || kn; const ok = reqOk(o.req); const can = !done && ok && (o.cost || 1) <= left;
+          return `<button class="opt ${done ? 'done' : ''} ${ok ? '' : 'locked'}" data-i="${i}" ${can ? '' : 'disabled'}><b>${done ? '✔ ' : '🔍 '}${txt(o.t)}</b>${done && o.note ? `<small>${txt(o.note)}</small>` : ''}${kn ? `<em class="perk">🗺️ ${T('Ho vas descobrir explorant: no et costa temps')}</em>` : ''}${!ok ? `<em>🔒 ${reqLabel(o.req)}</em>` : ''}</button>`;
         }).join('')}</div>
         <button class="btn primary" id="enough">${left > 0 ? T('Ja en tinc prou') : T('Continuar')}</button>`, (p) => {
         p.querySelectorAll('.opt').forEach(b => b.onclick = () => {
@@ -1021,13 +1142,19 @@
     sim(st) {
       const key = 'sim_' + S.cur.step;
       let r = S.cur.cache[key];
-      if (!r) { r = st.calc(S, H); S.cur.cache[key] = r; applyFx(r.fx); S.stats.campaigns++; if (r.verdict === 'good') S.stats.good++; save(); }
+      if (!r) {
+        r = st.calc(S, H); S.cur.cache[key] = r; applyFx(r.fx); S.stats.campaigns++; if (r.verdict === 'good') S.stats.good++;
+        // Una campanya fallida es paga: el client demana una compensació
+        if (r.verdict === 'bad') { r.penalty = 150 + 150 * curCh.stage; applyFx({ money: -r.penalty, log: T('Campanya fallida al capítol {0}: compensació de {1} al client.', [curCh.id, eur(r.penalty)]) }, true); }
+        save();
+      }
       const vcls = { good: 'good', mid: 'mid', bad: 'bad' }[r.verdict] || 'mid';
       panel(`<div class="pn-h"><b>📈 ${txt(r.title || T('Resultats'))}</b><small>${T("Resultats simulats")}</small></div>
         ${r.intro ? `<p>${txt(r.intro)}</p>` : ''}
         <div class="metrics">${(r.metrics || []).map(([l, v, cls]) => `<div class="metric ${cls || ''}"><small>${l}</small><b data-count>${v}</b></div>`).join('')}</div>
         ${r.chart ? chart(r.chart) : ''}
         <div class="verdict ${vcls}">${txt(r.summary || '')}</div>
+        ${r.penalty ? `<div class="errors"><b>💸 ${T('Compensació al client: −{0}', [eur(r.penalty)])}</b><p>${T('Quan una campanya fracassa per errors de l\'agència, el client no la paga sencera. Aquests diners surten de la teva liquiditat.')}</p></div>` : ''}
         <h4>${T("Per què ha passat?")}</h4>
         <ul class="factors">${(r.factors || []).map(([g, t]) => `<li class="${g === true ? 'ok' : g === false ? 'ko' : 'neu'}">${g === true ? '▲' : g === false ? '▼' : '●'} ${txt(t)}</li>`).join('')}</ul>
         <button class="btn primary" id="cont">${T("Continuar")}</button>`, (p) => {
@@ -1134,6 +1261,8 @@
     S.gigs = []; // nous encàrrecs disponibles
     save();
     const summary = st.text ? txt(st.text) : '';
+    if (bankrupt()) return;
+    const lowCash = S.money + S.reserve < weeklyCost() * 4;
     sceneShell(ch.bg || 'despatx');
     showActors('pau', 'h');
     panel(`<div class="reward">
@@ -1148,8 +1277,9 @@
         </div>
         ${Object.keys(run.trust).length ? `<p class="trustline">${Object.entries(run.trust).map(([k, v]) => `<span class="${v >= 0 ? 'pos' : 'neg'}">${GD.names[k]} ${v >= 0 ? '♥ +' + v : '💔 ' + v}</span>`).join('')}</p>` : ''}`}
         ${(() => { const pj = !replay && GD.projectAfter(ch.id); return pj && projStatus(pj) !== 'approved' ? `<div class="stage-clear proj-new" style="--sc:#7a8cff"><b>📋 ${T('Nou projecte real:')} ${txt(pj.title)}</b><p>${T('Per jugar el capítol següent l\'has de fer de veritat, entregar-lo i el professor l\'ha d\'aprovar.')}</p><button class="btn" data-proj="${pj.id}">${T('Veure l\'encàrrec')}</button></div>` : ''; })()}
+        ${lowCash && !replay ? `<div class="errors"><b>${T('⚠️ Liquiditat baixa')}</b><p>${T('Tens menys diners que les despeses d\'un mes ({0}). Si arribes a zero, l\'agència farà fallida i hauràs de començar de nou.', [eur(weeklyCost() * 4)])}</p></div>` : ''}
         ${stageComplete ? `<div class="stage-clear" style="--sc:${stage.color}"><b>${T("🌸 Etapa")} ${stage.id} ${T("superada!")}</b><p>${txt(stage.outro || '')}</p><p>${T("Nou rang:")} <b>${title()}</b></p></div>` : ''}
-        <button class="btn primary big" data-act="hub">${T("Tornar al centre d'operacions")}</button>
+        <button class="btn primary big" data-act="hub">${T('🗺️ Tornar a Vic')}</button>
       </div>`);
     if (stageComplete) petals($('.scene'), 30);
     hud();
@@ -1326,6 +1456,8 @@
       projectesEntregats: Object.values(S.proj || {}).filter(r => r && r.v).length,
       projectesAprovats: GD.projects.filter(p => projStatus(p) === 'approved').length,
       projectesTotal: GD.projects.length,
+      fallides: S.fallides || 0, fallidesDetall: S.fallidesLog || [],
+      millores: Object.keys(S.upgrades || {}),
       decisions: S.history.filter(h => h.key).map(h => T("Cap. {0}: {1}", [h.ch, h.t]))
     };
   }
@@ -1342,6 +1474,7 @@
       const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'submit', classe: S.classe, id: S.player.id, data: buildSummary() }) });
       if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || 'Error ' + r.status);
       S.syncPending = false; S.lastSync = Date.now(); save();
+      Object.entries(S.proj || {}).forEach(([k, r]) => { if (r && r.autoPending) { r.autoPending = false; requestAutograde(k, r.v); } });
       if (manual) { toast(T('📤 Resultats enviats al professor'), 'good'); if ($('.hub')) hubScreen(); }
       return true;
     } catch (e) {
@@ -1361,7 +1494,20 @@
   }
   window.addEventListener('online', () => { if (S && S.syncPending) doSync(false); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden && $('.hub')) checkReviews(false); });
+  setInterval(() => { if (!document.hidden && $('.hub')) checkReviews(false); }, 13000);
   function projTodo() { return GD.projects.filter(p => ['todo', 'changes'].includes(projStatus(p))).length; }
+
+  /* ================= Món explorable ================= */
+  function goWorld() {
+    if (!window.WORLD || !S) return hubScreen('campanya');
+    if (bankrupt()) return;
+    S.cur = S.cur && GD.chapters[S.cur.id] ? S.cur : null;
+    WORLD.open({
+      S: () => S, save, toast, txt, esc, eur, applyFx, rank, bankrupt, startChapter, projectScreen,
+      hubScreen: (tab) => hubScreen(tab), chapterState, projGate, projStatus,
+      speed: () => settings.speed, hudRefresh: () => WORLD.refresh()
+    });
+  }
 
   function newGame() {
     const go = () => setupScreen(false);
@@ -1373,12 +1519,14 @@
     S = Object.assign(newState(), S);
     applyPlayer();
     if (S.syncPending) queueSync();
-    if (S.cur && GD.chapters[S.cur.id]) startChapter(S.cur.id, true); else hubScreen('campanya');
+    if (S.cur && GD.chapters[S.cur.id]) startChapter(S.cur.id, true); else goWorld();
   }
 
   document.addEventListener('click', (ev) => {
     const lb = ev.target.closest('[data-lang]');
     if (lb && !lb.closest('.setup')) { if (lb.dataset.lang !== LANG) setLang(lb.dataset.lang); return; }
+    const ub = ev.target.closest('[data-buy],[data-unbuy]');
+    if (ub && !ub.disabled) { if (ub.dataset.buy) buyUpgrade(ub.dataset.buy); else unbuyUpgrade(ub.dataset.unbuy); return; }
     const b = ev.target.closest('[data-act],[data-ch],[data-tab],[data-skill],[data-lesson],[data-gig],[data-web],[data-proj]');
     if (!b || b.disabled) return;
     if (b.dataset.ch) { startChapter(b.dataset.ch); return; }
@@ -1395,7 +1543,8 @@
     switch (b.dataset.act) {
       case 'new': newGame(); break;
       case 'continue': continueGame(); break;
-      case 'hub': if (S.ending && $('.ending')) { hubScreen('campanya'); } else hubScreen(); break;
+      case 'hub': if (S.ending && $('.ending')) { hubScreen('campanya'); } else goWorld(); break;
+      case 'world': goWorld(); break;
       case 'hubGigs': hubScreen('encarrecs'); break;
       case 'hubTaller': hubScreen('taller'); break;
       case 'hubProj': hubScreen('projectes'); break;
@@ -1403,11 +1552,11 @@
       case 'webPlatforms': webPicker($('#hubBody')); break;
       case 'title': titleScreen(); break;
       case 'showEnding': endingScreen(S.ending, false); break;
-      case 'refreshGigs': advanceWeeks(1); genGigs(); save(); hubScreen('encarrecs'); toast(T('Ha passat una setmana. Nous encàrrecs disponibles.')); break;
+      case 'refreshGigs': advanceWeeks(1); genGigs(); save(); if (bankrupt()) break; hubScreen('encarrecs'); toast(T('Ha passat una setmana. Nous encàrrecs disponibles.')); break;
       case 'useReserve': S.money += S.reserve; S.reserve = 0; save(); hubScreen('empresa'); break;
       case 'export': textBox(T('Codi de la teva partida (copia\'l i enganxa\'l a l\'altre dispositiu):'), btoa(unescape(encodeURIComponent(JSON.stringify(S))))); break;
       case 'import': textBox(T('Enganxa el codi de la partida:'), '', (v) => {
-        try { const d = JSON.parse(decodeURIComponent(escape(atob(v)))); if (!d || !d.v) throw 0; S = Object.assign(newState(), d); applyPlayer(); save(); toast(T('Partida importada'), 'good'); hubScreen('campanya'); }
+        try { const d = JSON.parse(decodeURIComponent(escape(atob(v)))); if (!d || !d.v) throw 0; S = Object.assign(newState(), d); applyPlayer(); save(); toast(T('Partida importada'), 'good'); goWorld(); }
         catch (e) { toast(T('El codi no és vàlid'), 'bad'); }
       }); break;
       case 'speed': settings.speed = settings.speed <= 8 ? 18 : settings.speed <= 18 ? 32 : 6; saveSettings(); hubScreen('empresa'); break;
@@ -1421,6 +1570,7 @@
         if (S.classe) { toast(T('Codi desat: ') + esc(S.classe), 'good'); if (!$('.hub')) hubScreen('projectes'); doSync(true); } else if ($('.hub')) hubScreen(); else hubScreen('projectes');
       }, T('Desar')); break;
       case 'sceneMenu': confirmBox(T('Vols sortir de la missió? El progrés de la missió es desa i la podràs reprendre.'), () => { const c = S.cur; save(); hubScreen('campanya'); S.cur = c; save(); }); break;
+      case 'upgrades': hubScreen('empresa'); break;
     }
   });
 
@@ -1442,6 +1592,7 @@
   // Represa d'una missió interrompuda des del hub
   const _hub = hubScreen;
   hubScreen = function (tab) {
+    if (bankrupt()) return;
     const pending = S && S.cur && GD.chapters[S.cur.id] ? S.cur : null;
     _hub(tab);
     window.scrollTo(0, 0);

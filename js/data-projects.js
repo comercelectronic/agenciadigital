@@ -11,11 +11,11 @@ GD.projGuide = {
     { h: T("3. Crea el document"), d: T("Fes-lo amb Google Docs, Google Slides, Canva, Word o PowerPoint en línia. Segueix l'estructura de la guia: pots copiar-ne la plantilla des del joc o des d'aquesta pàgina.") },
     { h: T("4. Comparteix-lo bé"), d: T("Obre l'opció de compartir i tria «Qualsevol persona que tingui l'enllaç pot veure». Si el professor no el pot obrir, te'l retornarà sense revisar.") },
     { h: T("5. Entrega'l des del joc"), d: T("Pestanya 📋 Projectes: enganxa l'enllaç, marca les seccions que inclou i escriu un resum de la teva proposta. Necessites el codi de classe del professor.") },
-    { h: T("6. Espera la revisió"), d: T("El professor el pot aprovar o demanar-te canvis amb comentaris. Si et demana canvis, corregeix el mateix document (o fes-ne una versió nova) i torna'l a entregar. Mentrestant pots fer encàrrecs, lliçons i el Taller web.") }
+    { h: T("6. Correcció i revisió"), d: T("En pocs minuts, una correcció automàtica amb IA llegeix el document, el puntua amb la rúbrica i et dona comentaris. El professor la pot revisar i canviar en qualsevol moment. Si cal millorar-lo, corregeix el document i torna'l a entregar. Mentrestant pots fer encàrrecs, lliçons i el Taller web.") }
   ],
   ai: T("Pots fer servir la IA per buscar idees, revisar textos o generar esborranys, però la feina ha de ser teva i adaptada al client: indica al final del document quines eines d'IA has fet servir i per a què. Un document genèric copiat d'una IA es retornarà."),
   ads: T("Quan un projecte demana anuncis reals, crea'ls de veritat: dissenya les peces (Canva, Adobe Express, CapCut...) i munta la campanya a l'eina real (Meta Ads Manager, Google Ads, LinkedIn Campaign Manager) fins al pas abans de publicar, i fes-ne captures. No cal publicar ni gastar diners. Si no pots crear un compte, fes servir les vistes prèvies oficials i explica-ho a la nota."),
-  grading: T("Cada projecte s'avalua amb els criteris que trobaràs a la seva guia. Per aprovar, ha d'estar complet, adaptat al client i justificat amb dades. El professor també pot posar-hi una nota de 0 a 10.")
+  grading: T("Cada projecte s'avalua amb la rúbrica de la seva guia: cada criteri té 4 nivells (de 0 a 3 punts) i la nota és la proporció de punts obtinguts sobre 10. S'aprova amb un 5. La correcció automàtica només pot llegir documents públics de Google (Docs, Slides, Sheets), PDF, imatges i pàgines web: si fas servir Canva o vídeo, entrega també un PDF. La nota final la decideix sempre el professor.")
 };
 
 GD.projects = [
@@ -695,3 +695,14 @@ GD.projectTemplate = (p, name) => [
   T("Eines d'IA utilitzades i per a què:"),
   ''
 ].join('\n');
+
+// Rúbrica: cada criteri de cada projecte es puntua amb aquests 4 nivells (0–3 punts)
+GD.rubricLevels = [
+  { n: T("No assolit"), d: T("No hi és o és incorrecte.") },
+  { n: T("En procés"), d: T("Hi és, però incomplet, genèric o poc justificat.") },
+  { n: T("Assolit"), d: T("Complet, correcte i adaptat al client.") },
+  { n: T("Excel·lent"), d: T("Complet, justificat amb dades i amb aportacions pròpies d'alt nivell.") }
+];
+// Nota de 0 a 10 (arrodonida a mig punt) a partir dels nivells de cada criteri
+GD.gradeFromLevels = (levels) => levels.length ? Math.round(levels.reduce((a, b) => a + (+b || 0), 0) / (3 * levels.length) * 20) / 2 : 0;
+GD.PASS_GRADE = 5;

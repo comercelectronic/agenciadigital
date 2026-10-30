@@ -41,7 +41,7 @@
     ['llicons', T('Lliçons superades'), r => r.llicionsSuperades || 0],
     ['primer', T('1r intent'), r => r.mitjanaPrimerIntent || 0],
     ['millor', T('Millor'), r => r.mitjanaMillor || 0],
-    ['projectes', T('Projectes'), r => projCount(r, 'approved') * 100 + projCount(r, 'pending')],
+    ['projectes', T('Projectes'), r => projCount(r, 'passed') * 100 + projCount(r, 'pending') + projCount(r, 'auto')],
     ['webs', T('Webs'), r => r.websEntregades || 0],
     ['rep', T('Reputació'), r => r.reputacio || 0],
     ['diners', T('Liquiditat'), r => r.liquiditat || 0],
@@ -50,33 +50,49 @@
   ];
 
   /* ===== Projectes reals ===== */
-  // Estat d'un projecte d'un alumne: none, pending (per revisar), changes, approved
+  // Estat d'un projecte d'un alumne: none, pending (per revisar), auto (corregit per la IA, per validar), changes, approved
   function projState(r, p) {
     const sub = (r.projectes || {})[p.id], rv = (r.revisions || {})[p.id];
-    if (rv && rv.status === 'approved') return 'approved';
-    if (!sub) return 'none';
-    if (rv && rv.v >= sub.v) return 'changes';
+    if (rv && rv.status === 'approved' && rv.by !== 'auto') return 'approved';
+    if (!sub) return rv && rv.status === 'approved' ? 'auto' : 'none';
+    if (rv && rv.status && rv.v >= sub.v) return rv.by === 'auto' ? 'auto' : rv.status === 'approved' ? 'approved' : 'changes';
+    if (rv && rv.status === 'approved') return 'auto';
     return 'pending';
   }
-  const projCount = (r, st) => GD.projects.filter(p => projState(r, p) === st).length;
-  const PLB = () => ({ none: ['—', ''], pending: ['⏳', T('Per revisar')], changes: ['✏️', T('Canvis demanats')], approved: ['✅', T('Aprovat')] });
+  // Aprovat (pel professor o per la correcció automàtica): l'alumne pot continuar
+  const isPassed = (r, p) => { const rv = (r.revisions || {})[p.id]; return !!(rv && rv.status === 'approved'); };
+  const projCount = (r, st) => GD.projects.filter(p => st === 'passed' ? isPassed(r, p) : projState(r, p) === st).length;
+  const PLB = () => ({ none: ['—', ''], pending: ['⏳', T('Per revisar')], auto: ['🤖', T('Corregit automàticament')], changes: ['✏️', T('Canvis demanats')], approved: ['✅', T('Aprovat')] });
   const link = (u) => u ? `<a href="${/^https?:\/\//i.test(u) ? esc(u) : '#'}" target="_blank" rel="noopener">${esc(u)}</a>` : '';
+  const AUTO_ERR = () => ({ private: T('document privat'), folder: T('és una carpeta'), ai: T('servei d\'IA no disponible'), unreadable: T('no s\'ha pogut llegir'), empty: T('document buit') });
 
+  function pendingTable(items, withGrade) {
+    return `<div class="table-wrap"><table class="tbl"><thead><tr><th>${T('Alumne')}</th><th>${T('Projecte')}</th><th>${T('Versió')}</th><th>${T('Entregat')}</th>${withGrade ? `<th>${T('Nota')}</th>` : ''}<th></th></tr></thead><tbody>
+      ${items.map(({ r, k, p, sub }) => { const rv = (r.revisions || {})[p.id] || {}; return `<tr><td><span class="ava-s">${avatar(r)}</span><b>${esc(fullName(r))}</b> <small class="muted">${esc(r.classe || '')}</small></td>
+        <td>${esc(p.title)}<br><small class="muted">${esc(p.kind)} · ${T('cap. {0}', [p.after])}${!withGrade && rv.autoError && rv.autoError.v >= sub.v ? ` · 🤖 ${esc((AUTO_ERR()[rv.autoError.reason] || rv.autoError.reason))}` : ''}</small></td><td>${sub.v}</td><td><small>${dateTxt(sub.at)}</small></td>
+        ${withGrade ? `<td><b>${rv.grade != null ? rv.grade : '—'}</b> ${rv.status === 'approved' ? '✅' : '✏️'}</td>` : ''}
+        <td>${r._font === 'servidor' ? `<button class="btn small ${withGrade ? '' : 'primary'}" data-review="${esc(k)}|${p.id}">${withGrade ? T('Validar') : T('Revisar')}</button>` : T('<small class="muted">només del servidor</small>')}</td></tr>`; }).join('')}
+      </tbody></table></div>`;
+  }
   function renderPending() {
-    const items = [];
-    rows.forEach((r, k) => GD.projects.forEach(p => { if (projState(r, p) === 'pending') items.push({ r, k, p, sub: r.projectes[p.id] }); }));
-    items.sort((a, b) => String(a.sub.at).localeCompare(String(b.sub.at)));
+    const pend = [], auto = [];
+    rows.forEach((r, k) => GD.projects.forEach(p => {
+      const st = projState(r, p), sub = (r.projectes || {})[p.id];
+      if (st === 'pending') pend.push({ r, k, p, sub });
+      if (st === 'auto' && sub) auto.push({ r, k, p, sub });
+    }));
+    const byDate = (a, b) => String(a.sub.at).localeCompare(String(b.sub.at));
+    pend.sort(byDate); auto.sort(byDate);
     $('#pendSec').hidden = !rows.size;
-    $('#pend').innerHTML = items.length ? `<div class="table-wrap"><table class="tbl"><thead><tr><th>${T('Alumne')}</th><th>${T('Projecte')}</th><th>${T('Versió')}</th><th>${T('Entregat')}</th><th></th></tr></thead><tbody>
-      ${items.map(({ r, k, p, sub }) => `<tr><td><span class="ava-s">${avatar(r)}</span><b>${esc(fullName(r))}</b> <small class="muted">${esc(r.classe || '')}</small></td>
-        <td>${esc(p.title)}<br><small class="muted">${esc(p.kind)} · ${T('cap. {0}', [p.after])}</small></td><td>${sub.v}</td><td><small>${dateTxt(sub.at)}</small></td>
-        <td>${r._font === 'servidor' ? `<button class="btn small primary" data-review="${esc(k)}|${p.id}">${T('Revisar')}</button>` : T('<small class="muted">només del servidor</small>')}</td></tr>`).join('')}
-      </tbody></table></div>` : `<p class="muted">${T('No hi ha cap projecte pendent de revisar. 🎉')}</p>`;
+    $('#pend').innerHTML = (pend.length ? pendingTable(pend, false) : `<p class="muted">${T('No hi ha cap projecte pendent de revisar. 🎉')}</p>`)
+      + (auto.length ? `<h4>${T('🤖 Corregits automàticament ({0}) · revisa\'ls i valida o modifica la nota', [auto.length])}</h4>${pendingTable(auto, true)}` : '');
   }
 
   function reviewModal(k, pid) {
     const r = rows.get(k), p = GD.projectById(pid); if (!r || !p) return;
     const sub = (r.projectes || {})[pid] || {}, rv = (r.revisions || {})[pid];
+    const auto = rv && rv.by === 'auto';
+    const lv = (rv && rv.scores) || p.rubric.map(() => null);
     const d = document.createElement('div'); d.className = 'modal';
     d.innerHTML = `<div class="modal-box wide">
       <div class="detail-h"><span class="ava-s">${avatar(r)}</span><div><small class="muted">${esc(fullName(r))} · ${esc(r.classe || '')}</small><h2 style="margin:0">${esc(p.title)}</h2>
@@ -85,30 +101,46 @@
       ${sub.resum ? `<h4>${T('Resum de l\'alumne')}</h4><p class="pre">${esc(sub.resum)}</p>` : ''}
       ${sub.canvis ? `<h4>${T('Canvis respecte a la versió anterior')}</h4><p class="pre">${esc(sub.canvis)}</p>` : ''}
       ${sub.ia ? `<p class="small"><b>${T('Ús d\'IA:')}</b> ${esc(sub.ia)}</p>` : ''}
-      ${rv ? `<div class="info"><b>${T('Revisió anterior')} (${rv.status === 'approved' ? T('aprovat') : T('canvis demanats')}${rv.grade != null ? ' · ' + rv.grade : ''}, ${dateTxt(rv.at)})</b>${rv.feedback ? `<p class="pre">${esc(rv.feedback)}</p>` : ''}</div>` : ''}
-      <h4>${T('Criteris d\'avaluació')}</h4>
-      <div class="checks">${p.rubric.map((c, i) => `<label class="chk"><input type="checkbox" data-crit="${i}"><span>${esc(c)}</span></label>`).join('')}</div>
-      <p class="muted small">${T('Els criteris que deixis sense marcar s\'afegiran als comentaris si demanes canvis.')}</p>
-      <label class="fld">${T('Comentaris per a l\'alumne')}<textarea class="inp" id="fb" rows="5" maxlength="4000"></textarea></label>
-      <label class="fld" style="max-width:180px">${T('Nota (0–10, opcional)')}<input class="inp" id="grade" type="number" min="0" max="10" step="0.5" value="${rv && rv.grade != null ? rv.grade : ''}"></label>
+      ${rv && rv.autoError && rv.autoError.v >= (sub.v || 0) && !(rv.status && rv.v >= sub.v) ? `<div class="errors"><b>🤖 ${T('No s\'ha pogut fer la correcció automàtica:')}</b> ${esc(AUTO_ERR()[rv.autoError.reason] || rv.autoError.reason)}</div>` : ''}
+      ${rv && rv.status ? `<div class="info"><b>${auto ? T('🤖 Correcció automàtica') : T('Revisió anterior')} (${rv.status === 'approved' ? T('aprovat') : T('canvis demanats')}${rv.grade != null ? ' · ' + rv.grade : ''}, ${dateTxt(rv.at)})</b>${auto ? `<p class="small muted">${T('La pots validar tal com està o modificar els nivells, la nota i els comentaris.')}</p>` : ''}</div>` : ''}
+      <h4>${T('Rúbrica')}</h4>
+      <div class="table-wrap"><table class="tbl rubric"><thead><tr><th>${T('Criteri')}</th>${GD.rubricLevels.map((l, i) => `<th title="${esc(l.d)}">${i} · ${esc(l.n)}</th>`).join('')}</tr></thead><tbody>
+        ${p.rubric.map((c, i) => `<tr><td>${esc(c)}${rv && rv.comments && rv.comments[i] ? `<br><small class="muted">🤖 ${esc(rv.comments[i])}</small>` : ''}</td>${GD.rubricLevels.map((l, n) => `<td><input type="radio" name="crit${i}" value="${n}" ${lv[i] === n ? 'checked' : ''} aria-label="${esc(l.n)}"></td>`).join('')}</tr>`).join('')}
+      </tbody></table></div>
+      <p class="small">${T('Nota segons la rúbrica:')} <b id="calc">—</b></p>
+      <label class="fld">${T('Comentaris per a l\'alumne')}<textarea class="inp" id="fb" rows="7" maxlength="4000">${esc(rv && rv.feedback && (auto || rv.v >= sub.v) ? rv.feedback : '')}</textarea></label>
+      <label class="fld" style="max-width:180px">${T('Nota (0–10)')}<input class="inp" id="grade" type="number" min="0" max="10" step="0.5" value="${rv && rv.grade != null ? rv.grade : ''}"></label>
       <div class="row-btns">
-        <button class="btn primary" id="ok" ${sub.v ? '' : 'disabled'}>${T('✅ Aprovar')}</button>
+        <button class="btn primary" id="ok" ${sub.v ? '' : 'disabled'}>${auto && rv.status === 'approved' ? T('✅ Validar l\'aprovat') : T('✅ Aprovar')}</button>
         <button class="btn" id="chg" ${sub.v ? '' : 'disabled'}>${T('✏️ Demanar canvis')}</button>
         <button class="btn ghost" id="close">${T('Tancar')}</button></div></div>`;
     document.body.appendChild(d);
     const close = () => d.remove();
     d.querySelector('#close').onclick = close;
     d.onclick = (e) => { if (e.target === d) close(); };
+    const levels = () => p.rubric.map((c, i) => { const x = d.querySelector(`input[name=crit${i}]:checked`); return x ? +x.value : null; });
+    let gradeTouched = false;
+    d.querySelector('#grade').oninput = () => { gradeTouched = true; };
+    const recalc = () => {
+      const L = levels();
+      if (L.some(x => x == null)) { d.querySelector('#calc').textContent = T('marca tots els criteris'); return; }
+      const g = GD.gradeFromLevels(L);
+      d.querySelector('#calc').textContent = g;
+      if (!gradeTouched) d.querySelector('#grade').value = g;
+    };
+    d.querySelectorAll('input[type=radio]').forEach(x => x.onchange = recalc);
+    recalc();
     const send = async (status) => {
       let feedback = d.querySelector('#fb').value.trim();
-      const miss = [...d.querySelectorAll('[data-crit]')].filter(c => !c.checked).map(c => p.rubric[+c.dataset.crit]);
+      const L = levels();
+      const miss = p.rubric.filter((c, i) => L[i] != null && L[i] < 2);
       if (status === 'changes') {
-        if (miss.length) feedback = `${T('Criteris a millorar:')}\n${miss.map(m => '- ' + m).join('\n')}${feedback ? '\n\n' + feedback : ''}`;
+        if (!feedback && miss.length) feedback = `${T('Criteris a millorar:')}\n${miss.map(m => '- ' + m).join('\n')}`;
         if (!feedback) { toast(T('Escriu què ha de millorar l\'alumne.'), 'bad'); return; }
       }
       const g = d.querySelector('#grade').value;
       try {
-        const { review } = await api({ action: 'review', password: $('#pw').value, classe: r.classe, id: r.id, task: pid, status, feedback, grade: g === '' ? null : Number(g), v: sub.v });
+        const { review } = await api({ action: 'review', password: $('#pw').value, classe: r.classe, id: r.id, task: pid, status, feedback, grade: g === '' ? null : Number(g), v: sub.v, scores: L.every(x => x != null) ? L : null });
         r.revisions = Object.assign({}, r.revisions, { [pid]: review });
         close(); render();
         toast(status === 'approved' ? T('Projecte aprovat') : T('Canvis demanats'), 'good');
@@ -145,7 +177,7 @@
           <td>${r.llicionsSuperades || 0} / ${r.llicionsTotal || LESSONS.length}</td>
           <td>${pctTxt(r.mitjanaPrimerIntent)}</td>
           <td>${pctTxt(r.mitjanaMillor)}</td>
-          <td><b>${projCount(r, 'approved')}</b>/${GD.projects.length}${projCount(r, 'pending') ? ` <span class="tag file">⏳ ${projCount(r, 'pending')}</span>` : ''}</td>
+          <td><b>${projCount(r, 'passed')}</b>/${GD.projects.length}${projCount(r, 'pending') ? ` <span class="tag file">⏳ ${projCount(r, 'pending')}</span>` : ''}${projCount(r, 'auto') ? ` <span class="tag">🤖 ${projCount(r, 'auto')}</span>` : ''}${r.fallides ? ` <span class="tag" title="${esc(T('Fallides'))}">💸 ${r.fallides}</span>` : ''}</td>
           <td>${r.websEntregades ? `<b>${r.websEntregades}</b>/${GD.webLevels.length}` : '—'}</td>
           <td>${r.reputacio ?? '—'}</td>
           <td>${r.liquiditat != null ? r.liquiditat.toLocaleString(LOCALE) + ' €' : '—'}</td>
@@ -169,6 +201,7 @@
         <div class="metric"><small>${T("Campanyes bones")}</small><b>${r.campanyesBones || 0} / ${r.campanyes || 0}</b></div>
         <div class="metric"><small>${T("Encàrrecs fets")}</small><b>${r.encarrecs || 0}</b></div>
         <div class="metric"><small>${T("Final")}</small><b style="font-size:.9em">${esc(r.final || T('Encara no'))}</b></div>
+        <div class="metric ${r.fallides ? 'bad' : ''}"><small>${T("Fallides")}</small><b>${r.fallides || 0}</b></div>
       </div>
       <h4>${T("📚 Lliçons")}</h4>
       <table class="tbl"><thead><tr><th>${T("Lliçó")}</th><th>${T("Àrea")}</th><th>${T("1r intent")}</th><th>${T("Millor")}</th><th>${T("Intents")}</th></tr></thead><tbody>
@@ -183,6 +216,9 @@
       <table class="tbl"><thead><tr><th>${T('Nivell')}</th><th>${T('Encàrrec')}</th><th>${T('Plataforma')}</th><th>${T('Enllaç')}</th></tr></thead><tbody>
         ${GD.webLevels.map(L => { const w = (r.webs || {})[L.n]; return `<tr><td>${L.n}</td><td>${esc(L.title)}${w && w.reflection ? `<br><small class="muted">${esc(w.reflection)}</small>` : ''}${w && w.note ? `<br><small>📝 ${esc(w.note)}</small>` : ''}</td><td>${w ? esc(GD.webPlatforms[w.platform] ? GD.webPlatforms[w.platform].n : w.platform) : '—'}</td><td>${w ? `<a href="${/^https?:\/\//i.test(w.url) ? esc(w.url) : '#'}" target="_blank" rel="noopener">${esc(w.url)}</a>${w.reachable === false ? ' ⚠️' : ''}` : '—'}</td></tr>`; }).join('')}
       </tbody></table>
+      <h4>${T("🛒 Millores de l'agència")}</h4>
+      <p class="small">${(r.millores || []).map(id => { const u = GD.upgradeById(id); return u ? `${u.i} ${esc(u.n)}` : esc(id); }).join(' · ') || '—'}</p>
+      ${r.fallides ? `<p class="small err">💸 ${T('Fallides: {0}', [r.fallides])}${(r.fallidesDetall || []).map(f => ` · ${T('setmana {0}, nivell {1}', [f.setmana, f.nivell])}`).join('')}</p>` : ''}
       <h4>${T("🧭 Habilitats i coneixement")}</h4>
       <p class="small">${Object.entries(r.habilitats || {}).map(([k, v]) => `${esc(k)}: <b>${v}</b>`).join(' · ')}</p>
       <p class="small">${Object.entries(r.coneixement || {}).filter(([, v]) => v).map(([k, v]) => `${esc(GD.areas[k] || k)}: <b>${v}</b>`).join(' · ') || '—'}</p>
@@ -220,7 +256,7 @@
     const list = [...rows.values()].sort((a, b) => (a.classe || '').localeCompare(b.classe || '') || fullName(a).localeCompare(fullName(b)));
     const head = [T('Classe'), T('Nom'), T('Cognom'), T('Agència'), T('Perfil'), T('Nivell'), T('Etapa actual'), T('Etapes completades'), T('Capítols completats'), T('Capítols totals'), T('Capítol en curs'),
       T('Lliçons superades'), T('Lliçons totals'), T('Mitjana 1r intent (%)'), T('Mitjana millor (%)'), T('Reputació'), T('Liquiditat (€)'), T('Clients'), T('Equip'), T('Camí'), T('Final'),
-      T('Campanyes bones'), T('Campanyes'), T('Encàrrecs'), T('Setmana de joc'), T('Iniciat'), T('Darrera actualització'), T('Decisions clau'), T('Projectes aprovats'), T('Webs entregades'), T('Plataformes web'),
+      T('Campanyes bones'), T('Campanyes'), T('Encàrrecs'), T('Setmana de joc'), T('Iniciat'), T('Darrera actualització'), T('Decisions clau'), T('Projectes aprovats'), T('Fallides'), T('Webs entregades'), T('Plataformes web'),
       ...GD.projects.flatMap(p => [T('{0} · estat', [p.title]), T('{0} · nota', [p.title]), T('{0} · enllaç', [p.title])]),
       ...GD.webLevels.flatMap(L => [T('Web {0} · plataforma', [L.n]), T('Web {0} · enllaç', [L.n])]),
       ...LESSONS.flatMap(id => [T("{0} · 1r intent", [GD.lessons[id].title]), T("{0} · millor", [GD.lessons[id].title])])];
@@ -230,7 +266,7 @@
       const ll = r.llicons || {};
       lines.push([r.classe, r.nom, r.cognom, r.agencia, r.perfil, r.nivell, r.etapaActual, r.etapesCompletades, r.capitolsCompletats, r.capitolsTotal, r.capitolActual,
         r.llicionsSuperades, r.llicionsTotal, r.mitjanaPrimerIntent, r.mitjanaMillor, r.reputacio, r.liquiditat, r.clients, r.equip, r.cami, r.final,
-        r.campanyesBones, r.campanyes, r.encarrecs, r.setmana, dateTxt(r.iniciat), dateTxt(r.actualitzat), (r.decisions || []).join(' | '), projCount(r, 'approved'), r.websEntregades || 0, (r.webPlataformes || []).join(', '),
+        r.campanyesBones, r.campanyes, r.encarrecs, r.setmana, dateTxt(r.iniciat), dateTxt(r.actualitzat), (r.decisions || []).join(' | '), projCount(r, 'passed'), r.fallides || 0, r.websEntregades || 0, (r.webPlataformes || []).join(', '),
         ...GD.projects.flatMap(p => { const st = projState(r, p), sub = (r.projectes || {})[p.id], rv = (r.revisions || {})[p.id]; return [st === 'none' ? '' : PLB()[st][1], rv && rv.grade != null ? rv.grade : '', sub ? sub.url : '']; }),
         ...GD.webLevels.flatMap(L => { const w = (r.webs || {})[L.n]; return w ? [w.platform, w.url] : ['', '']; }),
         ...LESSONS.flatMap(id => ll[id] ? [`${ll[id].first}/${ll[id].total}`, `${ll[id].best}/${ll[id].total}`] : ['', ''])].map(cell).join(';'));
