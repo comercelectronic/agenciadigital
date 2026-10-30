@@ -4,7 +4,7 @@ Un joc narratiu en català en què el jugador crea el seu personatge (nom, tract
 
 Es juga des del navegador i es pot instal·lar com a app (PWA) al mòbil o a l'ordinador. Funciona sense connexió un cop carregat.
 
-- **URL:** https://agenciadigital.netlify.app (lloc de Netlify propi, independent de qualsevol altra web).
+- **URL:** https://agenciadigitalosona.netlify.app (lloc de Netlify propi, independent de qualsevol altra web).
 - **Instal·lar com a app:** a Android/Chrome/Edge surt el botó «📲 Instal·lar com a app». A l'iPhone/iPad: Safari → Compartir → «Afegeix a la pantalla d'inici».
 - **Partida:** es desa automàticament al dispositiu. Per passar-la d'un dispositiu a un altre (web ↔ app), fes servir Empresa → Exportar / Importar partida.
 
@@ -54,7 +54,7 @@ Totes les empreses, els personatges i els resultats de les campanyes són fictic
 
 1. Netlify → **Add new project → Import an existing project → GitHub** → repositori `agenciadigital`.
 2. **Branch to deploy:** `main` (deixa la resta com està: `netlify.toml` ja diu que es publica l'arrel i on és la funció).
-3. **Project name:** `agenciadigital` → l'adreça serà `https://agenciadigital.netlify.app`.
+3. **Project name:** `agenciadigitalosona` → l’adreça és `https://agenciadigitalosona.netlify.app`.
 4. **Environment variables:** afegeix `TEACHER_PASSWORD` amb la contrasenya del professorat i torna a desplegar.
 
 Netlify Blobs (on es desen els resultats) s'activa sol, no cal configurar res més.
