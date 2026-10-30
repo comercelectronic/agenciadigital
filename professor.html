@@ -36,6 +36,7 @@
     .detail-h { display: flex; gap: 14px; align-items: center; margin-bottom: 10px; }
     .detail-h .ava-s { width: 80px; height: 80px; }
     .err { color: var(--bad); font-weight: 700; }
+    .pre { white-space: pre-wrap; }
   </style>
 </head>
 <body>
@@ -51,6 +52,15 @@
       </div>
       <p class="muted small" data-t>Els alumnes que escriuen un codi de classe al joc envien els resultats automàticament cada vegada que acaben un capítol. També pots afegir fitxers de resultats que t'hagin enviat (botó de sota).</p>
       <p id="msg"></p>
+    </section>
+
+    <section class="card" id="pendSec" hidden>
+      <div class="form-row" style="justify-content:space-between;align-items:center">
+        <h3 style="margin:0" data-t>📋 Projectes per revisar</h3>
+        <a class="btn small" href="guia.html" target="_blank" rel="noopener" data-t>📘 Guia dels projectes</a>
+      </div>
+      <p class="muted small" data-t>Els alumnes no poden continuar la campanya fins que aproves el projecte que bloqueja el capítol següent. Si demanes canvis, veuran els teus comentaris al joc i el podran tornar a entregar.</p>
+      <div id="pend"></div>
     </section>
 
     <section class="card">
@@ -72,6 +82,7 @@
   <script src="js/data-lessons.js"></script>
   <script src="js/data-story1.js"></script>
   <script src="js/data-web.js"></script>
+  <script src="js/data-projects.js"></script>
   <script src="js/professor.js"></script>
 </body>
 </html>

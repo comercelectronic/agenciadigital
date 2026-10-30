@@ -34,7 +34,7 @@
     return {
       v: 1, agency: T('Píxel d\'Osona'), profile: null,
       player: { id: uid(), name: 'Pau', surname: 'Riera', g: 'm', look: Object.assign({}, ART.PLAYER_DEFAULT) },
-      classe: '', quizLog: {}, syncPending: false, lastSync: 0, web: { platforms: [], levels: {} },
+      classe: '', quizLog: {}, syncPending: false, lastSync: 0, web: { platforms: [], levels: {} }, proj: {},
       level: 1, xp: 0, sp: 0,
       skills: { estrategia: 0, creativitat: 0, analitica: 0, comercial: 0, gestio: 0 },
       money: 3000, reserve: 0, week: 1, rep: 5,
@@ -256,12 +256,12 @@
         <div class="hub-body" id="hubBody"></div>
       </main>
       <nav class="tabs">
-        ${[['campanya', '🗺️', T('Campanya')], ['pau', '🧑', esc(S.player.name)], ['encarrecs', '📨', T('Encàrrecs')], ['taller', '🛠️', T('Taller')], ['biblioteca', '📚', T('Biblioteca')], ['empresa', '🏢', T('Empresa')]]
-          .map(([k, i, n]) => `<button class="tab ${hubTab === k ? 'on' : ''}" data-tab="${k}"><span>${i}</span>${n}${k === 'pau' && S.sp ? `<em class="dot">${S.sp}</em>` : ''}</button>`).join('')}
+        ${[['campanya', '🗺️', T('Campanya')], ['pau', '🧑', esc(S.player.name)], ['encarrecs', '📨', T('Encàrrecs')], ['projectes', '📋', T('Projectes')], ['taller', '🛠️', T('Taller')], ['biblioteca', '📚', T('Biblioteca')], ['empresa', '🏢', T('Empresa')]]
+          .map(([k, i, n]) => `<button class="tab ${hubTab === k ? 'on' : ''}" data-tab="${k}"><span>${i}</span>${n}${k === 'pau' && S.sp ? `<em class="dot">${S.sp}</em>` : ''}${k === 'projectes' && projTodo() ? `<em class="dot">${projTodo()}</em>` : ''}</button>`).join('')}
       </nav>`;
     hud();
     const body = $('#hubBody');
-    ({ campanya: tabCampanya, pau: tabPau, encarrecs: tabGigs, taller: tabTaller, biblioteca: tabLibrary, empresa: tabEmpresa })[hubTab](body);
+    ({ campanya: tabCampanya, pau: tabPau, encarrecs: tabGigs, projectes: tabProjectes, taller: tabTaller, biblioteca: tabLibrary, empresa: tabEmpresa })[hubTab](body);
   }
 
   function chapterState(chId) {
@@ -271,8 +271,10 @@
     const idx = st.chapters.indexOf(chId);
     const prevStage = GD.stages.find(s => s.id === ch.stage - 1);
     if (prevStage && !prevStage.chapters.every(c => S.done[c])) return 'locked';
-    if (S.level < st.minLevel) return 'level';
+    if (S.level < st.minLevel && idx === 0) return 'level';
     if (idx > 0 && !S.done[st.chapters[idx - 1]]) return 'locked';
+    if (projGate(chId)) return 'proj';
+    if (S.level < st.minLevel) return 'level';
     return 'open';
   }
 
@@ -284,7 +286,15 @@
           <span class="nm-ava">${ART.portrait(GD.chapters[next].who || 'pau', 'n', { rank: rank() })}</span>
           <span class="nm-txt"><small>${T("Següent missió · Capítol")} ${next}</small><b>${txt(GD.chapters[next].title)}</b><i>${txt(GD.chapters[next].blurb || '')}</i></span>
           <span class="nm-go">▶</span></button>` : ''}
-      ${!next && !S.ending ? `<div class="card warn">${levelHint()}</div>` : ''}
+      ${!next && !S.ending ? (() => {
+        const gc = Object.keys(GD.chapters).find(c => chapterState(c) === 'proj'), gp = gc && projGate(gc);
+        if (!gp) return `<div class="card warn">${levelHint()}</div>`;
+        const ps = projStatus(gp);
+        return `<button class="next-mission proj-gate" data-proj="${gp.id}">
+          <span class="nm-ava">${ART.portrait(gp.who, ps === 'changes' ? 't' : 'n')}</span>
+          <span class="nm-txt"><small>${T('📋 Projecte real · cal l\'aprovació del professor')}</small><b>${txt(gp.title)}</b><i>${ps === 'sent' ? T('Entregat: esperant la revisió del professor. Mentrestant, pots fer encàrrecs i el Taller web.') : ps === 'changes' ? T('El professor hi ha demanat canvis. Corregeix-lo i torna\'l a entregar.') : T('Per continuar amb el capítol {0}, fes aquest projecte i entrega\'l.', [gc])}</i></span>
+          <span class="nm-go">${PST()[ps][0]}</span></button>`;
+      })() : ''}
       <div class="stages">
         ${GD.stages.map(st => {
           const done = st.chapters.filter(c => S.done[c]).length;
@@ -294,7 +304,7 @@
             <header><span class="st-num">${String(st.id).padStart(2, '0')}</span><div><h3>${txt(st.title)}</h3><p>${esc(st.sub)} ${T("· Nivells")} ${st.levels}</p></div><span class="st-prog">${done}/${st.chapters.length}</span></header>
             ${lock ? T('<p class="lockmsg">🔒 Completa l\'etapa anterior per desbloquejar-la.</p>') : `<ol>${st.chapters.map(c => {
               const s = chapterState(c);
-              return `<li class="ch ${s}"><button ${s === 'open' || s === 'done' ? `data-ch="${c}"` : 'disabled'}><span class="ch-id">${c}</span><span class="ch-t">${txt(GD.chapters[c].title)}</span><span class="ch-s">${s === 'done' ? '✔' : s === 'open' ? '▶' : s === 'level' ? T("Nv {0}", [st.minLevel]) : '🔒'}</span></button></li>`;
+              return `<li class="ch ${s}"><button ${s === 'open' || s === 'done' ? `data-ch="${c}"` : s === 'proj' ? `data-proj="${projGate(c).id}"` : 'disabled'}><span class="ch-id">${c}</span><span class="ch-t">${txt(GD.chapters[c].title)}</span><span class="ch-s">${s === 'done' ? '✔' : s === 'open' ? '▶' : s === 'proj' ? '📋' : s === 'level' ? T("Nv {0}", [st.minLevel]) : '🔒'}</span></button></li>`;
             }).join('')}</ol>`}
           </section>`;
         }).join('')}
@@ -552,6 +562,161 @@
         <button class="btn primary big" data-act="hubTaller">${T('Tornar al taller')}</button></div>`);
       if (first) petals($('.scene'), 20);
     });
+  }
+
+  /* ================= Projectes reals (revisats pel professor) ================= */
+  const CH_ORDER = GD.stages.flatMap(s => s.chapters);
+  function projRec(id) { if (!S.proj) S.proj = {}; return S.proj[id] || null; }
+  function projStatus(p) {
+    const r = projRec(p.id);
+    if (r && r.review && r.review.status === 'approved') return 'approved';
+    if (!S.done[p.after]) return 'locked';
+    if (!r || !r.v) return 'todo';
+    if (r.review && r.review.status === 'changes' && r.review.v >= r.v) return 'changes';
+    return 'sent';
+  }
+  // Projecte que cal tenir aprovat per poder jugar aquest capítol
+  function projGate(chId) {
+    const i = CH_ORDER.indexOf(chId);
+    const p = i > 0 ? GD.projectAfter(CH_ORDER[i - 1]) : null;
+    return p && projStatus(p) !== 'approved' ? p : null;
+  }
+  const PST = () => ({
+    locked: ['🔒', T('Bloquejat')], todo: ['📝', T('Per fer')], sent: ['⏳', T('En revisió')],
+    changes: ['✏️', T('Cal millorar-lo')], approved: ['✅', T('Aprovat')]
+  });
+  const guideUrl = (p) => 'guia.html' + (p ? '#' + p.id : '');
+
+  function tabProjectes(el) {
+    const st = GD.projects.map(p => projStatus(p));
+    const n = (k) => st.filter(s => s === k).length;
+    el.innerHTML = `
+      <div class="card web-head">
+        <h3>${T('📋 Projectes reals')}</h3>
+        <p>${T('Els clients et demanen feines de veritat: plans, campanyes, anuncis, informes... Les has de fer tu (amb Google Docs, Canva, les eines d\'anuncis...), entregar-ne l\'enllaç i esperar que el professor les aprovi per continuar la campanya.')}</p>
+        <div class="row-btns"><a class="btn small primary" href="${guideUrl()}" target="_blank" rel="noopener">${T('📘 Guia dels projectes')}</a>
+          ${S.classe ? `<button class="btn small" data-act="checkReviews">${T('🔄 Comprovar revisions')}</button>` : ''}</div>
+        <p class="muted small">${T('Aprovats: {0} de {1}', [n('approved'), GD.projects.length])} · ${T('En revisió: {0}', [n('sent')])} · ${T('Per millorar: {0}', [n('changes')])}</p>
+        ${S.classe ? '' : `<div class="warn small">${T('⚠️ Per entregar projectes necessites el codi de classe del professor.')} <button class="btn small" data-act="setClass">${T('🏷️ Posar codi de classe')}</button></div>`}
+      </div>
+      <div class="web-levels">${GD.projects.map((p, i) => {
+        const s = st[i], r = projRec(p.id), [ic, lb] = PST()[s];
+        const rv = r && r.review;
+        return `<div class="web-level card proj ${s}">
+          <span class="wl-ava">${ART.portrait(p.who, s === 'approved' ? 'h' : s === 'changes' ? 't' : 'n')}</span>
+          <div class="wl-txt"><small>${T('Capítol {0}', [p.after])} · ${txt(p.kind)}</small><b>${txt(p.title)}</b>
+            <em class="pstat ${s}">${ic} ${lb}${rv && rv.grade != null && s === 'approved' ? ' · ' + T('Nota: {0}', [rv.grade]) : ''}</em></div>
+          ${s === 'locked' ? `<span class="ch-s small">${T('Cap. {0}', [p.after])}</span>` : `<button class="btn ${s === 'todo' || s === 'changes' ? 'primary' : 'small'}" data-proj="${p.id}">${s === 'todo' ? T('Començar') : s === 'changes' ? T('Corregir') : T('Veure')}</button>`}
+        </div>`;
+      }).join('')}</div>`;
+  }
+
+  function projectScreen(id, skipIntro) {
+    const p = GD.projectById(id); if (!p) return;
+    rightActor = null;
+    sceneShell(p.bg);
+    const back = () => hubScreen('projectes');
+    const s = projStatus(p), r = projRec(p.id) || {}, rv = r.review;
+    const fb = rv ? `<div class="${rv.status === 'approved' ? 'info' : 'errors'}"><b>${rv.status === 'approved' ? T('✅ Aprovat pel professor') : T('✏️ El professor demana canvis')}${rv.grade != null ? ' · ' + T('Nota: {0}', [rv.grade]) : ''}</b>${rv.feedback ? `<p class="pre">${esc(rv.feedback)}</p>` : ''}</div>` : '';
+    const brief = () => panel(`<div class="pn-h"><b>📋 ${txt(p.title)}</b><small>${txt(p.kind)} · ${T('Capítol {0}', [p.after])} · ${PST()[s].join(' ')}</small></div>
+      ${fb}
+      <p><b>${T('Objectiu:')}</b> ${txt(p.goal)}</p>
+      <p><b>${T('Format:')}</b> ${txt(p.format)}</p>
+      <h4>${T('Què ha de contenir')}</h4>
+      <ol class="req-list">${p.sections.map(x => `<li><b>${txt(x.h)}.</b> ${txt(x.d)}</li>`).join('')}</ol>
+      <h4>${T('Com s\'avaluarà')}</h4>
+      <ul class="req-list">${p.rubric.map(x => `<li>${txt(x)}</li>`).join('')}</ul>
+      ${r.url ? `<p class="small">${T('La teva entrega (versió {0}):', [r.v])} <a href="${safeUrl(r.url)}" target="_blank" rel="noopener">${esc(r.url)}</a></p>` : ''}
+      <div class="row-btns">
+        <a class="btn primary" href="${guideUrl(p)}" target="_blank" rel="noopener">${T('📘 Guia pas a pas')}</a>
+        <button class="btn" id="tpl">${T('📄 Copiar la plantilla')}</button>
+        ${s === 'approved' ? '' : `<button class="btn ${s === 'sent' ? '' : 'primary'}" id="deliver">${s === 'sent' ? T('📤 Tornar a entregar') : T('📤 Entregar')}</button>`}
+        ${s === 'sent' && S.classe ? `<button class="btn" id="chk">${T('🔄 Comprovar revisió')}</button>` : ''}
+        <button class="btn ghost" id="back">${T('Tornar als projectes')}</button></div>`, (pn) => {
+      pn.querySelector('#back').onclick = back;
+      pn.querySelector('#tpl').onclick = () => textBox(T('Copia aquesta plantilla al teu document (Google Docs, Word...) i omple cada apartat:'), GD.projectTemplate(p, txt(S.agency)));
+      const d = pn.querySelector('#deliver'); if (d) d.onclick = deliver;
+      const c = pn.querySelector('#chk'); if (c) c.onclick = () => checkReviews(true).then(() => projectScreen(id, true));
+    });
+    const deliver = () => {
+      if (!S.classe) {
+        panel(`<div class="pn-h"><b>📤 ${T('Entrega del projecte')}</b><small>${txt(p.title)}</small></div>
+          <p>${T('Per entregar projectes necessites el codi de classe del professor: és el que permet que te\'ls revisi.')}</p>
+          <div class="row-btns"><button class="btn primary" data-act="setClass">${T('🏷️ Posar codi de classe')}</button><button class="btn ghost" id="b">${T('Tornar')}</button></div>`, (pn) => { pn.querySelector('#b').onclick = brief; });
+        return;
+      }
+      panel(`<div class="pn-h"><b>📤 ${T('Entrega del projecte')}</b><small>${txt(p.title)}</small></div>
+        <label class="fld">${T('Enllaç al projecte (Google Docs, Slides, Canva, Drive...)')}<input class="inp" id="pUrl" type="url" inputmode="url" placeholder="https://..." value="${esc(r.url || '')}"></label>
+        <label class="fld">${T('Enllaç addicional (opcional): carpeta de peces, panell, vídeo...')}<input class="inp" id="pUrl2" type="url" inputmode="url" placeholder="https://..." value="${esc(r.url2 || '')}"></label>
+        <label class="chk"><input type="checkbox" id="pShare"><span>${T('He comprovat que l\'enllaç s\'obre sense iniciar sessió («Qualsevol persona que tingui l\'enllaç pot veure»).')}</span></label>
+        <p class="lbl">${T('Marca les seccions que inclou el teu projecte (han de ser-hi totes):')}</p>
+        <div class="checks">${p.sections.map((x, i) => `<label class="chk"><input type="checkbox" data-sec="${i}" ${r.v ? 'checked' : ''}><span>${txt(x.h)}</span></label>`).join('')}</div>
+        <label class="fld">${T('Resum de la teva proposta per al client (mínim 150 caràcters)')}<textarea class="inp" id="pSum" rows="5" maxlength="2000">${esc(r.summary || '')}</textarea></label>
+        <p class="muted small" id="pCount"></p>
+        ${rv && rv.status === 'changes' ? `<label class="fld">${T('Què has canviat respecte a la versió anterior?')}<textarea class="inp" id="pChg" rows="3" maxlength="1000"></textarea></label>` : ''}
+        <label class="fld">${T('Eines d\'IA que has fet servir i per a què (si no n\'has fet servir, escriu «cap»)')}<input class="inp" id="pAi" maxlength="500" value="${esc(r.ai || '')}"></label>
+        <div class="row-btns"><button class="btn primary" id="send">${T('Entregar al professor')}</button><button class="btn ghost" id="b">${T('Tornar a l\'encàrrec')}</button></div>`, (pn) => {
+        pn.querySelector('#b').onclick = brief;
+        const sum = pn.querySelector('#pSum'), cnt = () => { pn.querySelector('#pCount').textContent = T('{0} caràcters', [sum.value.trim().length]); };
+        sum.oninput = cnt; cnt();
+        pn.querySelector('#send').onclick = async () => {
+          const norm = (u) => { u = (u || '').trim(); if (!u) return ''; if (!/^https?:\/\//i.test(u)) u = 'https://' + u; try { const x = new URL(u); return /^https?:$/.test(x.protocol) && x.hostname.includes('.') ? x.href : null; } catch (e) { return null; } };
+          const url = norm(pn.querySelector('#pUrl').value), url2 = norm(pn.querySelector('#pUrl2').value);
+          if (!url || url2 === null) { toast(T('Escriu un enllaç vàlid al projecte (per exemple, https://docs.google.com/...).'), 'bad'); return; }
+          if (!pn.querySelector('#pShare').checked) { toast(T('Comprova que l\'enllaç és públic i marca la casella.'), 'bad'); return; }
+          if ([...pn.querySelectorAll('[data-sec]')].some(c => !c.checked)) { toast(T('Al projecte hi han de ser totes les seccions. Completa\'l abans d\'entregar.'), 'bad'); return; }
+          const summary = sum.value.trim();
+          if (summary.length < 150) { toast(T('El resum ha de tenir almenys 150 caràcters.'), 'bad'); sum.focus(); return; }
+          const ai = pn.querySelector('#pAi').value.trim();
+          if (!ai) { toast(T('Indica si has fet servir eines d\'IA (o escriu «cap»).'), 'bad'); return; }
+          const chg = pn.querySelector('#pChg');
+          if (chg && chg.value.trim().length < 20) { toast(T('Explica què has canviat després dels comentaris del professor.'), 'bad'); chg.focus(); return; }
+          const rec = Object.assign({}, r, { url, url2, summary, ai, changes: chg ? chg.value.trim() : '', at: new Date().toISOString(), v: (r.v || 0) + 1 });
+          S.proj[p.id] = rec;
+          if (!rec.first) rec.first = rec.at;
+          save();
+          const btn = pn.querySelector('#send'); btn.disabled = true; btn.textContent = T('Enviant…');
+          const ok = await doSync(false);
+          showActors(p.who, 'h');
+          playLines([[p.who + '.h', T('Rebut! Ho miraré amb calma, {nom}. T\'ho tornaré revisat.')]], () => {
+            panel(`<div class="reward"><div class="rw-h"><small>${txt(p.kind)}</small><h2>📤 ${T('Projecte entregat!')}</h2></div>
+              <p><a href="${safeUrl(url)}" target="_blank" rel="noopener">${esc(url)}</a></p>
+              <p>${ok ? T('El professor el revisarà. Quan l\'aprovi, rebràs la recompensa i es desbloquejarà el capítol següent. Mentrestant, pots fer encàrrecs, repassar lliçons o avançar al Taller web.') : T('No s\'ha pogut enviar ara (sense connexió?). S\'enviarà automàticament quan tornis a tenir connexió; també ho pots fer des d\'Empresa → Enviar resultats ara.')}</p>
+              <button class="btn primary big" data-act="hubProj">${T('Tornar als projectes')}</button></div>`);
+          });
+        };
+      });
+    };
+    if (skipIntro || s === 'approved') brief(); else playLines(p.brief, brief);
+  }
+
+  let lastReviewCheck = 0;
+  async function checkReviews(manual) {
+    if (!S || !S.classe || !S.proj) return;
+    const waiting = GD.projects.some(p => projStatus(p) === 'sent');
+    if (!manual && (!waiting || Date.now() - lastReviewCheck < 20000)) return;
+    lastReviewCheck = Date.now();
+    let reviews;
+    try {
+      const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'reviews', classe: S.classe, id: S.player.id }) });
+      if (!res.ok) throw new Error('Error ' + res.status);
+      reviews = (await res.json()).reviews || {};
+    } catch (e) { if (manual) toast(T('No s\'han pogut comprovar les revisions. Torna-ho a provar més tard.'), 'bad'); return; }
+    let changed = false;
+    for (const p of GD.projects) {
+      const r = S.proj[p.id], rv = reviews[p.id];
+      if (!r || !rv || (r.review && r.review.at === rv.at)) continue;
+      r.review = rv; changed = true;
+      if (rv.status === 'approved' && !r.rewarded) {
+        r.rewarded = true;
+        const R = p.reward, keep = RUN; RUN = null;
+        applyFx({ xp: R.xp, money: R.money, fee: true, rep: R.rep, trust: R.trust ? { [R.trust]: 1 } : null, log: T('Projecte aprovat: «{0}».', [txt(p.title)]), key: true }, true);
+        RUN = keep;
+        toast(T('✅ Projecte aprovat: {0} (+{1} EXP)', [txt(p.title), R.xp]), 'good');
+      } else if (rv.status === 'changes') toast(T('✏️ El professor demana canvis a «{0}».', [txt(p.title)]), 'bad');
+    }
+    if (changed) { save(); queueSync(); if ($('.hub')) hubScreen(); }
+    else if (manual) toast(T('Encara no hi ha revisions noves.'));
   }
 
   function tabGigs(el) {
@@ -982,6 +1147,7 @@
           <div class="metric"><small>${w.n} ${T("setmanes de despeses i quotes")}</small><b>${w.inc - w.cost >= 0 ? '+' : ''}${eur(w.inc - w.cost)}</b></div>
         </div>
         ${Object.keys(run.trust).length ? `<p class="trustline">${Object.entries(run.trust).map(([k, v]) => `<span class="${v >= 0 ? 'pos' : 'neg'}">${GD.names[k]} ${v >= 0 ? '♥ +' + v : '💔 ' + v}</span>`).join('')}</p>` : ''}`}
+        ${(() => { const pj = !replay && GD.projectAfter(ch.id); return pj && projStatus(pj) !== 'approved' ? `<div class="stage-clear proj-new" style="--sc:#7a8cff"><b>📋 ${T('Nou projecte real:')} ${txt(pj.title)}</b><p>${T('Per jugar el capítol següent l\'has de fer de veritat, entregar-lo i el professor l\'ha d\'aprovar.')}</p><button class="btn" data-proj="${pj.id}">${T('Veure l\'encàrrec')}</button></div>` : ''; })()}
         ${stageComplete ? `<div class="stage-clear" style="--sc:${stage.color}"><b>${T("🌸 Etapa")} ${stage.id} ${T("superada!")}</b><p>${txt(stage.outro || '')}</p><p>${T("Nou rang:")} <b>${title()}</b></p></div>` : ''}
         <button class="btn primary big" data-act="hub">${T("Tornar al centre d'operacions")}</button>
       </div>`);
@@ -1156,6 +1322,10 @@
       webPlataformes: (S.web && S.web.platforms) || [],
       webs: Object.fromEntries(Object.entries((S.web && S.web.levels) || {}).map(([k, v]) => [k, { url: v.url, platform: v.platform, at: v.at, reflection: v.reflection, note: v.note, reachable: v.reachable }])),
       websEntregades: Object.keys((S.web && S.web.levels) || {}).length,
+      projectes: Object.fromEntries(Object.entries(S.proj || {}).filter(([, r]) => r && r.v).map(([k, r]) => [k, { url: r.url, url2: r.url2 || '', resum: r.summary, ia: r.ai, canvis: r.changes || '', at: r.at, primer: r.first || r.at, v: r.v }])),
+      projectesEntregats: Object.values(S.proj || {}).filter(r => r && r.v).length,
+      projectesAprovats: GD.projects.filter(p => projStatus(p) === 'approved').length,
+      projectesTotal: GD.projects.length,
       decisions: S.history.filter(h => h.key).map(h => T("Cap. {0}: {1}", [h.ch, h.t]))
     };
   }
@@ -1167,14 +1337,17 @@
     syncTimer = setTimeout(() => doSync(false), 1200);
   }
   async function doSync(manual) {
-    if (!S || !S.classe) return;
+    if (!S || !S.classe) return false;
     try {
       const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'submit', classe: S.classe, id: S.player.id, data: buildSummary() }) });
       if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || 'Error ' + r.status);
       S.syncPending = false; S.lastSync = Date.now(); save();
-      if (manual) { toast(T('📤 Resultats enviats al professor'), 'good'); if ($('.hub')) hubScreen('empresa'); }
+      if (manual) { toast(T('📤 Resultats enviats al professor'), 'good'); if ($('.hub')) hubScreen(); }
+      return true;
     } catch (e) {
+      S.syncPending = true; save();
       if (manual) toast(T('No s\'han pogut enviar els resultats (') + esc(e.message || T('sense connexió')) + T('). Torna-ho a provar o descarrega el fitxer.'), 'bad');
+      return false;
     }
   }
   function downloadResults() {
@@ -1187,6 +1360,8 @@
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   }
   window.addEventListener('online', () => { if (S && S.syncPending) doSync(false); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && $('.hub')) checkReviews(false); });
+  function projTodo() { return GD.projects.filter(p => ['todo', 'changes'].includes(projStatus(p))).length; }
 
   function newGame() {
     const go = () => setupScreen(false);
@@ -1204,7 +1379,7 @@
   document.addEventListener('click', (ev) => {
     const lb = ev.target.closest('[data-lang]');
     if (lb && !lb.closest('.setup')) { if (lb.dataset.lang !== LANG) setLang(lb.dataset.lang); return; }
-    const b = ev.target.closest('[data-act],[data-ch],[data-tab],[data-skill],[data-lesson],[data-gig],[data-web]');
+    const b = ev.target.closest('[data-act],[data-ch],[data-tab],[data-skill],[data-lesson],[data-gig],[data-web],[data-proj]');
     if (!b || b.disabled) return;
     if (b.dataset.ch) { startChapter(b.dataset.ch); return; }
     if (b.dataset.tab) { hubScreen(b.dataset.tab); return; }
@@ -1216,12 +1391,15 @@
     if (b.dataset.lesson) { sceneShell('despatx'); showActors('pau', 't'); lessonFlow(b.dataset.lesson, false, () => hubScreen('biblioteca')); return; }
     if (b.dataset.gig != null) { playGig(+b.dataset.gig); return; }
     if (b.dataset.web != null) { webLevel(+b.dataset.web); return; }
+    if (b.dataset.proj) { projectScreen(b.dataset.proj); return; }
     switch (b.dataset.act) {
       case 'new': newGame(); break;
       case 'continue': continueGame(); break;
       case 'hub': if (S.ending && $('.ending')) { hubScreen('campanya'); } else hubScreen(); break;
       case 'hubGigs': hubScreen('encarrecs'); break;
       case 'hubTaller': hubScreen('taller'); break;
+      case 'hubProj': hubScreen('projectes'); break;
+      case 'checkReviews': checkReviews(true); break;
       case 'webPlatforms': webPicker($('#hubBody')); break;
       case 'title': titleScreen(); break;
       case 'showEnding': endingScreen(S.ending, false); break;
@@ -1240,7 +1418,7 @@
       case 'downloadResults': downloadResults(); break;
       case 'setClass': textBox(T('Codi de classe (te\'l dona el professor):'), S.classe, (v) => {
         S.classe = normClass(v); S.lastSync = 0; save();
-        if (S.classe) { toast(T('Codi desat: ') + esc(S.classe), 'good'); doSync(true); } else hubScreen('empresa');
+        if (S.classe) { toast(T('Codi desat: ') + esc(S.classe), 'good'); if (!$('.hub')) hubScreen('projectes'); doSync(true); } else if ($('.hub')) hubScreen(); else hubScreen('projectes');
       }, T('Desar')); break;
       case 'sceneMenu': confirmBox(T('Vols sortir de la missió? El progrés de la missió es desa i la podràs reprendre.'), () => { const c = S.cur; save(); hubScreen('campanya'); S.cur = c; save(); }); break;
     }
@@ -1267,6 +1445,7 @@
     const pending = S && S.cur && GD.chapters[S.cur.id] ? S.cur : null;
     _hub(tab);
     window.scrollTo(0, 0);
+    checkReviews(false);
     if (pending) { S.cur = pending; save(); const nm = document.querySelector('.next-mission'); if (nm) { nm.dataset.resume = '1'; } }
   };
   document.addEventListener('click', (ev) => {

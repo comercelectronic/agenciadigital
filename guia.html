@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guia dels projectes · Agència Digital</title>
+  <meta name="description" content="Guia dels projectes reals del joc Agència Digital: què ha de contenir cada lliurament, passos, eines i criteris d'avaluació.">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { overflow-y: auto; }
+    .gd { max-width: 900px; margin: 0 auto; padding: 16px 16px 60px; }
+    .gd-h { color: #fff; display: flex; align-items: center; gap: 12px; margin: 8px 0 16px; flex-wrap: wrap; }
+    .gd-h img { width: 52px; height: 52px; }
+    .gd-h h1 { margin: 0; font-size: 1.5em; }
+    .gd-h p { margin: 0; opacity: .85; font-size: .9em; }
+    .gd-h .langs { margin-left: auto; }
+    .gd-h .langs button { color: #fff; }
+    .gd .card { margin-bottom: 14px; }
+    .gd h2 { margin: 0 0 6px; font-size: 1.25em; }
+    .gd h3 { margin: 16px 0 6px; font-size: 1em; }
+    .how { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+    .how div { background: var(--card2); border-radius: 12px; padding: 10px 12px; font-size: .92em; }
+    .how b { display: block; margin-bottom: 2px; }
+    .toc ol { columns: 2 260px; margin: 0; padding-left: 1.3em; }
+    .toc li { margin: 3px 0; break-inside: avoid; }
+    .toc a { color: var(--violet); font-weight: 700; text-decoration: none; }
+    .stage-t { color: #fff; margin: 26px 4px 10px; font-size: 1.1em; }
+    .pj-h { display: flex; gap: 12px; align-items: center; }
+    .pj-ava { width: 64px; height: 64px; flex: 0 0 64px; border-radius: 50%; overflow: hidden; background: var(--card2); border: 2.5px solid var(--ink); }
+    .pj-ava svg { width: 100%; height: 160%; margin-top: -10%; }
+    .pj-h small { color: var(--muted); font-weight: 800; text-transform: uppercase; letter-spacing: .04em; font-size: .74em; }
+    .pj-sec { margin: 0; padding-left: 1.3em; }
+    .pj-sec li { margin: 6px 0; }
+    .meta { background: var(--card2); border-radius: 12px; padding: 8px 12px; font-size: .92em; margin: 10px 0; }
+    .tips li { margin: 4px 0; }
+    .gd .row-btns { margin-top: 12px; }
+    .back { color: #fff; font-weight: 800; }
+    @media print {
+      body { background: #fff; }
+      .gd-h { color: #000; }
+      .gd-h .langs, .noprint, .row-btns { display: none !important; }
+      .stage-t { color: #000; }
+      .card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid-page; }
+    }
+  </style>
+</head>
+<body>
+  <main class="gd" id="gd"><div class="card">…</div></main>
+  <div id="toasts" aria-live="polite"></div>
+  <script src="js/i18n.js"></script>
+  <script src="js/art.js"></script>
+  <script src="js/data-story1.js"></script>
+  <script src="js/data-story2.js"></script>
+  <script src="js/data-story3.js"></script>
+  <script src="js/data-projects.js"></script>
+  <script src="js/guia.js"></script>
+</body>
+</html>

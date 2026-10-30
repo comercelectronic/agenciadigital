@@ -24,6 +24,16 @@ El joc i el panell del professor es poden fer servir en **català, castellà i a
 - **Contrasenya:** variable d'entorn `TEACHER_PASSWORD` del lloc de Netlify (obligatòria perquè funcioni el panell).
 - **Dades personals:** només s'envia el nom i cognom que escrigui l'alumne i els resultats del joc. No es demana correu ni cap altra dada.
 
+## Projectes reals (obligatoris, revisats pel professorat)
+
+Pestanya 📋 **Projectes**: 17 lliuraments de feina real repartits per tota la campanya (pla de màrqueting i campanya amb anuncis del forn, SEO local, campanya B2B, botiga en línia i correus, quadre de comandament, pitch, proposta comercial, calendari de continguts, sistema de treball, auditoria, gestió de crisi, informe executiu, manual de marca, llançament a França, pla d'IA i portafoli final).
+
+- Cada projecte s'activa en acabar un capítol i **bloqueja el capítol següent fins que el professor l'aprova**. Mentrestant, l'alumne pot fer encàrrecs, lliçons i el Taller web.
+- L'alumne fa el document de veritat (Google Docs, Slides, Canva, eines d'anuncis...), l'entrega amb l'enllaç, marca les seccions, escriu un resum i indica l'ús d'IA. Cal el codi de classe.
+- **Guia completa** a `/guia.html` (també imprimible): què ha de contenir cada projecte, passos, eines, criteris d'avaluació, consells i plantilla per copiar.
+- **Professorat:** al panell apareix «Projectes per revisar». Cada revisió mostra l'enllaç, el resum, els criteris d'avaluació (els que no es marquen s'afegeixen als comentaris), comentaris i nota opcional de 0 a 10. Es pot aprovar o demanar canvis; l'alumne ho veu al joc i ho pot tornar a entregar. Els estats i les notes surten al CSV.
+- Contingut a `js/data-projects.js`; revisions a Netlify Blobs (`joc-revisions`).
+
 ## Taller web (opcional)
 
 Pestanya 🛠️ **Taller**: un curs a part on l'alumne aprèn a crear webs professionals per als clients de l'agència. No és obligatori: la campanya avança igual sense fer-lo, però cada web entregada dona EXP, diners, reputació i confiança.

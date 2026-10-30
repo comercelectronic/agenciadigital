@@ -7,11 +7,15 @@
 //   la contrasenya de la variable d'entorn TEACHER_PASSWORD (si no existeix,
 //   es fa servir ADMIN_PASSWORD).
 //
-// Es desa a Netlify Blobs, al magatzem 'joc-resultats', amb la clau
-// "<CLASSE>/<id de l'alumne>".
+// - Projectes reals: l'alumne els entrega dins del seu resum; el professor els
+//   revisa (action: 'review') i l'alumne consulta l'estat (action: 'reviews').
+//
+// Es desa a Netlify Blobs: magatzem 'joc-resultats' (resums) i 'joc-revisions'
+// (revisions del professor), amb la clau "<CLASSE>/<id de l'alumne>".
 const { getStore, connectLambda } = require('@netlify/blobs');
 
-const MAX_BYTES = 60 * 1024;
+const MAX_BYTES = 200 * 1024;
+const TASK_RE = /^[a-z0-9-]{1,40}$/;
 const CLASS_RE = /^[A-Z0-9_-]{1,32}$/;
 const ID_RE = /^[a-z0-9-]{8,40}$/;
 
@@ -34,6 +38,8 @@ exports.handler = async function (event) {
 
   connectLambda(event);
   const store = getStore('joc-resultats');
+  const revStore = getStore('joc-revisions');
+  const validStudent = () => CLASS_RE.test(String(body.classe || '')) && ID_RE.test(String(body.id || ''));
 
   if (body.action === 'submit') {
     const classe = String(body.classe || '');
@@ -44,6 +50,12 @@ exports.handler = async function (event) {
     const data = Object.assign({}, body.data, { id, classe, rebut: new Date().toISOString() });
     await store.setJSON(`${classe}/${id}`, data);
     return json(200, { ok: true });
+  }
+
+  if (body.action === 'reviews') {
+    if (!validStudent()) return json(400, { error: 'Alumne no vàlid.' });
+    const rev = await revStore.get(`${body.classe}/${body.id}`, { type: 'json' }).catch(() => null);
+    return json(200, { reviews: (rev && rev.tasks) || {} });
   }
 
   // A partir d'aquí, accions del professorat
@@ -58,14 +70,38 @@ exports.handler = async function (event) {
     const classe = body.classe ? String(body.classe) : '';
     if (classe && !CLASS_RE.test(classe)) return json(400, { error: 'Codi de classe no vàlid.' });
     const { blobs } = await store.list(classe ? { prefix: `${classe}/` } : {});
-    const results = (await Promise.all(blobs.map(b => store.get(b.key, { type: 'json' }).catch(() => null)))).filter(Boolean);
+    const results = (await Promise.all(blobs.map(async (b) => {
+      const r = await store.get(b.key, { type: 'json' }).catch(() => null);
+      if (!r) return null;
+      const rev = await revStore.get(b.key, { type: 'json' }).catch(() => null);
+      return Object.assign(r, { revisions: (rev && rev.tasks) || {} });
+    }))).filter(Boolean);
     return json(200, { results });
+  }
+
+  if (body.action === 'review') {
+    if (!validStudent()) return json(400, { error: 'Alumne no vàlid.' });
+    const task = String(body.task || '');
+    if (!TASK_RE.test(task)) return json(400, { error: 'Projecte no vàlid.' });
+    if (!['approved', 'changes'].includes(body.status)) return json(400, { error: 'Estat no vàlid.' });
+    const grade = body.grade === null || body.grade === '' || body.grade === undefined ? null : Number(body.grade);
+    if (grade !== null && !(grade >= 0 && grade <= 10)) return json(400, { error: 'La nota ha de ser de 0 a 10.' });
+    const key = `${body.classe}/${body.id}`;
+    const rev = (await revStore.get(key, { type: 'json' }).catch(() => null)) || { tasks: {} };
+    rev.tasks[task] = {
+      status: body.status, grade,
+      feedback: String(body.feedback || '').slice(0, 4000),
+      v: Number(body.v) || 1, at: new Date().toISOString()
+    };
+    await revStore.setJSON(key, rev);
+    return json(200, { ok: true, review: rev.tasks[task] });
   }
 
   if (body.action === 'delete') {
     const key = `${body.classe}/${body.id}`;
     if (!CLASS_RE.test(String(body.classe || '')) || !ID_RE.test(String(body.id || ''))) return json(400, { error: 'Alumne no vàlid.' });
     await store.delete(key);
+    await revStore.delete(key).catch(() => {});
     return json(200, { ok: true });
   }
 
