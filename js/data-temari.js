@@ -74,6 +74,29 @@ GD.temari = [
   ['5.9', T("Implementació d'estratègies de seguretat informàtica")]
 ];
 GD.temariTitle = (c) => (GD.temari.find(x => x[0] === c) || [])[1] || c;
+// Com es treballa avui cada punt que en el temari oficial té un nom o una tecnologia antiquats
+GD.temariNow = {
+  '1.2': T("Avui també: aparèixer a la cerca amb IA (GEO), Google Business Profile i Google Shopping."),
+  '1.6': T("Avui també: retail media (anuncis dins de botigues en línia) i campanyes automatitzades."),
+  '1.7': T("Avui també: Llei europea d'accessibilitat, Llei de serveis digitals i mode de consentiment."),
+  '1.14': T("Avui: TV connectada i streaming amb anuncis, WhatsApp Business, Bizum i pagament amb el mòbil."),
+  '1.15': T("Avui: vídeo curt vertical, YouTube, directes, live shopping, videopodcasts i creadors."),
+  '2.12': T("Avui també: D2C, subscripcions, social commerce i marketplaces."),
+  '3.3': T("Avui: CMS, constructors visuals, Figma i editors de codi amb IA."),
+  '3.4': T("Avui: publicació des del CMS o amb Git (Netlify, Vercel); si cal FTP, sempre SFTP."),
+  '3.6': T("Avui també: aparèixer a la cerca amb IA (GEO)."),
+  '4.1': T("Avui: xat web amb chatbot d'IA, WhatsApp Business i Discord."),
+  '4.2': T("Avui: WhatsApp Business, Instagram Direct i Telegram."),
+  '4.3': T("Avui: centraletes al núvol, videotrucades i atenció omnicanal."),
+  '4.4': T("Avui: Reddit, grups de LinkedIn i Facebook, comunitats de WhatsApp i Discord."),
+  '4.5': T("Avui: Reddit, grups de LinkedIn i Facebook, comunitats de WhatsApp i Discord."),
+  '4.10': T("Avui: vídeo curt i col·laboracions amb creadors."),
+  '4.14': T("Avui: TikTok Shop, Instagram Shopping i live shopping."),
+  '5.1': T("Avui: web social, contingut generat pels usuaris i economia dels creadors."),
+  '5.3': T("Avui: contingut generat pels usuaris, escolta social i programes d'ambaixadors."),
+  '5.6': T("Avui: integracions per API i automatitzacions sense codi (Zapier, Make)."),
+  '5.7': T("Avui: ressenyes, creadors, ambaixadors i comunitats de marca.")
+};
 
 // Etiquetes dels continguts que ja existien
 GD.codes = {
@@ -115,67 +138,67 @@ Object.assign(GD.names, { sara: T('Sara'), laura: T('Laura'), mireia: T('Mireia'
 const L = (id, o) => { GD.lessons[id] = o; GD.codes.lessons[id] = o.codes; };
 
 L('L_directoris', {
-  area: 'seo', codes: ['1.2', '3.6'], title: T("Alta en cercadors i directoris"),
-  goal: T("Fer que els cercadors i els directoris trobin, entenguin i mostrin bé una empresa."),
+  area: 'seo', codes: ['1.2', '3.6'], title: T("Alta en cercadors, directoris i cerca amb IA"),
+  goal: T("Fer que els cercadors, els directoris i els assistents d'IA trobin, entenguin i recomanin bé una empresa."),
   body: [
-    T("Els cercadors troben les webs sols, però és millor <b>donar-les d'alta</b>: a Google Search Console i a Bing Webmaster Tools s'hi verifica el domini, s'envia el <b>mapa del lloc (sitemap.xml)</b> i es veuen els errors d'indexació i les cerques per les quals apareix la web."),
-    T("Per als negocis locals és imprescindible la fitxa de <b>Google Business Profile</b> (i Apple Maps i Bing Places). A més hi ha <b>directoris generals</b> (Pàgines Grogues, cambres de comerç) i <b>especialitzats</b> per sector: TripAdvisor o TheFork per a restaurants, Doctoralia per a clíniques, Booking per a allotjaments, Habitaclia per a immobiliàries..."),
-    T("La clau és la coherència <b>NAP</b> (nom, adreça i telèfon iguals a tot arreu), triar bé la categoria i mantenir horaris, fotos i ressenyes al dia. Un directori desactualitzat fa més mal que no ser-hi.")
+    T("Els cercadors troben les webs sols, però cal ajudar-los: a <b>Google Search Console</b> i a <b>Bing Webmaster Tools</b> es verifica el domini, s'envia el <b>mapa del lloc (sitemap.xml)</b> i es revisen els errors d'indexació, la velocitat (Core Web Vitals) i les cerques per les quals apareix la web."),
+    T("Per als negocis locals és imprescindible la fitxa de <b>Google Business Profile</b> (i Apple Business Connect i Bing Places). A més hi ha <b>directoris especialitzats</b> per sector: TheFork o TripAdvisor per a restaurants, Doctoralia per a clíniques, Booking o Airbnb per a allotjaments, Idealista o Habitaclia per a immobiliàries, i Google Merchant Center perquè els productes surtin a Google Shopping. La clau és la coherència <b>NAP</b> (nom, adreça i telèfon iguals a tot arreu) i tenir horaris, fotos i ressenyes al dia."),
+    T("Cada cop més gent pregunta directament a la IA: les visions generals amb IA de Google, ChatGPT, Gemini o Perplexity. Per aparèixer a les seves respostes (el que s'anomena <b>GEO</b>, optimització per a motors generatius) cal contingut clar que respongui preguntes concretes, <b>dades estructurades</b> (schema.org), fitxes i ressenyes actualitzades i que altres webs fiables parlin de l'empresa.")
   ],
-  example: T("Una clínica dental verifica la web a Search Console, hi envia el sitemap, completa la fitxa de Google i s'apunta a Doctoralia amb el mateix nom, adreça i telèfon. En un mes, les reserves des del mòbil es dupliquen."),
-  errors: [T("Pagar per sortir en centenars de directoris de poca qualitat."), T("Tenir telèfons o adreces diferents en cada directori."), T("No enviar el sitemap ni mirar mai els errors d'indexació.")],
+  example: T("Una clínica dental verifica la web a Search Console, envia el sitemap, completa la fitxa de Google, s'apunta a Doctoralia amb el mateix nom, adreça i telèfon i publica una pàgina de preguntes freqüents amb dades estructurades. Quan algú pregunta a un assistent d'IA per un dentista a Vic, la clínica ja hi surt."),
+  errors: [T("Pagar per sortir en centenars de directoris de poca qualitat."), T("Tenir telèfons o adreces diferents en cada directori."), T("Pensar que només compta Google i oblidar com responen els assistents d'IA.")],
   quiz: [
     { q: T("Per a què serveix Google Search Console?"), o: [T("Per fer anuncis de pagament"), T("Per verificar la web, enviar el sitemap i veure com apareix als resultats"), T("Per dissenyar la web")], c: 1, why: T("És l'eina gratuïta per comunicar-se amb Google i controlar la indexació.") },
     { q: T("Quin directori especialitzat és el més adequat per a un restaurant?"), o: [T("Doctoralia"), T("TheFork o TripAdvisor"), T("Habitaclia")], c: 1, why: T("Cada sector té els seus directoris: els comensals busquen a TheFork i TripAdvisor.") },
-    { q: T("Què vol dir mantenir la coherència NAP?"), o: [T("Que nom, adreça i telèfon siguin idèntics a tots els directoris"), T("Publicar a totes les xarxes alhora"), T("Tenir un nom de domini curt")], c: 0, why: T("Les dades coherents generen confiança als cercadors i als clients.") }
+    { q: T("Què ajuda una empresa a aparèixer a les respostes de la cerca amb IA?"), o: [T("Contingut clar que respon preguntes, dades estructurades i bones ressenyes"), T("Repetir la paraula clau cent vegades"), T("Tenir moltes pàgines buides")], c: 0, why: T("Els assistents d'IA citen fonts clares, fiables i ben valorades.") }
   ]
 });
 L('L_sem', {
-  area: 'ads', codes: ['1.6'], title: T("SEO, SEM i campanyes en pàgines afins"),
-  goal: T("Distingir el posicionament orgànic, els anuncis als cercadors i la publicitat en webs relacionades."),
+  area: 'ads', codes: ['1.6'], title: T("SEO, SEM, retail media i campanyes en pàgines afins"),
+  goal: T("Distingir el posicionament orgànic, els anuncis als cercadors i la publicitat en webs, apps i botigues en línia."),
   body: [
-    T("El <b>SEO</b> (Search Engine Optimization) busca aparèixer als resultats orgànics: contingut útil, paraules clau, velocitat, estructura i enllaços. És lent però no es paga per clic. El <b>SEM</b> (Search Engine Marketing) són els anuncis als cercadors (Google Ads, Microsoft Ads): es paga per clic i dona resultats immediats mentre hi ha pressupost."),
-    T("Les <b>campanyes en pàgines afins</b> mostren anuncis en webs que visita el teu públic: la xarxa de display de Google, la publicitat nativa en diaris, els patrocinis en blogs del sector o el <b>remàrqueting</b>, que torna a impactar qui ja ha visitat la web."),
-    T("Una bona estratègia combina les tres: SEO per al llarg termini, SEM per a les cerques amb intenció de compra i pàgines afins per guanyar notorietat i recuperar visitants.")
+    T("El <b>SEO</b> (Search Engine Optimization) busca aparèixer als resultats orgànics: contingut útil, paraules clau, velocitat, estructura i enllaços. És lent però no es paga per clic. El <b>SEM</b> (Search Engine Marketing) són els anuncis als cercadors (Google Ads, Microsoft Ads): es paga per clic i dona resultats immediats mentre hi ha pressupost. Avui moltes campanyes són automàtiques (Performance Max): la IA reparteix els anuncis entre cerca, YouTube, Shopping i display."),
+    T("Les <b>campanyes en pàgines afins</b> mostren anuncis en webs i apps que fa servir el teu públic: la xarxa de display, la publicitat nativa en diaris, els patrocinis de newsletters i podcasts del sector o el <b>remàrqueting</b>, que torna a impactar qui ja ha visitat la web. El <b>retail media</b> són els anuncis dins de les botigues en línia i els marketplaces (Amazon Ads, supermercats en línia, apps de repartiment), just quan el client està a punt de comprar."),
+    T("Una bona estratègia combina les tres: SEO per al llarg termini, SEM i retail media per a les cerques amb intenció de compra, i pàgines afins per guanyar notorietat i recuperar visitants.")
   ],
-  example: T("Una botiga de bicis fa SEO amb guies de rutes per Osona, SEM per a «botiga bicis Vic» i remàrqueting a qui ha mirat una bici elèctrica sense comprar-la."),
-  errors: [T("Pensar que el SEM millora el posicionament orgànic."), T("Fer display a tothom sense segmentar."), T("Abandonar el SEO quan les campanyes de pagament funcionen.")],
+  example: T("Una botiga de bicis fa SEO amb guies de rutes per Osona, SEM per a «botiga bicis Vic», anuncis patrocinats dels seus cascos a Amazon i remàrqueting a qui ha mirat una bici elèctrica sense comprar-la."),
+  errors: [T("Pensar que el SEM millora el posicionament orgànic."), T("Fer display a tothom sense segmentar."), T("Deixar les campanyes automàtiques sense revisar on surten ni què venen.")],
   quiz: [
     { q: T("Què és el SEM?"), o: [T("Optimitzar el contingut per als resultats orgànics"), T("Publicitat de pagament als cercadors"), T("Enviar butlletins")], c: 1, why: T("SEM són els anuncis als cercadors; SEO, el posicionament orgànic.") },
     { q: T("Què és el remàrqueting?"), o: [T("Tornar a mostrar anuncis a qui ja ha visitat la web"), T("Reescriure els textos de la web"), T("Fer màrqueting a la ràdio")], c: 0, why: T("Recupera visitants que coneixen la marca i encara no han comprat.") },
-    { q: T("Quin avantatge principal té el SEO?"), o: [T("Resultats immediats"), T("No es paga per cada clic i els resultats duren"), T("Es pot fer sense contingut")], c: 1, why: T("És més lent, però el trànsit orgànic no depèn d'un pressupost diari.") }
+    { q: T("Què és el retail media?"), o: [T("Anuncis dins de botigues en línia i marketplaces, com Amazon Ads"), T("Cartells a l'aparador de la botiga"), T("Un tipus de SEO")], c: 0, why: T("Arriba al client dins de la botiga on ja està comprant.") }
   ]
 });
 L('L_domini', {
-  area: 'web', codes: ['2.3', '3.4', '3.5'], title: T("Domini, allotjament i publicació per FTP"),
-  goal: T("Triar i registrar un domini, escollir el servidor i publicar una web."),
+  area: 'web', codes: ['2.3', '3.4', '3.5'], title: T("Domini, allotjament i publicació de la web"),
+  goal: T("Triar i registrar un domini, escollir l'allotjament i publicar una web de manera segura."),
   body: [
     T("El <b>domini</b> és l'adreça de la web (osonabikes.cat). Ha de ser curt, fàcil de dir i escriure, sense guions ni números innecessaris, i amb l'extensió adequada: <b>.cat</b> per al públic català, <b>.es</b> per a Espanya, <b>.com</b> per a l'internacional. Es registra en un <b>registrador</b> acreditat i es renova cada any; convé registrar-lo a nom de l'empresa."),
-    T("L'<b>allotjament</b> (hosting) és el servidor on viu la web: <b>compartit</b> (barat, per a webs petites), <b>VPS o núvol</b> (més potència i control), <b>gestionat</b> (WordPress gestionat, Shopify, Wix: tot inclòs) o plataformes estàtiques (Netlify, GitHub Pages). Cal mirar velocitat, ubicació dels servidors, còpies de seguretat, certificat SSL i suport."),
-    T("Per pujar els fitxers al servidor es fa servir <b>FTP</b> o, millor, <b>SFTP</b> (xifrat), amb programes com FileZilla: host, usuari, contrasenya i port. Avui moltes plataformes publiquen arrossegant una carpeta o connectant un repositori.")
+    T("L'<b>allotjament</b> (hosting) és el servidor on viu la web: <b>compartit</b> (barat, per a webs petites), <b>VPS o núvol</b> (més potència i control), <b>gestionat</b> (WordPress gestionat, Shopify, Wix: tot inclòs) o plataformes per a webs modernes (Netlify, Vercel, Cloudflare Pages). Cal mirar velocitat, ubicació dels servidors, còpies de seguretat, certificat SSL i suport."),
+    T("Per publicar, avui el més habitual és fer-ho des del mateix <b>CMS</b> (WordPress, Shopify o Wix publiquen amb un botó) o connectar un <b>repositori Git</b> (GitHub) a una plataforma com Netlify o Vercel, que publica sola cada canvi revisat i permet tornar enrere. L'<b>FTP</b> clàssic encara existeix en allotjaments compartits: si cal fer-lo servir, sempre <b>SFTP</b> (xifrat), amb programes com FileZilla. I abans de canvis grans, una còpia i un entorn de proves.")
   ],
-  example: T("La botiga de bicis registra osonabikes.cat i osonabikes.com, contracta un allotjament gestionat amb SSL i còpies diàries i puja la web per SFTP amb FileZilla."),
-  errors: [T("Registrar el domini a nom d'un proveïdor o d'un familiar."), T("Deixar caducar el domini perquè no es renova."), T("Fer servir FTP sense xifrar amb contrasenyes febles.")],
+  example: T("La botiga de bicis registra osonabikes.cat i osonabikes.com, connecta el repositori de la web a Netlify amb SSL automàtic i, cada vegada que aprova un canvi, la web es publica sola. Si alguna cosa falla, torna a la versió anterior amb un clic."),
+  errors: [T("Registrar el domini a nom d'un proveïdor o d'un familiar."), T("Deixar caducar el domini perquè no es renova."), T("Fer canvis directament a la web publicada sense còpia ni proves.")],
   quiz: [
     { q: T("Quin domini és millor per a una botiga de bicis de Vic amb clients catalans?"), o: [T("bicis-osona-barates-online24.net"), T("osonabikes.cat"), T("ob.xyz")], c: 1, why: T("Curt, clar i amb l'extensió del seu públic.") },
     { q: T("Què és l'allotjament web?"), o: [T("El servidor on es guarden i se serveixen els fitxers de la web"), T("El nom de la web"), T("Un programa de disseny")], c: 0, why: T("El domini és l'adreça; l'allotjament és on viu la web.") },
-    { q: T("Per què és millor SFTP que FTP?"), o: [T("És més ràpid"), T("Xifra la connexió i protegeix les credencials"), T("No necessita usuari")], c: 1, why: T("L'FTP clàssic envia usuari i contrasenya sense xifrar.") }
+    { q: T("Quina és avui una manera segura i habitual de publicar una web feta a mida?"), o: [T("Connectar un repositori Git a una plataforma que la publica automàticament"), T("Enviar els fitxers per correu al proveïdor"), T("Pujar-la per FTP sense xifrar")], c: 0, why: T("Hi ha historial de canvis, SSL automàtic i es pot tornar enrere. Si cal FTP, sempre SFTP.") }
   ]
 });
 L('L_html', {
   area: 'web', codes: ['3.1', '3.2', '3.3'], title: T("Estructura web, HTML i editors"),
-  goal: T("Conèixer l'estructura d'una web corporativa, l'HTML bàsic i els editors més habituals."),
+  goal: T("Conèixer l'estructura d'una web corporativa, l'HTML bàsic i les eines actuals per crear webs."),
   body: [
-    T("Una <b>web corporativa</b> sol tenir: inici (què fem i per a qui), qui som, serveis o productes, casos o opinions, blog, contacte, i les pàgines legals (avís legal, privacitat i galetes). El menú ha de ser simple i el contacte, a un clic."),
+    T("Una <b>web corporativa</b> sol tenir: inici (què fem i per a qui), qui som, serveis o productes, casos o opinions, blog, contacte, i les pàgines legals (avís legal, privacitat i galetes). El menú ha de ser simple, el contacte a un clic i la web ha de ser <b>accessible</b> (contrast, text alternatiu, navegació amb teclat)."),
     T("L'<b>HTML</b> descriu l'estructura amb etiquetes: <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;footer&gt;</code>, títols de <code>&lt;h1&gt;</code> a <code>&lt;h6&gt;</code>, paràgrafs <code>&lt;p&gt;</code>, enllaços <code>&lt;a href&gt;</code> i imatges <code>&lt;img alt&gt;</code>. El CSS en defineix l'aspecte i el JavaScript, el comportament."),
-    T("Els <b>editors</b> poden ser visuals (WYSIWYG: Wix, WordPress amb Elementor, Webflow, Dreamweaver en mode disseny) o de codi (Visual Studio Code, amb ajuda de la IA). Els visuals són ràpids; el codi dona més control i webs més lleugeres.")
+    T("Les eines més habituals són els <b>CMS i constructors visuals</b> (WordPress amb l'editor de blocs, Shopify, Wix, Webflow, Framer), les <b>eines de disseny</b> per prototipar (Figma) i els <b>editors de codi</b> (Visual Studio Code, Cursor) amb assistents d'IA que generen i revisen codi. També hi ha constructors amb IA que fan un primer esborrany de web a partir d'una descripció: cal revisar-ne sempre els textos, l'accessibilitat i el SEO.")
   ],
-  example: T("La pàgina d'inici de la botiga de bicis té un únic &lt;h1&gt; («Bicicletes i reparacions a Vic»), un &lt;nav&gt; amb cinc enllaços i imatges amb text alternatiu."),
-  errors: [T("Fer servir diversos &lt;h1&gt; a la mateixa pàgina."), T("Oblidar el text alternatiu de les imatges."), T("Amagar el contacte en un menú secundari.")],
+  example: T("La pàgina d'inici de la botiga de bicis té un únic &lt;h1&gt; («Bicicletes i reparacions a Vic»), un &lt;nav&gt; amb cinc enllaços i imatges amb text alternatiu. El primer esborrany el van fer amb un constructor amb IA, però van reescriure els textos i van revisar l'accessibilitat."),
+  errors: [T("Fer servir diversos &lt;h1&gt; a la mateixa pàgina."), T("Oblidar el text alternatiu de les imatges."), T("Publicar tal qual la web que genera una IA, sense revisar-la.")],
   quiz: [
     { q: T("Quina etiqueta HTML conté el menú de navegació?"), o: ['&lt;nav&gt;', '&lt;footer&gt;', '&lt;h1&gt;'], c: 0, why: T("&lt;nav&gt; agrupa els enllaços de navegació.") },
     { q: T("Per a què serveix l'atribut alt d'una imatge?"), o: [T("Per canviar-ne la mida"), T("Per descriure-la a cercadors i lectors de pantalla"), T("Per enllaçar-la")], c: 1, why: T("Millora l'accessibilitat i el SEO.") },
-    { q: T("Quin d'aquests és un editor de codi?"), o: [T("Visual Studio Code"), T("Wix"), T("Canva")], c: 0, why: T("Wix és un editor visual i Canva, un programa de disseny gràfic.") }
+    { q: T("Quina eina faries servir per dissenyar el prototip d'una web abans de construir-la?"), o: ['Figma', 'FileZilla', 'Excel'], c: 0, why: T("Figma és l'eina de disseny i prototipat més habitual.") }
   ]
 });
 L('L_clientonline', {
@@ -211,17 +234,17 @@ L('L_onetoone', {
   ]
 });
 L('L_mobil', {
-  area: 'avancat', codes: ['1.14'], title: T("Màrqueting mòbil, TDT i pagament amb el mòbil"),
-  goal: T("Conèixer les eines del màrqueting mòbil i els pagaments i la banca des del mòbil."),
+  area: 'avancat', codes: ['1.14'], title: T("Màrqueting mòbil, TV connectada i pagament amb el mòbil"),
+  goal: T("Conèixer les eines del màrqueting mòbil, la publicitat a la TV connectada i els pagaments i la banca des del mòbil."),
   body: [
-    T("El <b>màrqueting mòbil</b> inclou webs adaptades (mobile first), apps, notificacions push, SMS i missatgeria, codis QR, geolocalització (ofertes quan el client és a prop) i anuncis dins d'apps. El mòbil és personal: cal permís i missatges útils, no intrusius."),
-    T("La <b>TDT</b> (televisió digital terrestre) i la TV connectada permeten publicitat interactiva (HbbTV: prémer el botó vermell per veure més informació) i anuncis segmentats a les plataformes de televisió en línia."),
-    T("La <b>banca mòbil</b> permet gestionar comptes i fer transferències des de l'app del banc. El <b>pagament amb el mòbil</b> es fa amb NFC (Apple Pay, Google Pay), amb Bizum entre persones i comerços, o amb codis QR. Per al comerç vol dir cues més curtes i menys efectiu.")
+    T("El <b>màrqueting mòbil</b> inclou webs pensades primer per al mòbil (mobile first), apps i webs instal·lables (PWA), notificacions push, missatgeria (WhatsApp Business, SMS i RCS), codis QR, geolocalització (ofertes quan el client és a prop), targetes de fidelitat al moneder del mòbil i anuncis dins d'apps. El mòbil és personal: cal permís i missatges útils, no intrusius."),
+    T("La televisió s'ha mogut a internet: la <b>TV connectada</b> (CTV) i les plataformes de streaming amb anuncis (YouTube al televisor, Netflix, Prime Video, Movistar Plus+, Pluto TV) permeten anuncis <b>segmentats</b> per zona, interessos o horari i mesurats com en digital, també per a anunciants locals amb pressupostos petits. La <b>TDT</b> clàssica encara té molta audiència, però només permet triar canal i franja."),
+    T("La <b>banca mòbil</b> permet gestionar comptes i fer transferències des de l'app del banc. El <b>pagament amb el mòbil</b> es fa amb NFC (Apple Pay, Google Pay), amb Bizum entre persones, a botigues i en línia, o amb codis QR. Per al comerç vol dir cues més curtes, menys efectiu i compres en línia amb pocs clics.")
   ],
-  example: T("L'hotel envia per WhatsApp (amb permís) el codi d'entrada i un enllaç per pagar les activitats amb Bizum, i fa servir un QR a recepció per deixar opinions."),
-  errors: [T("Enviar SMS comercials sense consentiment."), T("Fer una web que al mòbil obliga a fer zoom."), T("No acceptar pagaments amb el mòbil en un negoci amb públic jove.")],
+  example: T("L'hotel envia per WhatsApp (amb permís) el codi d'entrada i un enllaç per pagar les activitats amb Bizum, fa servir un QR a recepció per deixar opinions i anuncia les escapades de cap de setmana a la TV connectada només a Barcelona i rodalia."),
+  errors: [T("Enviar SMS o WhatsApps comercials sense consentiment."), T("Fer una web que al mòbil obliga a fer zoom."), T("No acceptar pagaments amb el mòbil en un negoci amb públic jove.")],
   quiz: [
-    { q: T("Què és l'HbbTV?"), o: [T("TV híbrida interactiva: continguts i publicitat interactius des del televisor"), T("Un tipus de SMS"), T("Una xarxa social")], c: 0, why: T("Permet interactuar amb la publicitat i els continguts de la TDT.") },
+    { q: T("Què permet la publicitat a la TV connectada que la TDT clàssica no permet?"), o: [T("Segmentar el públic i mesurar els resultats com en digital"), T("Emetre en blanc i negre"), T("Res, és el mateix")], c: 0, why: T("Els anuncis a la TV connectada es compren i es mesuren com la publicitat digital.") },
     { q: T("Quina tecnologia fa servir Apple Pay o Google Pay a la botiga?"), o: ['NFC', 'FTP', 'HTML'], c: 0, why: T("L'NFC permet pagar acostant el mòbil al datàfon.") },
     { q: T("Quina regla bàsica té el màrqueting mòbil?"), o: [T("Enviar molts missatges"), T("Tenir permís i aportar valor"), T("Fer servir només SMS")], c: 1, why: T("El mòbil és molt personal: sense permís i utilitat, molesta.") }
   ]
@@ -259,35 +282,36 @@ L('L_newsletter', {
   ]
 });
 L('L_models', {
-  area: 'web', codes: ['2.4', '2.5', '2.12'], title: T("Models de negoci digital i negocis electrònics"),
+  area: 'web', codes: ['2.4', '2.5', '2.12'], title: T("Models de negoci digital i comerç electrònic"),
   goal: T("Distingir els models de negoci en línia i triar el més adequat."),
   body: [
-    T("Segons qui ven a qui: <b>B2C</b> (empresa a consumidor), <b>B2B</b> (empresa a empresa), <b>C2C</b> (entre particulars, com Wallapop), <b>B2G</b> (a l'administració) i <b>C2B</b>. Segons el tipus de portal: <b>horitzontals</b> (generalistes, de tot per a tothom: Amazon) i <b>verticals</b> (especialitzats en un sector)."),
-    T("Negocis electrònics: <b>e-shop</b> (botiga pròpia), <b>e-marketplace</b> (mercat on venen molts venedors: Amazon, Etsy), <b>e-procurement</b> (compres i proveïdors de les empreses en línia), <b>e-auction</b> (subhastes, com eBay), <b>e-mail</b> comercial i els portals de subscripció."),
-    T("L'<b>aparador web</b> o <b>catàleg electrònic</b> mostra els productes amb fotos, descripcions i preus, amb o sense compra en línia: és el primer pas de molts comerços i és clau per al B2B.")
+    T("Segons qui ven a qui: <b>B2C</b> (empresa a consumidor), <b>B2B</b> (empresa a empresa), <b>C2C</b> (entre particulars, com Wallapop o Vinted), <b>B2G</b> (a l'administració) i <b>C2B</b>. Segons el tipus de portal: <b>horitzontals</b> (generalistes, de tot per a tothom: Amazon) i <b>verticals</b> (especialitzats en un sector, com Zalando en moda)."),
+    T("Models actuals de comerç electrònic: <b>e-shop</b> pròpia (Shopify, WooCommerce, PrestaShop) i venda directa de la marca al client (<b>D2C</b>), <b>e-marketplace</b> (Amazon, Etsy, Zalando, Miravia), <b>social commerce</b> (TikTok Shop, Instagram), <b>subscripcions</b> (caixes mensuals, serveis), <b>e-procurement</b> (compres i proveïdors en línia entre empreses) i, més minoritàries, les subhastes en línia (<b>e-auction</b>: eBay, Catawiki). El correu (<b>e-mail</b>) és el canal que les connecta totes."),
+    T("L'<b>aparador web</b> o <b>catàleg electrònic</b> mostra els productes amb fotos, descripcions i preus, amb o sense compra en línia. Avui el mateix catàleg se sincronitza amb Google Shopping (Merchant Center), les xarxes socials i els marketplaces: és clau tant per al B2C com per al B2B.")
   ],
-  example: T("La formatgeria ven al consumidor a la seva e-shop, als restaurants per una àrea B2B amb preus de professional i les edicions limitades en una subhasta anual."),
-  errors: [T("Pensar que un marketplace no cobra comissions."), T("Fer servir el mateix catàleg i preus per a professionals i particulars."), T("No tenir cap aparador web perquè «no venem en línia».")],
+  example: T("La formatgeria ven a la seva e-shop (D2C), ofereix una subscripció mensual de formatges, té una àrea B2B amb preus per a restaurants i sincronitza el catàleg amb Google Shopping i Instagram."),
+  errors: [T("Pensar que un marketplace no cobra comissions."), T("Fer servir el mateix catàleg i preus per a professionals i particulars."), T("Dependre d'un sol marketplace sense cap canal propi.")],
   quiz: [
-    { q: T("Amazon com a portal on es ven de tot és un portal..."), o: [T("horitzontal"), T("vertical"), T("B2G")], c: 0, why: T("Els portals horitzontals són generalistes.") },
+    { q: T("Una caixa de formatges que el client rep cada mes pagant una quota és un model de..."), o: [T("subscripció"), T("subhasta"), T("B2G")], c: 0, why: T("Les subscripcions donen ingressos recurrents i fidelitzen.") },
     { q: T("Què és l'e-procurement?"), o: [T("La gestió de compres i proveïdors en línia entre empreses"), T("Una subhasta"), T("Un blog")], c: 0, why: T("Digitalitza el procés de compra de les empreses.") },
     { q: T("Una plataforma on molts venedors ofereixen productes és un..."), o: [T("e-marketplace"), T("e-mail"), T("aparador físic")], c: 0, why: T("El marketplace reuneix molts venedors i compradors.") }
   ]
 });
 L('L_normativa', {
   area: 'email', codes: ['1.7', '2.9'], title: T("Normativa: comunicacions electròniques, privacitat i consumidors"),
-  goal: T("Aplicar la LSSI, el RGPD, la normativa de galetes i els drets dels consumidors en línia."),
+  goal: T("Aplicar la LSSI, el RGPD, la normativa de galetes, d'accessibilitat i els drets dels consumidors en línia."),
   body: [
     T("La <b>LSSI-CE</b> obliga a identificar l'empresa a la web (avís legal amb raó social, NIF, adreça i contacte) i prohibeix enviar comunicacions comercials per correu o SMS sense <b>consentiment previ</b>, llevat de clients anteriors amb productes semblants i possibilitat de baixa."),
     T("El <b>RGPD</b> i la <b>LOPDGDD</b> regulen les dades personals: base legal per tractar-les, informació clara (política de privacitat), mínim de dades necessàries, seguretat i els drets d'accés, rectificació, supressió, oposició, limitació i portabilitat. Les <b>galetes</b> no necessàries requereixen consentiment, i rebutjar ha de ser tan fàcil com acceptar."),
-    T("En les vendes a distància, el consumidor té un <b>dret de desistiment de 14 dies naturals</b> sense haver de justificar-ho (amb excepcions com els productes peribles o personalitzats), i s'ha d'informar de les condicions de venda, devolució i cancel·lació abans de comprar.")
+    T("En les vendes a distància, el consumidor té un <b>dret de desistiment de 14 dies naturals</b> sense haver de justificar-ho (amb excepcions com els productes peribles o personalitzats), i s'ha d'informar de les condicions de venda, devolució i cancel·lació abans de comprar."),
+    T("Normes més recents: la <b>Llei europea d'accessibilitat</b> obliga des del juny del 2025 moltes botigues en línia a ser accessibles; la <b>Llei de serveis digitals</b> (DSA) exigeix als marketplaces identificar els venedors i fer transparent la publicitat; les <b>ressenyes falses</b> estan prohibides; i la publicitat amb creadors s'ha d'identificar com a publicitat. Per mesurar respectant el consentiment, Google fa servir el <b>mode de consentiment</b>.")
   ],
-  example: T("Una botiga revisa la web: afegeix l'avís legal, un bàner de galetes amb el botó «Rebutjar», casella de consentiment no marcada al formulari i la informació del desistiment a les condicions de venda."),
+  example: T("Una botiga revisa la web: afegeix l'avís legal, un bàner de galetes amb el botó «Rebutjar» i el mode de consentiment activat, casella de consentiment no marcada al formulari, la informació del desistiment a les condicions de venda i millores d'accessibilitat al procés de compra."),
   errors: [T("Casella de consentiment marcada per defecte."), T("Carregar Google Analytics abans que l'usuari accepti les galetes."), T("No informar del dret de desistiment.")],
   quiz: [
     { q: T("Quants dies té el consumidor per desistir d'una compra en línia?"), o: [T("7 dies"), T("14 dies naturals"), T("30 dies hàbils")], c: 1, why: T("És el termini general de la normativa de consumidors.") },
     { q: T("Es pot enviar un correu comercial a qualsevol adreça que trobem a internet?"), o: [T("Sí, si és d'una empresa"), T("No, cal consentiment previ"), T("Sí, un cop l'any")], c: 1, why: T("La LSSI prohibeix les comunicacions comercials no sol·licitades.") },
-    { q: T("Com ha de ser el bàner de galetes?"), o: [T("Amb el botó de rebutjar tan visible com el d'acceptar"), T("Sense opció de rebutjar"), T("Només informatiu")], c: 0, why: T("El consentiment ha de ser lliure.") }
+    { q: T("Què exigeix la Llei europea d'accessibilitat a moltes botigues en línia des del 2025?"), o: [T("Que la web i el procés de compra siguin accessibles per a persones amb discapacitat"), T("Que tinguin una app"), T("Que acceptin només targeta")], c: 0, why: T("Contrast, text alternatiu, navegació amb teclat i formularis clars, entre altres.") }
   ]
 });
 L('L_logistica', {
@@ -371,50 +395,50 @@ L('L_viral', {
   ]
 });
 L('L_comunitats', {
-  area: 'xarxes', codes: ['4.1', '4.2', '4.3', '4.4', '4.5', '4.12', '4.13'], title: T("Xats, missatgeria, fòrums i grups"),
+  area: 'xarxes', codes: ['4.1', '4.2', '4.3', '4.4', '4.5', '4.12', '4.13'], title: T("Xats, missatgeria, comunitats i grups"),
   goal: T("Fer servir els canals de conversa en línia per relacionar-se amb clients i contactes."),
   body: [
-    T("Els <b>xats</b> van començar amb l'<b>IRC</b> (canals temàtics amb programes com mIRC) i els <b>webxats</b> (xat dins d'una web); avui les empreses fan servir el xat de la web i chatbots. La <b>missatgeria instantània</b> (WhatsApp Business, Telegram) permet catàlegs, respostes ràpides, missatges automàtics i canals de difusió. La <b>telefonia per internet</b> (VoIP: Teams, Meet, Zoom o centraletes virtuals) abarateix trucades i reunions."),
-    T("Als <b>fòrums</b> i <b>grups de discussió</b> (fòrums sectorials, grups de LinkedIn o Facebook, Reddit) es llegeix abans d'escriure, es respecten les normes i la <b>netiqueta</b>, s'aporta valor i no es fa spam. Per <b>buscar un grup interessant</b>: cercar per paraules clau del sector, mirar l'activitat, el nombre de membres actius i les normes."),
+    T("Els <b>xats</b> d'avui són el xat de la web amb un <b>chatbot d'IA</b> que respon les preguntes freqüents i passa a una persona quan cal (Intercom, Tidio, Zendesk) i les comunitats en temps real com <b>Discord</b>; abans es feia amb l'IRC i els webxats. La <b>missatgeria instantània</b> (WhatsApp Business, Instagram Direct, Telegram) permet catàlegs, respostes ràpides, missatges automàtics, canals de difusió i fins i tot cobrar. La <b>telefonia per internet</b> és avui la <b>centraleta al núvol</b> i les videotrucades (Teams, Meet, Zoom), integrades amb el CRM en una atenció <b>omnicanal</b>: web, WhatsApp, xarxes, correu i telèfon en una sola safata."),
+    T("Els <b>fòrums</b> i <b>grups de discussió</b> viuen a Reddit, als grups de LinkedIn i Facebook, a les comunitats de WhatsApp i als servidors de Discord o Slack de cada sector. S'hi llegeix abans d'escriure, es respecten les normes i la <b>netiqueta</b>, s'aporta valor i no es fa spam. Per <b>buscar un grup interessant</b>: cercar per paraules clau del sector, mirar l'activitat, el nombre de membres actius i les normes."),
     T("Per <b>crear una xarxa de contactes influents</b>: identificar persones clau del sector (clients, periodistes, creadors, associacions), seguir-les i interactuar amb aportacions útils, presentar-se amb un missatge personalitzat i mantenir el contacte donant abans de demanar.")
   ],
-  example: T("L'associació de comerciants crea una comunitat de WhatsApp amb canals per temes, un fòrum per a dubtes de digitalització i reunions mensuals per Meet, i convida dos creadors locals a les trobades."),
-  errors: [T("Afegir gent a grups de WhatsApp sense permís."), T("Entrar en un fòrum només per fer publicitat."), T("Demanar favors a contactes influents sense haver aportat res abans.")],
+  example: T("L'associació de comerciants crea una comunitat de WhatsApp amb canals per temes, un servidor de Discord per a dubtes de digitalització i videotrucades mensuals. A la web, un xat amb IA respon horaris i aparcament i passa els casos complexos a una persona."),
+  errors: [T("Entrar en un fòrum només per fer publicitat."), T("Deixar el chatbot sol, sense opció de parlar amb una persona."), T("Demanar favors a contactes influents sense haver aportat res abans.")],
   quiz: [
-    { q: T("Què és l'IRC?"), o: [T("Un sistema clàssic de xat per canals"), T("Una xarxa de pagament"), T("Un tipus de domini")], c: 0, why: T("Internet Relay Chat va ser el primer gran sistema de xat.") },
+    { q: T("Què ha de fer un bon chatbot d'atenció al client?"), o: [T("Respondre les preguntes freqüents i passar a una persona quan cal"), T("Fer veure que és una persona"), T("Respondre només en horari d'oficina")], c: 0, why: T("La IA agilitza, però el client ha de saber que parla amb un bot i poder parlar amb una persona.") },
     { q: T("Què és la netiqueta?"), o: [T("Les normes de comportament en línia"), T("Una etiqueta HTML"), T("Un preu")], c: 0, why: T("Respecte, aportar valor i no fer spam.") },
     { q: T("Quina és la millor manera d'entrar en un grup de discussió professional?"), o: [T("Llegir-ne les normes i aportar valor abans de promocionar res"), T("Publicar ofertes el primer dia"), T("Enviar missatges privats a tothom")], c: 0, why: T("La confiança es guanya participant.") }
   ]
 });
 L('L_paginaxarxa', {
-  area: 'xarxes', codes: ['4.8', '4.9', '4.10', '4.11', '4.14'], title: T("Pàgines d'empresa i comerç a les xarxes socials"),
-  goal: T("Configurar una pàgina d'empresa completa i vendre des de les xarxes."),
+  area: 'xarxes', codes: ['4.8', '4.9', '4.10', '4.11', '4.14'], title: T("Pàgines d'empresa, creadors i comerç a les xarxes socials"),
+  goal: T("Configurar una pàgina d'empresa completa, col·laborar amb creadors i vendre des de les xarxes."),
   body: [
     T("Les <b>xarxes socials per a empreses</b> (perfils professionals d'Instagram i TikTok, pàgines de Facebook i LinkedIn) ofereixen estadístiques, anuncis i eines. A la pàgina s'hi <b>afegeixen elements</b>: logo, portada, descripció amb paraules clau, botó d'acció (trucar, reservar, comprar), horari, ubicació, enllaç a la web i històries destacades."),
-    T("Els <b>elements fotogràfics i audiovisuals</b> (fotos reals, carrusels, vídeos curts, directes) són els que més interacció generen; cal adaptar-ne el format a cada xarxa. Les <b>aplicacions professionals</b> afegeixen funcions: botiga, reserves, Meta Business Suite per programar, xat amb WhatsApp, formularis de contacte."),
-    T("Per <b>comprar i vendre a les xarxes</b> (social commerce): Instagram i Facebook Shopping amb catàleg i etiquetes de producte, TikTok Shop, Facebook Marketplace o vendes per missatge. Cal un catàleg actualitzat, preus clars, condicions de venda i un bon servei d'atenció.")
+    T("Els <b>elements fotogràfics i audiovisuals</b> (vídeos curts verticals, carrusels, fotos reals, directes) són els que més interacció generen; cal adaptar-ne el format a cada xarxa. Les marques també treballen amb <b>creadors i influencers</b> (sovint microinfluencers locals): contingut col·laboratiu, codis de descompte i sempre identificant la publicitat. Les <b>aplicacions professionals</b> afegeixen funcions: botiga, reserves, Meta Business Suite per programar, xat amb WhatsApp, formularis de contacte."),
+    T("Per <b>comprar i vendre a les xarxes</b> (social commerce): Instagram i Facebook Shopping amb catàleg i etiquetes de producte, TikTok Shop, vendes en directe (live shopping), Facebook Marketplace o vendes per missatge. Cal un catàleg actualitzat, preus clars, condicions de venda i un bon servei d'atenció.")
   ],
-  example: T("Cim Trail connecta el catàleg de la botiga a Instagram, etiqueta les jaquetes a les fotos i als reels i afegeix el botó «Comprar». Les vendes des de xarxes passen a ser un 25 % del total."),
-  errors: [T("Fer servir un perfil personal en lloc d'un professional."), T("Deixar la descripció i el botó d'acció buits."), T("Vendre per missatge sense condicions de venda ni factura.")],
+  example: T("Cim Trail connecta el catàleg de la botiga a Instagram i TikTok, etiqueta les jaquetes als reels, fa un directe de venda amb una corredora de muntanya de la comarca i afegeix el botó «Comprar». Les vendes des de xarxes passen a ser un 25 % del total."),
+  errors: [T("Fer servir un perfil personal en lloc d'un professional."), T("Publicar col·laboracions pagades sense indicar que són publicitat."), T("Vendre per missatge sense condicions de venda ni factura.")],
   quiz: [
     { q: T("Quin avantatge té un perfil professional respecte d'un de personal?"), o: [T("Estadístiques, botons d'acció i anuncis"), T("Més seguidors automàticament"), T("Cap")], c: 0, why: T("Les eines professionals només hi són als perfils d'empresa.") },
     { q: T("Què és el social commerce?"), o: [T("Vendre directament des de les xarxes socials"), T("Fer anuncis a la TV"), T("Un blog")], c: 0, why: T("La compra es fa sense sortir de la xarxa o amb molt pocs passos.") },
-    { q: T("Quin tipus de contingut sol generar més interacció?"), o: [T("Fotos reals i vídeos curts"), T("Text llarg sense imatges"), T("Enllaços sense descripció")], c: 0, why: T("El contingut visual és el que més funciona a les xarxes.") }
+    { q: T("Què cal fer quan un creador publica contingut pagat per la marca?"), o: [T("Indicar clarament que és publicitat"), T("Amagar-ho perquè sembli espontani"), T("Res")], c: 0, why: T("La normativa obliga a identificar la publicitat, i la transparència genera confiança.") }
   ]
 });
 L('L_web20', {
-  area: 'xarxes', codes: ['5.1', '5.2', '5.4', '5.5', '5.6', '5.7', '5.8'], title: T("La web 2.0 i el consumidor proactiu"),
-  goal: T("Aprofitar la participació dels usuaris per millorar la reputació i les vendes."),
+  area: 'xarxes', codes: ['5.1', '5.2', '5.4', '5.5', '5.6', '5.7', '5.8'], title: T("Contingut dels usuaris, creadors i webs integrades"),
+  goal: T("Aprofitar la participació dels usuaris i les eines integrades per millorar la reputació i les vendes."),
   body: [
-    T("La <b>web 2.0</b> és la web participativa: els usuaris no només llegeixen, també creen contingut, opinen, comparteixen i col·laboren (xarxes, blogs, wikis, ressenyes, fòrums). Els <b>objectius</b> d'una empresa a la web 2.0: escoltar, conversar, generar confiança, millorar productes amb les opinions i convertir clients en prescriptors."),
-    T("Eines del màrqueting 2.0: xarxes socials, blogs, sindicació de continguts (RSS), plataformes d'opinions, wikis i comunitats. Els <b>webs integrats</b> (mashups) combinen serveis de diverses fonts: un mapa de Google, les ressenyes, el feed d'Instagram o un sistema de reserves incrustats a la web."),
-    T("Els <b>consumidors proactius</b> (prosumidors) opinen, comparen, recomanen i fins i tot creen continguts sobre les marques. Les xarxes que els fan <b>prescriptors</b> (TripAdvisor, Google, comunitats de marca, ambaixadors) influeixen més que la publicitat. Cal facilitar opinions, respondre-les totes i aprofitar les ofertes creuades i els comparadors.")
+    T("La <b>web 2.0</b> va ser el pas a la web participativa. Avui en diem <b>web social</b> i <b>contingut generat pels usuaris</b> (UGC): ressenyes, fotos, vídeos, comentaris i comunitats. A més hi ha l'<b>economia dels creadors</b>: persones que viuen de crear contingut i que les marques contracten. Els <b>objectius</b> d'una empresa: escoltar (escolta social), conversar, generar confiança, millorar productes amb les opinions i convertir clients en prescriptors."),
+    T("Eines: xarxes socials, plataformes de ressenyes, comunitats de marca, eines d'escolta social, programes d'ambaixadors i de referits, newsletters i podcasts. Els <b>webs integrats</b> d'avui connecten serveis per <b>API</b> i amb eines sense codi (Zapier, Make): les ressenyes de Google, el feed d'Instagram, les reserves o el xat a la web, i cada comanda entra sola al CRM i al correu."),
+    T("Els <b>consumidors proactius</b> (prosumidors) opinen, comparen (comparadors de preus, vídeos d'unboxing, TikTok com a cercador), recomanen i fins i tot creen continguts sobre les marques. Les xarxes que els fan <b>prescriptors</b> (Google, TripAdvisor, comunitats de marca, ambaixadors) influeixen més que la publicitat. Cal facilitar opinions, respondre-les totes i aprofitar les ofertes creuades i els comparadors.")
   ],
-  example: T("Can Jordi incrusta a la web les ressenyes de Google i un mapa, convida els clients a penjar fotos amb una etiqueta i respon cada opinió. La nota passa de 3,9 a 4,5."),
+  example: T("Can Jordi mostra a la web les ressenyes de Google i les fotos que els clients etiqueten a Instagram, connecta les reserves amb el CRM amb Make i respon cada opinió. La nota passa de 3,9 a 4,5."),
   errors: [T("Respondre només les opinions bones."), T("Esborrar comentaris crítics."), T("Comprar ressenyes falses.")],
   quiz: [
-    { q: T("Què defineix la web 2.0?"), o: [T("La participació dels usuaris en la creació de continguts"), T("Webs només de lectura"), T("Webs sense imatges")], c: 0, why: T("L'usuari passa de lector a participant.") },
-    { q: T("Què és un web integrat o mashup?"), o: [T("Un web que combina serveis o continguts de diverses fonts"), T("Un web sense menú"), T("Una web en dos idiomes")], c: 0, why: T("Per exemple, un mapa i ressenyes incrustats.") },
+    { q: T("Què és el contingut generat pels usuaris (UGC)?"), o: [T("Ressenyes, fotos i vídeos que fan els clients sobre la marca"), T("Els anuncis de la marca"), T("El codi de la web")], c: 0, why: T("És la versió actual de la web participativa i genera molta confiança.") },
+    { q: T("Què fa una eina com Zapier o Make en una web integrada?"), o: [T("Connecta serveis perquè les dades passin d'un a l'altre automàticament"), T("Dissenya logos"), T("Registra el domini")], c: 0, why: T("Integra la web amb el CRM, el correu, les reserves i altres eines sense programar.") },
     { q: T("Què és un prosumidor?"), o: [T("Un consumidor que també crea, opina i recomana"), T("Un proveïdor"), T("Un tipus de virus")], c: 0, why: T("Productor + consumidor.") }
   ]
 });
@@ -435,17 +459,17 @@ L('L_zones', {
   ]
 });
 L('L_videotv', {
-  area: 'avancat', codes: ['1.15', '1.14'], title: T("Internet TV, web TV i videoblogs"),
-  goal: T("Fer servir el vídeo en línia i la televisió connectada en una estratègia de màrqueting."),
+  area: 'avancat', codes: ['1.15', '1.14'], title: T("Vídeo en línia, streaming i creadors"),
+  goal: T("Fer servir el vídeo en línia, els directes i la televisió connectada en una estratègia de màrqueting."),
   body: [
-    T("La <b>Internet TV</b> o <b>TV per internet</b> emet continguts de televisió a través de la xarxa (plataformes OTT, televisió a la carta, canals en directe). La <b>web TV</b> és un canal de vídeo propi d'una organització a la seva web o a YouTube, i els <b>videoblogs</b> (vlogs) són blogs en format vídeo, sovint personals i propers."),
-    T("Per a les marques, el vídeo serveix per explicar productes (tutorials, demostracions), mostrar l'empresa per dins, fer directes (presentacions, preguntes i respostes) i anunciar-se a YouTube o a la TV connectada amb segmentació, com en digital."),
+    T("La <b>televisió per internet</b> d'avui són les plataformes de streaming (OTT), YouTube —que cada cop es mira més al televisor— i els directes (YouTube, Twitch, Instagram, TikTok Live). La <b>web TV</b> de les marques s'ha convertit en el seu canal de YouTube i el contingut de marca, i els <b>videoblogs</b> d'abans són els creadors de vídeo, el vídeo curt vertical (Reels, TikTok, Shorts) i els videopodcasts."),
+    T("Per a les marques, el vídeo serveix per explicar productes (tutorials, demostracions, unboxings), mostrar l'empresa per dins, vendre en directe (<b>live shopping</b>), col·laborar amb creadors i anunciar-se a YouTube o a la TV connectada amb segmentació, com en digital."),
     T("Claus: els primers segons decideixen si es continua mirant, subtítols (molta gent el mira sense so), formats adaptats a cada plataforma (horitzontal per a YouTube i TV, vertical per a xarxes), regularitat i mesurar la retenció i les conversions.")
   ],
-  example: T("La televisió local crea una web TV amb programes a la carta, un videoblog setmanal amb comerços del territori i paquets d'anuncis a la TV connectada per als anunciants locals."),
+  example: T("La televisió local fa clips verticals subtitulats dels seus programes per a TikTok i Reels, un videopodcast setmanal amb comerços del territori a YouTube i Spotify, i ven paquets d'anuncis a la TV connectada als anunciants locals."),
   errors: [T("Pujar vídeos llargs sense subtítols ni un inici que enganxi."), T("Fer servir el mateix format per a totes les plataformes."), T("Mesurar només les visualitzacions.")],
   quiz: [
-    { q: T("Què és un videoblog?"), o: [T("Un blog en format de vídeo"), T("Un anunci de TV"), T("Un fòrum")], c: 0, why: T("És el format vlog: entrades en vídeo.") },
+    { q: T("Què és el live shopping?"), o: [T("Vendre productes en un directe de vídeo on es pot comprar al moment"), T("Una botiga física oberta 24 hores"), T("Un anunci de ràdio")], c: 0, why: T("Combina vídeo en directe, interacció i compra immediata.") },
     { q: T("Què és una plataforma OTT?"), o: [T("Un servei de vídeo que es distribueix per internet"), T("Un tipus de cable"), T("Una ràdio")], c: 0, why: T("Over The Top: contingut directament per internet.") },
     { q: T("Per què cal posar subtítols als vídeos?"), o: [T("Perquè molta gent els mira sense so"), T("Per ocupar més espai"), T("No cal")], c: 0, why: T("Milloren la comprensió i l'accessibilitat.") }
   ]
@@ -488,7 +512,7 @@ M('1.7', {
   title: T("Osona Bikes vol la seva pròpia web"), who: 'laura', bg: 'despatx', codes: ['2.3', '3.1', '3.2', '3.3', '3.4', '3.5'],
   blurb: T("Una botiga de bicicletes necessita domini, allotjament i una web ben estructurada."),
   steps: [
-    { t: 'dlg', lines: [['laura.n', T("Vull una web per a la botiga, però no sé què és un domini, ni un hosting, ni un FTP. M'ho expliques?")]] },
+    { t: 'dlg', lines: [['laura.n', T("Vull una web per a la botiga, però no sé què és un domini, ni un hosting, ni com es publica una web. M'ho expliques?")]] },
     { t: 'lesson', id: 'L_domini' },
     { t: 'choice', key: 'tm_laura1', who: 'laura', prompt: T("Quin domini i quin allotjament li recomanes?"), opts: [
       { t: T("osonabikes.cat (i el .com per protegir-lo) a nom de l'empresa, amb allotjament gestionat amb SSL i còpies"), q: 1, fx: good(40) },
@@ -497,9 +521,9 @@ M('1.7', {
     ] },
     { t: 'lesson', id: 'L_html' },
     { t: 'choice', key: 'tm_laura2', who: 'laura', prompt: T("Com plantegeu la web i com la publiqueu?"), opts: [
-      { t: T("Inici, bicis, taller, rutes (blog), qui som, contacte i pàgines legals; HTML semàntic amb un sol h1 i publicació per SFTP"), q: 1, fx: good(40, { money: 400, fee: true }) },
+      { t: T("Inici, bicis, taller, rutes (blog), qui som, contacte i pàgines legals; HTML semàntic amb un sol h1, web accessible i publicació automàtica des d'un repositori, amb SSL"), q: 1, fx: good(40, { money: 400, fee: true }) },
       { t: T("Una sola pàgina amb tot barrejat i la pugem per FTP sense xifrar"), q: 0, fx: bad(100, T("Les credencials FTP es van filtrar i van haver de netejar la web (−100 €).")) },
-      { t: T("Copiar l'estructura d'una web gran d'una altra botiga"), q: 0.5, fx: { money: 200, fee: true } }
+      { t: T("Demanar a una IA que generi la web i publicar-la sense revisar-la"), q: 0.5, fx: { money: 200, fee: true } }
     ] },
     { t: 'dlg', lines: [['laura.h', T("osonabikes.cat ja és en línia! I ara entenc què és cada cosa.")]] },
     { t: 'reward', money: 200 }
@@ -515,7 +539,7 @@ M('2.6', {
     { t: 'choice', key: 'tm_mireia1', who: 'mireia', prompt: T("Què canvies primer?"), opts: [
       { t: T("Reserva directa ràpida des del mòbil, pagament amb targeta, Bizum i Apple Pay, i un millor preu per reservar a la web"), q: 1, fx: good(40) },
       { t: T("Enviar SMS comercials a tots els números que tenen a la llibreta"), q: 0, fx: bad(400, T("Va enviar SMS sense consentiment i l'hotel va rebre una sanció que l'agència va haver d'assumir en part (−400 €).")) },
-      { t: T("Fer un anunci a la TDT local"), q: 0.5, fx: { rep: 0 } }
+      { t: T("Fer un anunci a la televisió local"), q: 0.5, fx: { rep: 0 } }
     ] },
     { t: 'lesson', id: 'L_onetoone' },
     { t: 'choice', key: 'tm_mireia2', who: 'mireia', prompt: T("Com fidelitzes els clients que ja han vingut?"), opts: [
@@ -553,7 +577,7 @@ M('3.6', {
     { t: 'dlg', lines: [['', T("A la fira, la Roser, de la formatgeria del mercat, t'atura.")], ['client.n', T("Em diuen que vengui a Amazon, que faci una botiga, que vengui a restaurants... Quin model em convé?")]] },
     { t: 'lesson', id: 'L_models' },
     { t: 'choice', key: 'tm_roser1', prompt: T("Quina combinació proposes?"), opts: [
-      { t: T("E-shop pròpia (B2C) amb catàleg i aparador web, àrea B2B amb preus per a restaurants i una subhasta anual per a les edicions limitades"), q: 1, fx: good(50, { money: 600, fee: true }) },
+      { t: T("E-shop pròpia (D2C) amb el catàleg sincronitzat a Google Shopping i Instagram, una subscripció mensual de formatges i una àrea B2B amb preus per a restaurants"), q: 1, fx: good(50, { money: 600, fee: true }) },
       { t: T("Tot a un marketplace generalista, sense web pròpia"), q: 0.5, fx: { money: 200, fee: true, log: T("Va recomanar dependre només d'un marketplace (comissions i poca marca).") } },
       { t: T("Una sola web amb els mateixos preus per a tothom i comandes per telèfon"), q: 0, fx: bad(200, T("Els restaurants no van entendre els preus i la Roser va perdre comandes (−200 €).")) }
     ] },
@@ -650,7 +674,7 @@ M('5.7', {
     { t: 'dlg', lines: [['pilar.n', T("Som seixanta botigues i ens comuniquem per un grup de WhatsApp on hi ha de tot: fotos, queixes, bons dies... Ningú llegeix res.")]] },
     { t: 'lesson', id: 'L_comunitats' },
     { t: 'choice', key: 'tm_pilar1', who: 'pilar', prompt: T("Quins canals proposes?"), opts: [
-      { t: T("Comunitat de WhatsApp amb canals per temes, un fòrum per a dubtes de digitalització, reunions mensuals per videotrucada i un xat a la web per als clients"), q: 1, fx: good(50) },
+      { t: T("Comunitat de WhatsApp amb canals per temes, un servidor de Discord per a dubtes de digitalització, videotrucades mensuals i un xat amb IA a la web que passa a una persona quan cal"), q: 1, fx: good(50) },
       { t: T("Afegir tots els clients al grup de WhatsApp de l'associació"), q: 0, fx: bad(300, T("Afegir clients sense permís va provocar queixes i una advertència de protecció de dades (−300 €).")) },
       { t: T("Tornar a les circulars en paper"), q: 0.5, fx: { rep: 0 } }
     ] },
@@ -669,12 +693,12 @@ M('6.6', {
     { t: 'dlg', lines: [['sergi.n', T("Ara que mirem les vendes i no els seguidors, vull que Instagram i LinkedIn venguin de veritat. Qui sap, potser fins i tot TikTok.")]] },
     { t: 'lesson', id: 'L_paginaxarxa' },
     { t: 'choice', key: 'tm_sergi1', who: 'sergi', prompt: T("Com prepares les pàgines?"), opts: [
-      { t: T("Perfils professionals amb descripció, botó d'acció, catàleg connectat, reels de producte, Meta Business Suite i pàgina de LinkedIn per a botigues distribuïdores"), q: 1, fx: good(50) },
+      { t: T("Perfils professionals amb descripció, botó d'acció, catàleg connectat, reels de producte, col·laboracions etiquetades amb creadors locals i pàgina de LinkedIn per a botigues distribuïdores"), q: 1, fx: good(50) },
       { t: T("Fer servir el perfil personal del Sergi"), q: 0, fx: { rep: -1, log: T("Va gestionar la marca des d'un perfil personal sense eines professionals.") } },
       { t: T("Només canviar la foto de perfil"), q: 0.5, fx: { rep: 0 } }
     ] },
     { t: 'choice', key: 'tm_sergi2', who: 'sergi', prompt: T("Com veneu a les xarxes?"), opts: [
-      { t: T("Instagram Shopping amb etiquetes de producte, condicions de venda clares i atenció per missatge en menys d'una hora"), q: 1, fx: good(50, { money: 700, fee: true }) },
+      { t: T("Instagram Shopping i TikTok Shop amb etiquetes de producte, un directe de venda al mes, condicions de venda clares i atenció per missatge en menys d'una hora"), q: 1, fx: good(50, { money: 700, fee: true }) },
       { t: T("Vendre per missatge privat sense condicions ni factures"), q: 0, fx: bad(400, T("Vendes sense factura ni condicions: problemes fiscals i devolucions (−400 €).")) },
       { t: T("Penjar l'enllaç de la web a la bio i prou"), q: 0.5, fx: { money: 200, fee: true } }
     ] },
@@ -687,8 +711,8 @@ M('6.7', {
   steps: [
     { t: 'dlg', lines: [['jordi.n', T("Després de la crisi, els clients ens tornen a estimar. Com fem que ho expliquin ells, i no nosaltres?")]] },
     { t: 'lesson', id: 'L_web20' },
-    { t: 'choice', key: 'tm_jordi1', who: 'jordi', prompt: T("Quina estratègia 2.0 proposes?"), opts: [
-      { t: T("Ressenyes i mapa integrats a la web, convidar a pujar fotos amb una etiqueta, respondre totes les opinions i un club d'ambaixadors"), q: 1, fx: good(50, { money: 700, fee: true }) },
+    { t: 'choice', key: 'tm_jordi1', who: 'jordi', prompt: T("Quina estratègia amb el contingut dels clients proposes?"), opts: [
+      { t: T("Ressenyes de Google i fotos dels clients integrades a la web, reserves connectades al CRM, respondre totes les opinions i un club d'ambaixadors"), q: 1, fx: good(50, { money: 700, fee: true }) },
       { t: T("Comprar 200 ressenyes de cinc estrelles"), q: 0, fx: bad(800, T("Google va eliminar les ressenyes falses i va penalitzar la fitxa; el client va reclamar (−800 €).")) },
       { t: T("Respondre només les opinions bones"), q: 0.5, fx: { rep: 0 } }
     ] },
@@ -726,7 +750,7 @@ M('7.7', {
     { t: 'dlg', lines: [['xavi.n', T("La gent jove no mira la TDT. Tenim programes bons, però ningú no els troba. I els anunciants locals ja no ens truquen.")]] },
     { t: 'lesson', id: 'L_videotv' },
     { t: 'choice', key: 'tm_xavi1', who: 'xavi', prompt: T("Quina estratègia proposes?"), opts: [
-      { t: T("Web TV a la carta i en directe, canal de YouTube, videoblog setmanal amb comerços, peces verticals subtitulades per a xarxes i publicitat interactiva HbbTV i a la TV connectada"), q: 1, fx: good(60, { money: 900, fee: true }) },
+      { t: T("Programes a la carta a la web i a YouTube, clips verticals subtitulats per a TikTok i Reels, un videopodcast setmanal amb comerços, directes i anuncis segmentats a la TV connectada per als anunciants locals"), q: 1, fx: good(60, { money: 900, fee: true }) },
       { t: T("Pujar els programes sencers a YouTube sense editar"), q: 0.5, fx: { money: 200, fee: true } },
       { t: T("Tancar la TDT i fer només TikTok"), q: 0, fx: bad(500, T("La televisió va perdre els anunciants de sempre (−500 €).")) }
     ] },

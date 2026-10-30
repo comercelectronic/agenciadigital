@@ -415,7 +415,8 @@
     const chips = (id) => (GD.codes.lessons[id] || []).map(c => `<em class="tm-chip">${c}</em>`).join('');
     el.innerHTML = `<div class="card"><h3>${T('📚 El temari')}</h3>
       <p class="small">${T('Punts treballats: <b>{0}</b> de {1}. Cada lliçó, missió, projecte, web i acció del món treballa uns punts del temari.', [td.size, GD.temari.length])}</p>
-      ${Object.entries(GD.temariBlocks).map(([b, n]) => `<p class="tm-block"><b>${b}. ${esc(n)}</b><br>${GD.temari.filter(([c]) => c.split('.')[0] === b).map(([c, t]) => `<span class="tm-c ${td.has(c) ? 'on' : ''}" title="${esc(t)}">${td.has(c) ? '✔' : '·'} ${c}</span>`).join('')}</p>`).join('')}</div>
+      ${Object.entries(GD.temariBlocks).map(([b, n]) => `<p class="tm-block"><b>${b}. ${esc(n)}</b><br>${GD.temari.filter(([c]) => c.split('.')[0] === b).map(([c, t]) => `<span class="tm-c ${td.has(c) ? 'on' : ''}" title="${esc(t)}">${td.has(c) ? '✔' : '·'} ${c}</span>`).join('')}</p>`).join('')}
+      <details class="tm-now"><summary>${T('Com es treballa avui')}</summary><p class="small">${T("Alguns punts del temari parlen de tecnologies que han canviat. Al joc es treballen amb les eines que es fan servir ara:")}</p><ul>${Object.entries(GD.temariNow).map(([c, n]) => `<li><b>${c}</b> ${esc(GD.temariTitle(c))}. ${esc(n)}</li>`).join('')}</ul></details></div>
       <p class="muted">${T("Les lliçons es desbloquegen durant les missions. Pots repassar-les i repetir-ne l'exercici quan vulguis.")}</p>
       ${Object.entries(GD.areas).map(([a, n]) => byArea[a] ? `
         <h3 class="sec">${n}</h3>

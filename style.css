@@ -582,3 +582,7 @@ button { font-family: inherit; font-size: inherit; color: inherit; cursor: point
 .tm-block { margin: 8px 0; font-size: .9em; }
 .tm-c { display: inline-block; margin: 3px 4px 0 0; padding: 2px 7px; border-radius: 8px; background: #efeaf8; color: var(--muted); font-size: .82em; font-weight: 800; }
 .tm-c.on { background: #dcf5ea; color: #1d7a52; }
+.tm-now { margin-top: 6px; font-size: .88em; }
+.tm-now summary { cursor: pointer; font-weight: 800; color: #2c56b0; }
+.tm-now ul { margin: 6px 0 0; padding-left: 18px; }
+.tm-now li { margin: 3px 0; }
