@@ -148,9 +148,9 @@ L('L_directoris', {
   example: T("Una clínica dental verifica la web a Search Console, envia el sitemap, completa la fitxa de Google, s'apunta a Doctoralia amb el mateix nom, adreça i telèfon i publica una pàgina de preguntes freqüents amb dades estructurades. Quan algú pregunta a un assistent d'IA per un dentista a Vic, la clínica ja hi surt."),
   errors: [T("Pagar per sortir en centenars de directoris de poca qualitat."), T("Tenir telèfons o adreces diferents en cada directori."), T("Pensar que només compta Google i oblidar com responen els assistents d'IA.")],
   quiz: [
-    { q: T("Per a què serveix Google Search Console?"), o: [T("Per fer anuncis de pagament"), T("Per verificar la web, enviar el sitemap i veure com apareix als resultats"), T("Per dissenyar la web")], c: 1, why: T("És l'eina gratuïta per comunicar-se amb Google i controlar la indexació.") },
-    { q: T("Quin directori especialitzat és el més adequat per a un restaurant?"), o: [T("Doctoralia"), T("TheFork o TripAdvisor"), T("Habitaclia")], c: 1, why: T("Cada sector té els seus directoris: els comensals busquen a TheFork i TripAdvisor.") },
-    { q: T("Què ajuda una empresa a aparèixer a les respostes de la cerca amb IA?"), o: [T("Contingut clar que respon preguntes, dades estructurades i bones ressenyes"), T("Repetir la paraula clau cent vegades"), T("Tenir moltes pàgines buides")], c: 0, why: T("Els assistents d'IA citen fonts clares, fiables i ben valorades.") }
+    { q: T("Per a què serveix Google Search Console?"), o: [T("Per gestionar la fitxa de Google Business Profile"), T("Per verificar la web, enviar el sitemap i veure com apareix als resultats"), T("Per mesurar les visites i les conversions de la web"), T("Per pujar posicions pagant una quota mensual")], c: 1, why: T("És l'eina gratuïta per comunicar-se amb Google i controlar la indexació.") },
+    { q: T("Quin directori especialitzat és el més adequat per a un restaurant?"), o: [T("Booking i Airbnb"), T("TheFork o TripAdvisor"), T("Doctoralia"), T("Google Merchant Center")], c: 1, why: T("Cada sector té els seus directoris: els comensals busquen a TheFork i TripAdvisor.") },
+    { q: T("Què ajuda una empresa a aparèixer a les respostes de la cerca amb IA?"), o: [T("Contingut clar que respon preguntes, dades estructurades i bones ressenyes"), T("Publicar molts articles generats amb IA cada setmana"), T("Pagar anuncis a Google, que també surten a les respostes"), T("Tenir moltes paraules clau a cada pàgina")], c: 0, why: T("Els assistents d'IA citen fonts clares, fiables i ben valorades.") }
   ]
 });
 L('L_sem', {
@@ -164,9 +164,9 @@ L('L_sem', {
   example: T("Una botiga de bicis fa SEO amb guies de rutes per Osona, SEM per a «botiga bicis Vic», anuncis patrocinats dels seus cascos a Amazon i remàrqueting a qui ha mirat una bici elèctrica sense comprar-la."),
   errors: [T("Pensar que el SEM millora el posicionament orgànic."), T("Fer display a tothom sense segmentar."), T("Deixar les campanyes automàtiques sense revisar on surten ni què venen.")],
   quiz: [
-    { q: T("Què és el SEM?"), o: [T("Optimitzar el contingut per als resultats orgànics"), T("Publicitat de pagament als cercadors"), T("Enviar butlletins")], c: 1, why: T("SEM són els anuncis als cercadors; SEO, el posicionament orgànic.") },
-    { q: T("Què és el remàrqueting?"), o: [T("Tornar a mostrar anuncis a qui ja ha visitat la web"), T("Reescriure els textos de la web"), T("Fer màrqueting a la ràdio")], c: 0, why: T("Recupera visitants que coneixen la marca i encara no han comprat.") },
-    { q: T("Què és el retail media?"), o: [T("Anuncis dins de botigues en línia i marketplaces, com Amazon Ads"), T("Cartells a l'aparador de la botiga"), T("Un tipus de SEO")], c: 0, why: T("Arriba al client dins de la botiga on ja està comprant.") }
+    { q: T("Què és el SEM?"), o: [T("Optimitzar la web perquè surti als primers resultats"), T("Publicitat de pagament als cercadors"), T("Publicitat de pagament a les xarxes socials"), T("Anuncis en webs relacionades amb el teu sector")], c: 1, why: T("SEM són els anuncis als cercadors; SEO, el posicionament orgànic.") },
+    { q: T("Què és el remàrqueting?"), o: [T("Tornar a mostrar anuncis a qui ja ha visitat la web"), T("Mostrar anuncis a gent semblant als teus clients"), T("Enviar correus a qui ha deixat el carretó a mitges"), T("Repetir la mateixa campanya cada temporada")], c: 0, why: T("Recupera visitants que coneixen la marca i encara no han comprat.") },
+    { q: T("Què és el retail media?"), o: [T("Anuncis dins de botigues en línia i marketplaces, com Amazon Ads"), T("Anuncis de botigues en línia a les xarxes socials"), T("Publicitat a les pantalles de les botigues físiques"), T("Anuncis de Google Shopping a la pàgina de resultats")], c: 0, why: T("Arriba al client dins de la botiga on ja està comprant.") }
   ]
 });
 L('L_domini', {
@@ -180,9 +180,9 @@ L('L_domini', {
   example: T("La botiga de bicis registra osonabikes.cat i osonabikes.com, connecta el repositori de la web a Netlify amb SSL automàtic i, cada vegada que aprova un canvi, la web es publica sola. Si alguna cosa falla, torna a la versió anterior amb un clic."),
   errors: [T("Registrar el domini a nom d'un proveïdor o d'un familiar."), T("Deixar caducar el domini perquè no es renova."), T("Fer canvis directament a la web publicada sense còpia ni proves.")],
   quiz: [
-    { q: T("Quin domini és millor per a una botiga de bicis de Vic amb clients catalans?"), o: [T("bicis-osona-barates-online24.net"), T("osonabikes.cat"), T("ob.xyz")], c: 1, why: T("Curt, clar i amb l'extensió del seu públic.") },
-    { q: T("Què és l'allotjament web?"), o: [T("El servidor on es guarden i se serveixen els fitxers de la web"), T("El nom de la web"), T("Un programa de disseny")], c: 0, why: T("El domini és l'adreça; l'allotjament és on viu la web.") },
-    { q: T("Quina és avui una manera segura i habitual de publicar una web feta a mida?"), o: [T("Connectar un repositori Git a una plataforma que la publica automàticament"), T("Enviar els fitxers per correu al proveïdor"), T("Pujar-la per FTP sense xifrar")], c: 0, why: T("Hi ha historial de canvis, SSL automàtic i es pot tornar enrere. Si cal FTP, sempre SFTP.") }
+    { q: T("Quin domini és millor per a una botiga de bicis de Vic amb clients catalans?"), o: [T("osonabikes.com"), T("osonabikes.cat"), T("bicis-osona.cat"), T("osonabikesvic.es")], c: 1, why: T("Curt, clar, sense guions i amb l'extensió del seu públic. El .com també convé registrar-lo per protegir la marca.") },
+    { q: T("Què és l'allotjament web?"), o: [T("El servidor on es guarden i se serveixen els fitxers de la web"), T("L'adreça que la gent escriu per arribar a la web"), T("El certificat que fa que la web sigui segura"), T("El programa amb què es crea i s'edita la web")], c: 0, why: T("El domini és l'adreça; l'allotjament és on viu la web.") },
+    { q: T("Quina és avui una manera segura i habitual de publicar una web feta a mida?"), o: [T("Connectar un repositori Git a una plataforma que la publica automàticament"), T("Pujar-la per FTP al servidor de producció directament"), T("Editar els fitxers directament al servidor amb el gestor de l'allotjament"), T("Comprimir-la en un ZIP i enviar-la al proveïdor d'allotjament")], c: 0, why: T("Hi ha historial de canvis, SSL automàtic i es pot tornar enrere. Si cal FTP, sempre SFTP.") }
   ]
 });
 L('L_html', {
@@ -196,9 +196,9 @@ L('L_html', {
   example: T("La pàgina d'inici de la botiga de bicis té un únic &lt;h1&gt; («Bicicletes i reparacions a Vic»), un &lt;nav&gt; amb cinc enllaços i imatges amb text alternatiu. El primer esborrany el van fer amb un constructor amb IA, però van reescriure els textos i van revisar l'accessibilitat."),
   errors: [T("Fer servir diversos &lt;h1&gt; a la mateixa pàgina."), T("Oblidar el text alternatiu de les imatges."), T("Publicar tal qual la web que genera una IA, sense revisar-la.")],
   quiz: [
-    { q: T("Quina etiqueta HTML conté el menú de navegació?"), o: ['&lt;nav&gt;', '&lt;footer&gt;', '&lt;h1&gt;'], c: 0, why: T("&lt;nav&gt; agrupa els enllaços de navegació.") },
-    { q: T("Per a què serveix l'atribut alt d'una imatge?"), o: [T("Per canviar-ne la mida"), T("Per descriure-la a cercadors i lectors de pantalla"), T("Per enllaçar-la")], c: 1, why: T("Millora l'accessibilitat i el SEO.") },
-    { q: T("Quina eina faries servir per dissenyar el prototip d'una web abans de construir-la?"), o: ['Figma', 'FileZilla', 'Excel'], c: 0, why: T("Figma és l'eina de disseny i prototipat més habitual.") }
+    { q: T("Quina etiqueta HTML conté el menú de navegació?"), o: ["&lt;nav&gt;", "&lt;header&gt;", "&lt;menu&gt;", "&lt;aside&gt;"], c: 0, why: T("&lt;nav&gt; agrupa els enllaços de navegació principals; &lt;header&gt; és la capçalera, que sovint el conté.") },
+    { q: T("Per a què serveix l'atribut alt d'una imatge?"), o: [T("Per mostrar un text si la imatge triga a carregar"), T("Per descriure-la a cercadors i lectors de pantalla"), T("Per mostrar un text quan el ratolí passa per sobre"), T("Per indicar l'autor i la llicència de la imatge")], c: 1, why: T("Millora l'accessibilitat i el SEO.") },
+    { q: T("Quina eina faries servir per dissenyar el prototip d'una web abans de construir-la?"), o: [T("Figma"), T("Canva"), T("Webflow"), T("Visual Studio Code")], c: 0, why: T("Figma és l'eina de prototipat més habitual. Canva és per a peces gràfiques, Webflow construeix la web i Visual Studio Code és per escriure codi.") }
   ]
 });
 L('L_clientonline', {
@@ -212,9 +212,9 @@ L('L_clientonline', {
   example: T("Un hotel rural descobreix que el 70 % de les visites arriben des del mòbil i que la gent llegeix les opinions de TripAdvisor abans de reservar: prioritza una reserva mòbil ràpida i respon totes les opinions."),
   errors: [T("Dissenyar només per a ordinador."), T("Ignorar les opinions dels altres compradors."), T("Tenir preus diferents a la web i a la botiga sense explicar-ho.")],
   quiz: [
-    { q: T("Què és el ROPO?"), o: [T("Investigar en línia i comprar fora de línia"), T("Un tipus d'anunci"), T("Un mitjà de pagament")], c: 0, why: T("Research Online, Purchase Offline: la recerca digital influeix en la compra física.") },
-    { q: T("Quina característica té el client en línia?"), o: [T("Compra sense comparar"), T("Compara preus i opinions abans de decidir"), T("No fa servir el mòbil")], c: 1, why: T("És un client informat i exigent.") },
-    { q: T("Què vol dir una experiència omnicanal?"), o: [T("Ser a tots els canals amb informació i servei coherents"), T("Fer anuncis a la TV"), T("Tenir només botiga en línia")], c: 0, why: T("El client passa d'un canal a l'altre i espera coherència.") }
+    { q: T("Què és el ROPO?"), o: [T("Investigar en línia i comprar fora de línia"), T("Veure el producte a la botiga i comprar-lo en línia"), T("Comprar en línia i recollir a la botiga"), T("Tornar a la botiga en línia després d'una oferta")], c: 0, why: T("Research Online, Purchase Offline. El cas contrari, mirar a la botiga i comprar en línia, és el showrooming.") },
+    { q: T("Quina característica té el client en línia?"), o: [T("És fidel a la primera botiga on compra"), T("Compara preus i opinions abans de decidir"), T("Decideix sobretot pel preu més baix"), T("Prefereix comprar des de l'ordinador")], c: 1, why: T("És un client informat i exigent.") },
+    { q: T("Què vol dir una experiència omnicanal?"), o: [T("Ser a tots els canals amb informació i servei coherents"), T("Ser present al màxim nombre de canals possible"), T("Tenir una campanya diferent a cada canal"), T("Vendre a la botiga física i a un marketplace")], c: 0, why: T("El client passa d'un canal a l'altre i espera coherència.") }
   ]
 });
 L('L_onetoone', {
@@ -228,9 +228,9 @@ L('L_onetoone', {
   example: T("L'hotel envia a cada client un correu abans de l'estada amb activitats segons els seus interessos: rutes en bici per als esportistes i el mercat de Vic per a qui ve amb nens."),
   errors: [T("Enviar el mateix missatge a tothom i dir-ne «personalització»."), T("Personalitzar amb dades que el client no ha autoritzat."), T("Tenir el CRM ple de dades velles o duplicades.")],
   quiz: [
-    { q: T("Què caracteritza el màrqueting one-to-one?"), o: [T("Un missatge únic per a tothom"), T("Adaptar l'oferta i el missatge a cada client"), T("Fer només anuncis")], c: 1, why: T("La personalització individual és la base del one-to-one.") },
-    { q: T("Quina eina és clau per fer one-to-one?"), o: [T("Un CRM amb dades de cada client"), T("Un cartell"), T("Un fax")], c: 0, why: T("Sense dades organitzades no es pot personalitzar.") },
-    { q: T("Què cal per fer servir les dades d'un client?"), o: [T("Res, si les tenim"), T("El seu consentiment i informar-lo de l'ús"), T("Pagar-li")], c: 1, why: T("La normativa de protecció de dades ho exigeix.") }
+    { q: T("Què caracteritza el màrqueting one-to-one?"), o: [T("Enviar el mateix missatge a cada segment de clients"), T("Adaptar l'oferta i el missatge a cada client"), T("Posar el nom del client a l'assumpte del correu"), T("Atendre cada client per telèfon")], c: 1, why: T("La personalització individual és la base del one-to-one.") },
+    { q: T("Quina eina és clau per fer one-to-one?"), o: [T("Un CRM amb dades de cada client"), T("Una eina d'enviament de butlletins"), T("Un píxel de seguiment a la web"), T("Una base de dades de contactes comprada")], c: 0, why: T("Sense dades organitzades no es pot personalitzar.") },
+    { q: T("Què cal per fer servir les dades d'un client?"), o: [T("Res, si el client ja ens ha comprat abans"), T("El seu consentiment i informar-lo de l'ús"), T("Només una política de privacitat a la web"), T("Que les dades estiguin guardades a la UE")], c: 1, why: T("La normativa de protecció de dades ho exigeix.") }
   ]
 });
 L('L_mobil', {
@@ -244,9 +244,9 @@ L('L_mobil', {
   example: T("L'hotel envia per WhatsApp (amb permís) el codi d'entrada i un enllaç per pagar les activitats amb Bizum, fa servir un QR a recepció per deixar opinions i anuncia les escapades de cap de setmana a la TV connectada només a Barcelona i rodalia."),
   errors: [T("Enviar SMS o WhatsApps comercials sense consentiment."), T("Fer una web que al mòbil obliga a fer zoom."), T("No acceptar pagaments amb el mòbil en un negoci amb públic jove.")],
   quiz: [
-    { q: T("Què permet la publicitat a la TV connectada que la TDT clàssica no permet?"), o: [T("Segmentar el públic i mesurar els resultats com en digital"), T("Emetre en blanc i negre"), T("Res, és el mateix")], c: 0, why: T("Els anuncis a la TV connectada es compren i es mesuren com la publicitat digital.") },
-    { q: T("Quina tecnologia fa servir Apple Pay o Google Pay a la botiga?"), o: ['NFC', 'FTP', 'HTML'], c: 0, why: T("L'NFC permet pagar acostant el mòbil al datàfon.") },
-    { q: T("Quina regla bàsica té el màrqueting mòbil?"), o: [T("Enviar molts missatges"), T("Tenir permís i aportar valor"), T("Fer servir només SMS")], c: 1, why: T("El mòbil és molt personal: sense permís i utilitat, molesta.") }
+    { q: T("Què permet la publicitat a la TV connectada que la TDT clàssica no permet?"), o: [T("Segmentar el públic i mesurar els resultats com en digital"), T("Arribar a més audiència que la TDT"), T("Emetre anuncis més llargs i sense límit"), T("Pagar només quan l'espectador compra")], c: 0, why: T("Els anuncis a la TV connectada es compren i es mesuren com la publicitat digital.") },
+    { q: T("Quina tecnologia fa servir Apple Pay o Google Pay a la botiga?"), o: [T("NFC"), T("Bluetooth"), T("Codi QR"), T("Wi-Fi")], c: 0, why: T("L'NFC permet pagar acostant el mòbil al datàfon.") },
+    { q: T("Quina regla bàsica té el màrqueting mòbil?"), o: [T("Enviar missatges a la mateixa hora cada dia"), T("Tenir permís i aportar valor"), T("Fer servir sempre WhatsApp en lloc de SMS"), T("Fer missatges molt curts")], c: 1, why: T("El mòbil és molt personal: sense permís i utilitat, molesta.") }
   ]
 });
 L('L_blog', {
@@ -260,9 +260,9 @@ L('L_blog', {
   example: T("La llibreria fa un blog de comunitat on els clubs de lectura recomanen llibres, i cada article acaba amb un enllaç per reservar-los."),
   errors: [T("Publicar només notícies de l'empresa que no interessen a ningú."), T("Començar amb força i abandonar el blog al cap d'un mes."), T("No incloure cap crida a l'acció.")],
   quiz: [
-    { q: T("Quin tipus de blog fa servir articles escrits pels clients?"), o: [T("Blog de comunitat"), T("Blog intern"), T("Blog institucional")], c: 0, why: T("El blog de comunitat dona veu als clients i col·laboradors.") },
-    { q: T("Quin és un objectiu habitual d'un blog corporatiu?"), o: [T("Atraure trànsit orgànic i generar confiança"), T("Substituir la botiga"), T("Evitar les xarxes")], c: 0, why: T("El contingut útil posiciona i demostra coneixement.") },
-    { q: T("Què cal per mantenir un blog viu?"), o: [T("Un calendari editorial realista"), T("Publicar cent articles el primer dia"), T("No mesurar res")], c: 0, why: T("La constància importa més que el volum inicial.") }
+    { q: T("Quin tipus de blog fa servir articles escrits pels clients?"), o: [T("Blog de comunitat"), T("Blog d'experts"), T("Blog de producte"), T("Blog institucional")], c: 0, why: T("El blog de comunitat dona veu als clients i col·laboradors; el d'experts el fan especialistes de l'empresa.") },
+    { q: T("Quin és un objectiu habitual d'un blog corporatiu?"), o: [T("Atraure trànsit orgànic i generar confiança"), T("Publicar les ofertes i promocions de la setmana"), T("Substituir les xarxes socials de l'empresa"), T("Explicar la història i els valors de l'empresa")], c: 0, why: T("El contingut útil posiciona i demostra coneixement.") },
+    { q: T("Què cal per mantenir un blog viu?"), o: [T("Un calendari editorial realista"), T("Publicar cada dia, encara que siguin textos curts"), T("Fer articles molt llargs per posicionar millor"), T("Un dissenyador que renovi el blog cada any")], c: 0, why: T("La constància importa més que el volum inicial.") }
   ]
 });
 L('L_newsletter', {
@@ -276,9 +276,9 @@ L('L_newsletter', {
   example: T("La llibreria envia un butlletí mensual amb les novetats per gènere; qui va comprar novel·la negra rep primer les novetats d'aquest gènere. L'obertura passa del 18 % al 34 %."),
   errors: [T("Comprar una llista de correus."), T("Amagar l'enllaç per donar-se de baixa."), T("Enviar-ho tot a tothom i massa sovint.")],
   quiz: [
-    { q: T("Què és el doble opt-in?"), o: [T("Confirmar la subscripció amb un segon pas per correu"), T("Enviar dos correus al dia"), T("Tenir dues llistes")], c: 0, why: T("Garanteix que l'adreça és real i que la persona vol rebre els correus.") },
-    { q: T("Quina mètrica indica quanta gent ha obert el butlletí?"), o: [T("Taxa d'obertura"), T("Taxa de rebot de la web"), T("CPC")], c: 0, why: T("La taxa d'obertura mesura les obertures sobre els enviaments.") },
-    { q: T("Què ha d'incloure sempre un butlletí comercial?"), o: [T("Un enllaç per donar-se de baixa"), T("Un descompte"), T("Un vídeo")], c: 0, why: T("La normativa obliga a oferir una manera fàcil de deixar de rebre'l.") }
+    { q: T("Què és el doble opt-in?"), o: [T("Confirmar la subscripció amb un segon pas per correu"), T("Marcar dues caselles al formulari de subscripció"), T("Enviar el butlletí dues vegades a qui no l'obre"), T("Demanar el correu i el telèfon per subscriure's")], c: 0, why: T("Garanteix que l'adreça és real i que la persona vol rebre els correus.") },
+    { q: T("Quina mètrica indica quanta gent ha obert el butlletí?"), o: [T("Taxa d'obertura"), T("Taxa de clics"), T("Taxa de lliurament"), T("Taxa de conversió")], c: 0, why: T("La taxa d'obertura mesura les obertures sobre els enviaments.") },
+    { q: T("Què ha d'incloure sempre un butlletí comercial?"), o: [T("Un enllaç per donar-se de baixa"), T("La política de galetes"), T("El logo de l'empresa"), T("Una crida a l'acció")], c: 0, why: T("La normativa obliga a oferir una manera fàcil de deixar de rebre'l.") }
   ]
 });
 L('L_models', {
@@ -292,9 +292,9 @@ L('L_models', {
   example: T("La formatgeria ven a la seva e-shop (D2C), ofereix una subscripció mensual de formatges, té una àrea B2B amb preus per a restaurants i sincronitza el catàleg amb Google Shopping i Instagram."),
   errors: [T("Pensar que un marketplace no cobra comissions."), T("Fer servir el mateix catàleg i preus per a professionals i particulars."), T("Dependre d'un sol marketplace sense cap canal propi.")],
   quiz: [
-    { q: T("Una caixa de formatges que el client rep cada mes pagant una quota és un model de..."), o: [T("subscripció"), T("subhasta"), T("B2G")], c: 0, why: T("Les subscripcions donen ingressos recurrents i fidelitzen.") },
-    { q: T("Què és l'e-procurement?"), o: [T("La gestió de compres i proveïdors en línia entre empreses"), T("Una subhasta"), T("Un blog")], c: 0, why: T("Digitalitza el procés de compra de les empreses.") },
-    { q: T("Una plataforma on molts venedors ofereixen productes és un..."), o: [T("e-marketplace"), T("e-mail"), T("aparador físic")], c: 0, why: T("El marketplace reuneix molts venedors i compradors.") }
+    { q: T("Una caixa de formatges que el client rep cada mes pagant una quota és un model de..."), o: [T("subscripció"), T("D2C"), T("e-marketplace"), T("B2B")], c: 0, why: T("Les subscripcions donen ingressos recurrents i fidelitzen.") },
+    { q: T("Què és l'e-procurement?"), o: [T("La gestió de compres i proveïdors en línia entre empreses"), T("La venda en línia d'una empresa a altres empreses"), T("La gestió de l'estoc d'una botiga en línia"), T("La venda a l'administració pública per internet")], c: 0, why: T("Digitalitza el procés de compra de les empreses.") },
+    { q: T("Una plataforma on molts venedors ofereixen productes és un..."), o: [T("e-marketplace"), T("e-shop"), T("portal vertical"), T("e-procurement")], c: 0, why: T("El marketplace reuneix molts venedors i compradors.") }
   ]
 });
 L('L_normativa', {
@@ -309,9 +309,9 @@ L('L_normativa', {
   example: T("Una botiga revisa la web: afegeix l'avís legal, un bàner de galetes amb el botó «Rebutjar» i el mode de consentiment activat, casella de consentiment no marcada al formulari, la informació del desistiment a les condicions de venda i millores d'accessibilitat al procés de compra."),
   errors: [T("Casella de consentiment marcada per defecte."), T("Carregar Google Analytics abans que l'usuari accepti les galetes."), T("No informar del dret de desistiment.")],
   quiz: [
-    { q: T("Quants dies té el consumidor per desistir d'una compra en línia?"), o: [T("7 dies"), T("14 dies naturals"), T("30 dies hàbils")], c: 1, why: T("És el termini general de la normativa de consumidors.") },
-    { q: T("Es pot enviar un correu comercial a qualsevol adreça que trobem a internet?"), o: [T("Sí, si és d'una empresa"), T("No, cal consentiment previ"), T("Sí, un cop l'any")], c: 1, why: T("La LSSI prohibeix les comunicacions comercials no sol·licitades.") },
-    { q: T("Què exigeix la Llei europea d'accessibilitat a moltes botigues en línia des del 2025?"), o: [T("Que la web i el procés de compra siguin accessibles per a persones amb discapacitat"), T("Que tinguin una app"), T("Que acceptin només targeta")], c: 0, why: T("Contrast, text alternatiu, navegació amb teclat i formularis clars, entre altres.") }
+    { q: T("Quants dies té el consumidor per desistir d'una compra en línia?"), o: [T("7 dies naturals"), T("14 dies naturals"), T("14 dies hàbils"), T("30 dies naturals")], c: 1, why: T("És el termini general de la normativa de consumidors.") },
+    { q: T("Es pot enviar un correu comercial a qualsevol adreça que trobem a internet?"), o: [T("Sí, si és l'adreça genèrica d'una empresa"), T("No, cal consentiment previ"), T("Sí, si inclou un enllaç per donar-se de baixa"), T("Sí, si l'adreça és pública a la seva web")], c: 1, why: T("La LSSI prohibeix les comunicacions comercials no sol·licitades.") },
+    { q: T("Què exigeix la Llei europea d'accessibilitat a moltes botigues en línia des del 2025?"), o: [T("Que la web i el procés de compra siguin accessibles per a persones amb discapacitat"), T("Que la web estigui disponible en diversos idiomes"), T("Que la web funcioni bé al mòbil"), T("Que la botiga tingui atenció al client per telèfon")], c: 0, why: T("Contrast, text alternatiu, navegació amb teclat i formularis clars, entre altres.") }
   ]
 });
 L('L_logistica', {
@@ -325,9 +325,9 @@ L('L_logistica', {
   example: T("La botiga de roba envia un correu automàtic quan la comanda surt, amb el número de seguiment. Quan un paquet es perd, truca la clienta, envia un altre producte l'endemà i li regala l'enviament de la propera compra."),
   errors: [T("Vendre productes sense estoc."), T("Respondre una reclamació amb excuses i sense solució."), T("Posar traves a les devolucions dins del termini legal.")],
   quiz: [
-    { q: T("Què és la logística inversa?"), o: [T("La gestió de les devolucions"), T("Enviar més ràpid"), T("Comprar estoc")], c: 0, why: T("És el flux del producte del client cap a la botiga.") },
-    { q: T("Com s'ha de gestionar una reclamació?"), o: [T("Ràpid, amb empatia i una solució concreta"), T("Ignorar-la si és en línia"), T("Discutir qui té raó")], c: 0, why: T("Ben resolta, fidelitza el client.") },
-    { q: T("En quin termini cal retornar els diners d'un desistiment?"), o: [T("Com a màxim 14 dies"), T("6 mesos"), T("No cal retornar-los")], c: 0, why: T("La normativa fixa un màxim de 14 dies naturals.") }
+    { q: T("Què és la logística inversa?"), o: [T("La gestió de les devolucions"), T("L'enviament des del proveïdor directament al client"), T("La recollida de comandes a la botiga física"), T("La reposició de l'estoc quan s'esgota")], c: 0, why: T("És el flux del producte del client cap a la botiga.") },
+    { q: T("Com s'ha de gestionar una reclamació?"), o: [T("Ràpid, amb empatia i una solució concreta"), T("Ràpid, amb una disculpa i un descompte general"), T("Amb calma, després d'investigar qui té la culpa"), T("Per escrit i sempre en privat")], c: 0, why: T("Ben resolta, fidelitza el client.") },
+    { q: T("En quin termini cal retornar els diners d'un desistiment?"), o: [T("Com a màxim 14 dies"), T("Com a màxim 30 dies"), T("Quan el producte torni al magatzem"), T("En el termini que marquin les condicions de la botiga")], c: 0, why: T("La normativa fixa un màxim de 14 dies naturals.") }
   ]
 });
 L('L_pagaments', {
@@ -341,9 +341,9 @@ L('L_pagaments', {
   example: T("La botiga de mobles ofereix targeta, Bizum, PayPal i finançament a 12 mesos per a compres de més de 600 €. L'abandonament del carretó baixa un 20 %."),
   errors: [T("Oferir només transferència bancària."), T("Amagar les comissions del contra reemborsament fins al final."), T("Guardar les dades de targeta dels clients a la teva base de dades.")],
   quiz: [
-    { q: T("Què és un TPV virtual?"), o: [T("El sistema que permet cobrar amb targeta a la web"), T("Un programa de disseny"), T("Un tipus de domini")], c: 0, why: T("És l'equivalent en línia del datàfon.") },
-    { q: T("Què exigeix la directiva PSD2 en els pagaments en línia?"), o: [T("Autenticació reforçada amb dos factors"), T("Pagar només en efectiu"), T("Res")], c: 0, why: T("L'autenticació reforçada redueix el frau.") },
-    { q: T("Què és el diner electrònic?"), o: [T("Valor monetari emmagatzemat electrònicament, com en un moneder digital"), T("Bitllets escanejats"), T("Punts d'una botiga")], c: 0, why: T("És un mitjà de pagament regulat.") }
+    { q: T("Què és un TPV virtual?"), o: [T("El sistema que permet cobrar amb targeta a la web"), T("El datàfon que es connecta per Wi-Fi a la botiga"), T("El programa de facturació de la botiga en línia"), T("Un moneder digital per pagar amb el mòbil")], c: 0, why: T("És l'equivalent en línia del datàfon.") },
+    { q: T("Què exigeix la directiva PSD2 en els pagaments en línia?"), o: [T("Autenticació reforçada amb dos factors"), T("Que tots els pagaments es facin amb targeta"), T("Que la botiga guardi les dades de les targetes xifrades"), T("Un límit màxim per a cada compra en línia")], c: 0, why: T("L'autenticació reforçada redueix el frau.") },
+    { q: T("Què és el diner electrònic?"), o: [T("Valor monetari emmagatzemat electrònicament, com en un moneder digital"), T("Qualsevol pagament fet amb targeta"), T("Una criptomoneda com el bitcoin"), T("Una transferència bancària immediata")], c: 0, why: T("És un mitjà de pagament regulat.") }
   ]
 });
 L('L_seguretat', {
@@ -357,9 +357,9 @@ L('L_seguretat', {
   example: T("La botiga de mobles activa HTTPS, verificació en dos passos a tots els comptes i còpies diàries. Quan arriba un correu fals «del banc», l'equip el detecta perquè ha fet una formació de phishing."),
   errors: [T("Fer servir la mateixa contrasenya a tot arreu."), T("No fer còpies de seguretat fora del servidor."), T("Clicar enllaços de correus urgents sense comprovar el remitent.")],
   quiz: [
-    { q: T("En el xifratge asimètric..."), o: [T("es fa servir una clau pública i una privada"), T("es fa servir una sola clau"), T("no hi ha claus")], c: 0, why: T("La clau pública xifra; només la privada desxifra.") },
-    { q: T("Què garanteix la firma digital?"), o: [T("La identitat del signant i que el document no s'ha modificat"), T("Que el document és gratuït"), T("Que s'envia més ràpid")], c: 0, why: T("Autenticitat i integritat.") },
-    { q: T("Quina és una bona pràctica contra el phishing?"), o: [T("Comprovar remitent i enllaços abans de clicar"), T("Respondre amb la contrasenya"), T("Desactivar l'antivirus")], c: 0, why: T("El phishing es basa en enganyar amb urgència i aparença oficial.") }
+    { q: T("En el xifratge asimètric..."), o: [T("es fa servir una clau pública i una privada"), T("es fa servir la mateixa clau per xifrar i desxifrar"), T("es fan servir dues claus privades"), T("la clau privada xifra i la pública desxifra")], c: 0, why: T("La clau pública xifra; només la privada desxifra.") },
+    { q: T("Què garanteix la firma digital?"), o: [T("La identitat del signant i que el document no s'ha modificat"), T("Que el document és confidencial i només el pot llegir el destinatari"), T("La identitat del signant i la data en què es va crear"), T("Que el document s'ha enviat per un canal xifrat")], c: 0, why: T("Autenticitat i integritat.") },
+    { q: T("Quina és una bona pràctica contra el phishing?"), o: [T("Comprovar remitent i enllaços abans de clicar"), T("Obrir només els adjunts en PDF"), T("Confiar en els correus que porten el logo del banc"), T("Canviar la contrasenya després de clicar l'enllaç")], c: 0, why: T("El phishing es basa en enganyar amb urgència i aparença oficial.") }
   ]
 });
 L('L_afiliacio', {
@@ -373,9 +373,9 @@ L('L_afiliacio', {
   example: T("El gimnàs dona un codi a tres entrenadores conegudes (10 % de comissió per alta) i fa una promoció creuada amb una botiga de nutrició: els socis tenen descompte a la botiga i els clients de la botiga, una setmana gratis."),
   errors: [T("Pagar els afiliats per clic sense controlar la qualitat."), T("Aliar-se amb una marca que competeix amb tu."), T("No mesurar d'on venen les vendes.")],
   quiz: [
-    { q: T("Com cobra normalment un afiliat?"), o: [T("Una comissió per venda o contacte"), T("Un sou fix"), T("Res")], c: 0, why: T("L'afiliació paga per resultats.") },
-    { q: T("Què és el cross màrqueting?"), o: [T("Una aliança entre marques complementàries"), T("Rebaixar preus"), T("Copiar un competidor")], c: 0, why: T("Comparteixen públic sense competir.") },
-    { q: T("Oferir patates a qui compra una hamburguesa és..."), o: [T("venda creuada (cross-selling)"), T("afiliació"), T("SEO")], c: 0, why: T("És oferir un complement al mateix client.") }
+    { q: T("Com cobra normalment un afiliat?"), o: [T("Una comissió per venda o contacte"), T("Un preu fix per publicació"), T("Un pagament per cada clic a l'enllaç"), T("Producte gratuït a canvi de mencions")], c: 0, why: T("L'afiliació paga per resultats.") },
+    { q: T("Què és el cross màrqueting?"), o: [T("Una aliança entre marques complementàries"), T("Oferir un producte complementari al mateix client"), T("Fer promoció en diversos canals alhora"), T("Una campanya conjunta amb un competidor")], c: 0, why: T("Comparteixen públic sense competir.") },
+    { q: T("Oferir patates a qui compra una hamburguesa és..."), o: [T("venda creuada (cross-selling)"), T("venda addicional (up-selling)"), T("cross màrqueting"), T("afiliació")], c: 0, why: T("Venda creuada és oferir un complement; l'up-selling és oferir una versió més cara del mateix producte.") }
   ]
 });
 L('L_viral', {
@@ -389,9 +389,9 @@ L('L_viral', {
   example: T("El gimnàs llança el repte «30 dies, 30 esquats» amb un vídeo divertit i un premi per a qui convidi més amics. El 40 % de les altes noves arriben per referits."),
   errors: [T("Prometre al client que «ho farem viral»."), T("Reptes perillosos o ofensius per cridar l'atenció."), T("No preparar-se per a una allau de comentaris.")],
   quiz: [
-    { q: T("Què indica un coeficient viral superior a 1?"), o: [T("Que cada usuari porta més d'un usuari nou"), T("Que la campanya ha fallat"), T("Que hi ha un error")], c: 0, why: T("Amb més d'1, la difusió creix per si sola.") },
-    { q: T("Quin element ajuda a fer viral un contingut?"), o: [T("Que provoqui emoció i sigui fàcil de compartir"), T("Que sigui molt llarg"), T("Que no tingui imatges")], c: 0, why: T("L'emoció i la facilitat són els motors de la difusió.") },
-    { q: T("Quin risc té el màrqueting viral?"), o: [T("Que un missatge mal plantejat s'escampi en contra"), T("Cap"), T("Que sigui massa barat")], c: 0, why: T("La viralitat no es controla del tot.") }
+    { q: T("Què indica un coeficient viral superior a 1?"), o: [T("Que cada usuari porta més d'un usuari nou"), T("Que cada usuari comparteix el contingut més d'una vegada"), T("Que la campanya ha arribat a més del doble de gent prevista"), T("Que el contingut té més comparticions que m'agrada")], c: 0, why: T("Amb més d'1, la difusió creix per si sola.") },
+    { q: T("Quin element ajuda a fer viral un contingut?"), o: [T("Que provoqui emoció i sigui fàcil de compartir"), T("Que tingui molts hashtags populars"), T("Que es publiqui a totes les xarxes alhora"), T("Que tingui una bona inversió en anuncis")], c: 0, why: T("L'emoció i la facilitat són els motors de la difusió.") },
+    { q: T("Quin risc té el màrqueting viral?"), o: [T("Que un missatge mal plantejat s'escampi en contra"), T("Que costi molt més del previst"), T("Que la marca guanyi seguidors poc interessats"), T("Que la plataforma bloquegi el contingut")], c: 0, why: T("La viralitat no es controla del tot.") }
   ]
 });
 L('L_comunitats', {
@@ -405,9 +405,9 @@ L('L_comunitats', {
   example: T("L'associació de comerciants crea una comunitat de WhatsApp amb canals per temes, un servidor de Discord per a dubtes de digitalització i videotrucades mensuals. A la web, un xat amb IA respon horaris i aparcament i passa els casos complexos a una persona."),
   errors: [T("Entrar en un fòrum només per fer publicitat."), T("Deixar el chatbot sol, sense opció de parlar amb una persona."), T("Demanar favors a contactes influents sense haver aportat res abans.")],
   quiz: [
-    { q: T("Què ha de fer un bon chatbot d'atenció al client?"), o: [T("Respondre les preguntes freqüents i passar a una persona quan cal"), T("Fer veure que és una persona"), T("Respondre només en horari d'oficina")], c: 0, why: T("La IA agilitza, però el client ha de saber que parla amb un bot i poder parlar amb una persona.") },
-    { q: T("Què és la netiqueta?"), o: [T("Les normes de comportament en línia"), T("Una etiqueta HTML"), T("Un preu")], c: 0, why: T("Respecte, aportar valor i no fer spam.") },
-    { q: T("Quina és la millor manera d'entrar en un grup de discussió professional?"), o: [T("Llegir-ne les normes i aportar valor abans de promocionar res"), T("Publicar ofertes el primer dia"), T("Enviar missatges privats a tothom")], c: 0, why: T("La confiança es guanya participant.") }
+    { q: T("Què ha de fer un bon chatbot d'atenció al client?"), o: [T("Respondre les preguntes freqüents i passar a una persona quan cal"), T("Respondre totes les consultes sense intervenció humana"), T("Respondre només quan l'equip no està disponible"), T("Recollir les dades del client abans de respondre res")], c: 0, why: T("La IA agilitza, però el client ha de saber que parla amb un bot i poder parlar amb una persona.") },
+    { q: T("Què és la netiqueta?"), o: [T("Les normes de comportament en línia"), T("Les normes d'ús d'una xarxa social"), T("Les etiquetes que classifiquen els temes d'un fòrum"), T("La normativa de protecció de dades en línia")], c: 0, why: T("Respecte, aportar valor i no fer spam.") },
+    { q: T("Quina és la millor manera d'entrar en un grup de discussió professional?"), o: [T("Llegir-ne les normes i aportar valor abans de promocionar res"), T("Presentar-se amb un enllaç als serveis de l'agència"), T("Contactar en privat els membres més actius"), T("Publicar un cas d'èxit de l'agència el primer dia")], c: 0, why: T("La confiança es guanya participant.") }
   ]
 });
 L('L_paginaxarxa', {
@@ -421,9 +421,9 @@ L('L_paginaxarxa', {
   example: T("Cim Trail connecta el catàleg de la botiga a Instagram i TikTok, etiqueta les jaquetes als reels, fa un directe de venda amb una corredora de muntanya de la comarca i afegeix el botó «Comprar». Les vendes des de xarxes passen a ser un 25 % del total."),
   errors: [T("Fer servir un perfil personal en lloc d'un professional."), T("Publicar col·laboracions pagades sense indicar que són publicitat."), T("Vendre per missatge sense condicions de venda ni factura.")],
   quiz: [
-    { q: T("Quin avantatge té un perfil professional respecte d'un de personal?"), o: [T("Estadístiques, botons d'acció i anuncis"), T("Més seguidors automàticament"), T("Cap")], c: 0, why: T("Les eines professionals només hi són als perfils d'empresa.") },
-    { q: T("Què és el social commerce?"), o: [T("Vendre directament des de les xarxes socials"), T("Fer anuncis a la TV"), T("Un blog")], c: 0, why: T("La compra es fa sense sortir de la xarxa o amb molt pocs passos.") },
-    { q: T("Què cal fer quan un creador publica contingut pagat per la marca?"), o: [T("Indicar clarament que és publicitat"), T("Amagar-ho perquè sembli espontani"), T("Res")], c: 0, why: T("La normativa obliga a identificar la publicitat, i la transparència genera confiança.") }
+    { q: T("Quin avantatge té un perfil professional respecte d'un de personal?"), o: [T("Estadístiques, botons d'acció i anuncis"), T("Més abast orgànic a les publicacions"), T("La insígnia de compte verificat"), T("Poder publicar més vegades al dia")], c: 0, why: T("Les eines professionals només hi són als perfils d'empresa.") },
+    { q: T("Què és el social commerce?"), o: [T("Vendre directament des de les xarxes socials"), T("Fer anuncis a les xarxes que porten a la botiga en línia"), T("Vendre a través de creadors amb codis de descompte"), T("Fer créixer la comunitat per vendre més endavant")], c: 0, why: T("La compra es fa sense sortir de la xarxa o amb molt pocs passos.") },
+    { q: T("Què cal fer quan un creador publica contingut pagat per la marca?"), o: [T("Indicar clarament que és publicitat"), T("Etiquetar la marca a la publicació"), T("Indicar-ho només si el creador ha cobrat diners"), T("Posar l'enllaç de la botiga a la bio del creador")], c: 0, why: T("La normativa obliga a identificar la publicitat, i la transparència genera confiança.") }
   ]
 });
 L('L_web20', {
@@ -437,9 +437,9 @@ L('L_web20', {
   example: T("Can Jordi mostra a la web les ressenyes de Google i les fotos que els clients etiqueten a Instagram, connecta les reserves amb el CRM amb Make i respon cada opinió. La nota passa de 3,9 a 4,5."),
   errors: [T("Respondre només les opinions bones."), T("Esborrar comentaris crítics."), T("Comprar ressenyes falses.")],
   quiz: [
-    { q: T("Què és el contingut generat pels usuaris (UGC)?"), o: [T("Ressenyes, fotos i vídeos que fan els clients sobre la marca"), T("Els anuncis de la marca"), T("El codi de la web")], c: 0, why: T("És la versió actual de la web participativa i genera molta confiança.") },
-    { q: T("Què fa una eina com Zapier o Make en una web integrada?"), o: [T("Connecta serveis perquè les dades passin d'un a l'altre automàticament"), T("Dissenya logos"), T("Registra el domini")], c: 0, why: T("Integra la web amb el CRM, el correu, les reserves i altres eines sense programar.") },
-    { q: T("Què és un prosumidor?"), o: [T("Un consumidor que també crea, opina i recomana"), T("Un proveïdor"), T("Un tipus de virus")], c: 0, why: T("Productor + consumidor.") }
+    { q: T("Què és el contingut generat pels usuaris (UGC)?"), o: [T("Ressenyes, fotos i vídeos que fan els clients sobre la marca"), T("Contingut que fan creadors pagats per la marca"), T("Les preguntes que els usuaris fan al xat de la web"), T("Les dades que deixen els usuaris en navegar per la web")], c: 0, why: T("És la versió actual de la web participativa i genera molta confiança.") },
+    { q: T("Què fa una eina com Zapier o Make en una web integrada?"), o: [T("Connecta serveis perquè les dades passin d'un a l'altre automàticament"), T("Crea la web sense haver de programar"), T("Incrusta a la web el contingut de les xarxes socials"), T("Guarda còpies de seguretat de totes les eines")], c: 0, why: T("Integra la web amb el CRM, el correu, les reserves i altres eines sense programar.") },
+    { q: T("Què és un prosumidor?"), o: [T("Un consumidor que també crea, opina i recomana"), T("Un creador que cobra de les marques"), T("Un client que compra sovint i en gran quantitat"), T("Un professional que ven a altres consumidors")], c: 0, why: T("Productor + consumidor.") }
   ]
 });
 L('L_zones', {
@@ -453,9 +453,9 @@ L('L_zones', {
   example: T("El mapa de calor de la cansaladeria mostra que ningú veu el botó de l'enviament refrigerat perquè és a baix de tot: el pugen a la part superior i les comandes augmenten un 15 %."),
   errors: [T("Posar la informació clau on ningú hi arriba fent scroll."), T("Obligar a crear un compte per comprar."), T("Confondre vendes amb diners disponibles al banc.")],
   quiz: [
-    { q: T("Què mostra un mapa de calor?"), o: [T("On miren, cliquen i fan scroll els usuaris"), T("La temperatura del servidor"), T("Les vendes per províncies")], c: 0, why: T("Revela les zones calentes i les que ningú veu.") },
-    { q: T("Per què una botiga amb moltes vendes pot tenir problemes de caixa?"), o: [T("Perquè paga estoc i publicitat abans de cobrar"), T("No pot passar mai"), T("Perquè ven massa barat sempre")], c: 0, why: T("El flux de caixa depèn de quan entren i surten els diners.") },
-    { q: T("Quin programa és vectorial, adequat per dissenyar un logo?"), o: ['Illustrator', 'Excel', 'FileZilla'], c: 0, why: T("Els logos es fan en vectorial perquè escalin sense perdre qualitat.") }
+    { q: T("Què mostra un mapa de calor?"), o: [T("On miren, cliquen i fan scroll els usuaris"), T("Quines pàgines tenen més visites"), T("D'on vénen geogràficament les visites"), T("Les hores del dia amb més trànsit")], c: 0, why: T("Revela les zones calentes i les que ningú veu.") },
+    { q: T("Per què una botiga amb moltes vendes pot tenir problemes de caixa?"), o: [T("Perquè paga estoc i publicitat abans de cobrar"), T("Perquè el marge per comanda és massa baix"), T("Perquè té massa devolucions"), T("Perquè paga massa impostos")], c: 0, why: T("El marge baix o les devolucions també hi influeixen, però una botiga rendible es pot quedar sense caixa si els pagaments van abans que els cobraments.") },
+    { q: T("Quin programa és vectorial, adequat per dissenyar un logo?"), o: [T("Illustrator"), T("Photoshop"), T("GIMP"), T("Canva")], c: 0, why: T("Els logos es fan en vectorial (Illustrator, Inkscape) perquè escalin sense perdre qualitat. Photoshop i GIMP treballen amb píxels.") }
   ]
 });
 L('L_videotv', {
@@ -469,9 +469,9 @@ L('L_videotv', {
   example: T("La televisió local fa clips verticals subtitulats dels seus programes per a TikTok i Reels, un videopodcast setmanal amb comerços del territori a YouTube i Spotify, i ven paquets d'anuncis a la TV connectada als anunciants locals."),
   errors: [T("Pujar vídeos llargs sense subtítols ni un inici que enganxi."), T("Fer servir el mateix format per a totes les plataformes."), T("Mesurar només les visualitzacions.")],
   quiz: [
-    { q: T("Què és el live shopping?"), o: [T("Vendre productes en un directe de vídeo on es pot comprar al moment"), T("Una botiga física oberta 24 hores"), T("Un anunci de ràdio")], c: 0, why: T("Combina vídeo en directe, interacció i compra immediata.") },
-    { q: T("Què és una plataforma OTT?"), o: [T("Un servei de vídeo que es distribueix per internet"), T("Un tipus de cable"), T("Una ràdio")], c: 0, why: T("Over The Top: contingut directament per internet.") },
-    { q: T("Per què cal posar subtítols als vídeos?"), o: [T("Perquè molta gent els mira sense so"), T("Per ocupar més espai"), T("No cal")], c: 0, why: T("Milloren la comprensió i l'accessibilitat.") }
+    { q: T("Què és el live shopping?"), o: [T("Vendre productes en un directe de vídeo on es pot comprar al moment"), T("Comprar productes que surten en una sèrie de streaming"), T("Fer un vídeo de presentació d'un producte nou"), T("Vendre a la botiga física mentre es grava un vídeo")], c: 0, why: T("Combina vídeo en directe, interacció i compra immediata.") },
+    { q: T("Què és una plataforma OTT?"), o: [T("Un servei de vídeo que es distribueix per internet"), T("Un canal de televisió que també emet per la TDT"), T("Una xarxa social de vídeos curts"), T("Un format d'anunci de vídeo a la web")], c: 0, why: T("Over The Top: contingut directament per internet.") },
+    { q: T("Per què cal posar subtítols als vídeos?"), o: [T("Perquè molta gent els mira sense so"), T("Perquè l'algoritme els mostra a més gent"), T("Perquè així es poden traduir automàticament"), T("Perquè ho exigeixen totes les plataformes")], c: 0, why: T("Milloren la comprensió i l'accessibilitat.") }
   ]
 });
 

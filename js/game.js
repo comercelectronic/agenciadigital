@@ -525,6 +525,15 @@
   function trustHearts(v) { if (v < 0) return '💔'.repeat(Math.min(3, -v)); return '♥'.repeat(Math.min(10, v)) + '<span class="empty">' + '♡'.repeat(Math.max(0, 5 - v)) + '</span>'; }
 
   /* ================= Encàrrecs lliures ================= */
+  // Estudiar té un cost: cada resposta incorrecta d'un test es paga (material i hores de repàs), més car a cada etapa
+  function studyCost() { return 30 + 20 * (curStage() - 1); }
+  function payStudy(title) {
+    const c = studyCost();
+    applyFx({ money: -c, log: T('Resposta incorrecta a «{0}»: −{1} en hores de repàs.', [title, eur(c)]) }, true);
+    return c;
+  }
+  // Ordre aleatori de les opcions d'una pregunta (retorna els índexs originals)
+  function shuffledIdx(n) { const a = [...Array(n).keys()]; for (let i = n - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
   function curStage() { const st = GD.stages.find(s => s.chapters.some(c => !S.done[c])); return st ? st.id : 8; }
   function genGigs() {
     const st = curStage();
@@ -1053,10 +1062,11 @@
         if (extra) {
           const q = extra.q;
           panel(`<div class="pn-h"><b>${T("Pregunta del client")}</b><small>${T("Repàs:")} ${esc(GD.lessons[extra.id].title)}</small></div><p>${esc(t.opts[+b.dataset.k].t)} ${T("— d'acord. Però abans, una pregunta:")}</p><p class="quiz-q">${esc(q.q)}</p>
-            <div class="opts">${q.o.map((x, k) => `<button class="opt" data-a="${k}">${esc(x)}</button>`).join('')}</div>`, (r2) => {
+            <div class="opts">${shuffledIdx(q.o.length).map(k => `<button class="opt" data-a="${k}">${q.o[k]}</button>`).join('')}</div>`, (r2) => {
             r2.querySelectorAll('[data-a]').forEach(bb => bb.onclick = () => {
               const right = +bb.dataset.a === q.c;
-              toast(right ? T('✔ Resposta correcta: +50% EXP') : '✘ ' + esc(q.why), right ? 'good' : 'bad');
+              const cost = right ? 0 : payStudy(GD.lessons[extra.id].title);
+              toast(right ? T('✔ Resposta correcta: +50% EXP') : '✘ −' + eur(cost) + ' · ' + q.why, right ? 'good' : 'bad');
               finish(right ? 1.5 : 1);
             });
           });
@@ -1368,6 +1378,7 @@
         ${l.example ? `<div class="example"><b>${l.exampleTitle || T('Exemple (cas simulat)')}</b><p>${txt(l.example)}</p></div>` : ''}
         ${l.errors ? `<div class="errors"><b>${T("⚠️ Errors freqüents")}</b><ul>${l.errors.map(e => `<li>${e}</li>`).join('')}</ul></div>` : ''}
         ${l.source ? `<p class="source">${T("Font:")} ${l.source}</p>` : ''}
+        <p class="study-cost">${T("💸 Cada resposta incorrecta et costarà {0}: tornar a estudiar també és temps i diners.", [eur(studyCost())])}</p>
         <button class="btn primary" id="quiz">${T("Fer l'exercici ✍️")}</button>
         ${!inMission ? T('<button class="btn ghost" id="back">Tornar a la biblioteca</button>') : ''}
       </div>`, (p) => {
@@ -1399,17 +1410,19 @@
       const q = l.quiz[qi];
       panel(`<div class="pn-h"><b>${T("Exercici")} ${qi + 1}/${l.quiz.length}</b><small>${esc(l.title)}</small></div>
         <p class="quiz-q">${q.q}</p>
-        <div class="opts">${q.o.map((o, i) => `<button class="opt" data-i="${i}">${o}</button>`).join('')}</div>`, (p) => {
+        <div class="opts">${shuffledIdx(q.o.length).map(i => `<button class="opt" data-i="${i}">${q.o[i]}</button>`).join('')}</div>`, (p) => {
         p.querySelectorAll('.opt').forEach(b => b.onclick = () => {
           const ok = +b.dataset.i === q.c;
-          p.querySelectorAll('.opt').forEach((bb, i) => { bb.disabled = true; if (i === q.c) bb.classList.add('right'); });
+          p.querySelectorAll('.opt').forEach(bb => { bb.disabled = true; if (+bb.dataset.i === q.c) bb.classList.add('right'); });
           if (!ok) b.classList.add('wrong');
+          const cost = ok ? 0 : payStudy(l.title);
+          if (!ok) hud();
           const fb = document.createElement('div');
           fb.className = 'quiz-fb ' + (ok ? 'ok' : 'ko');
-          fb.innerHTML = `<b>${ok ? T('✔ Correcte') : T('✘ Incorrecte')}</b><p>${q.why}</p><button class="btn primary">${T("Següent")}</button>`;
+          fb.innerHTML = `<b>${ok ? T('✔ Correcte') : T('✘ Incorrecte · −{0}', [eur(cost)])}</b><p>${q.why}</p><button class="btn primary">${T("Següent")}</button>`;
           p.appendChild(fb);
           fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          fb.querySelector('button').onclick = () => quiz(qi + 1, score + (ok ? 1 : 0));
+          fb.querySelector('button').onclick = () => { if (!ok && bankrupt()) return; quiz(qi + 1, score + (ok ? 1 : 0)); };
         });
       });
     };
@@ -1683,7 +1696,7 @@
     if (bankrupt()) return;
     S.cur = S.cur && GD.chapters[S.cur.id] ? S.cur : null;
     WORLD.open({
-      S: () => S, save, toast, txt, esc, eur, applyFx, rank, bankrupt, startChapter, projectScreen,
+      S: () => S, save, toast, txt, esc, eur, applyFx, rank, bankrupt, payStudy, startChapter, projectScreen,
       hubScreen: (tab) => hubScreen(tab), chapterState, projGate, projStatus,
       speed: () => settings.speed, hudRefresh: () => WORLD.refresh()
     });

@@ -28,9 +28,9 @@ GD.lessons = {
     example: T('Proposta feble: «Fem màrqueting digital de qualitat». Proposta forta: «Ajudem els comerços d\'Osona a aconseguir més clients del barri amb accions mesurables i pressupostos petits».'),
     errors: [T('Confondre tenir presència a les xarxes amb aconseguir resultats comercials.'), T('Prometre resultats sense haver estudiat el negoci.'), T('Definir-se amb paraules buides que podria dir qualsevol competidor.')],
     quiz: [
-      { q: T('Quina d\'aquestes frases descriu millor el màrqueting?'), o: [T('Fer anuncis a internet'), T('Entendre necessitats, crear una oferta que hi respongui i fer que la triïn'), T('Tenir molts seguidors')], c: 1, why: T('La publicitat és una eina dins del màrqueting, no el màrqueting sencer.') },
-      { q: T('Quina proposta ven un resultat?'), o: [T('«Et fem 12 publicacions al mes»'), T('«T\'ajudem a augmentar les reserves dels dimarts i ho mesurem cada setmana»'), T('«Som experts en xarxes socials»')], c: 1, why: T('Parla del problema del client i de com es mesurarà l\'èxit.') },
-      { q: T('Què ha d\'incloure una bona proposta de valor?'), o: [T('Per a qui, quin problema resol i per què és millor'), T('Una llista llarga de serveis'), T('Un eslògan enginyós')], c: 0, why: T('Una proposta de valor és concreta: públic, problema i diferència.') }
+      { q: T('Quina d\'aquestes frases descriu millor el màrqueting?'), o: [T('Fer arribar el producte a més gent amb anuncis i promocions ben pensades'), T('Entendre necessitats, crear una oferta que hi respongui i fer que la triïn'), T('Comunicar els avantatges del producte als canals on és el públic'), T('Crear una marca reconeguda i una comunitat fidel a les xarxes')], c: 1, why: T('La publicitat és una eina dins del màrqueting, no el màrqueting sencer.') },
+      { q: T('Quina proposta ven un resultat?'), o: [T('«Et gestionem les xarxes amb 12 publicacions al mes i un informe d\'abast»'), T('«T\'ajudem a augmentar les reserves dels dimarts i ho mesurem cada setmana»'), T('«Farem créixer la teva comunitat i la visibilitat de la marca a Vic»'), T('«Et fem una campanya d\'anuncis segmentada als clients dels dimarts»')], c: 1, why: T('Parla del problema del client i de com es mesurarà l\'èxit.') },
+      { q: T('Què ha d\'incloure una bona proposta de valor?'), o: [T('Per a qui és, quin problema resol i per què és millor que les alternatives'), T('Què fa l\'empresa, quins serveis ofereix i quina experiència té'), T('Per a qui és, quin preu té i quines garanties ofereix'), T('Quin problema resol, quin eslògan el resumeix i quin to fa servir')], c: 0, why: T('Una proposta de valor és concreta: públic, problema i diferència.') }
     ]
   },
   L_fin: {
@@ -44,9 +44,9 @@ GD.lessons = {
     example: T('Una agència factura 4.000 € al gener, però cobra a 60 dies. Si les despeses de gener són 2.500 €, té benefici, però el gener no ha entrat res al compte: necessita liquiditat per aguantar.'),
     errors: [T('Pensar que facturar és el mateix que cobrar.'), T('Gastar tota la caixa inicial en eines abans de tenir clients.'), T('No separar els diners de l\'empresa dels personals.')],
     quiz: [
-      { q: T('Factures 3.000 € i les despeses són 2.200 €. Quin és el benefici?'), o: ['5.200 €', '800 €', '3.000 €'], c: 1, why: '3.000 − 2.200 = 800 €.' },
-      { q: T('Què és la liquiditat?'), o: [T('El benefici anual'), T('Els diners disponibles ara per fer front als pagaments'), T('El total facturat')], c: 1, why: T('La liquiditat és la caixa disponible, no el resultat comptable.') },
-      { q: T('Per què serveix una reserva per a imprevistos?'), o: [T('Per gastar-la en publicitat pròpia'), T('Per aguantar retards de cobrament o despeses inesperades'), T('No serveix de res si tens clients')], c: 1, why: T('Protegeix l\'empresa davant de cobraments que s\'endarrereixen o de crisis.') }
+      { q: T('Factures 3.000 € i les despeses són 2.200 €. Quin és el benefici?'), o: [T('5.200 €'), T('800 €'), T('2.200 €'), T('3.000 €, perquè el benefici és el que factures')], c: 1, why: '3.000 − 2.200 = 800 €.' },
+      { q: T('Què és la liquiditat?'), o: [T('El benefici que queda després de pagar totes les despeses de l\'any'), T('Els diners disponibles ara per fer front als pagaments'), T('El total que has facturat, encara que no ho hagis cobrat'), T('La diferència entre el que et deuen i el que deus')], c: 1, why: T('La liquiditat és la caixa disponible, no el resultat comptable.') },
+      { q: T('Per què serveix una reserva per a imprevistos?'), o: [T('Per invertir-la quan surti una oportunitat de creixement'), T('Per aguantar retards de cobrament o despeses inesperades'), T('Per pagar menys impostos a final d\'any'), T('Per demostrar al banc que l\'empresa és solvent')], c: 1, why: T('Protegeix l\'empresa davant de cobraments que s\'endarrereixen o de crisis.') }
     ]
   },
   L_recerca: {
@@ -60,9 +60,9 @@ GD.lessons = {
     example: T('Una perruqueria creu que necessita més anuncis. Entrevistant clientes descobreix que molts no saben que obre els dissabtes: el problema era d\'informació, no de visibilitat.'),
     errors: [T('Proposar la solució abans d\'escoltar.'), T('Fer preguntes que només confirmen el que ja penses.'), T('Tractar tots els clients com si fossin iguals.')],
     quiz: [
-      { q: T('«Les vendes de la tarda han baixat.» Això és…'), o: [T('Una causa'), T('Un símptoma'), T('Una solució')], c: 1, why: T('És el que s\'observa; encara cal descobrir per què passa.') },
-      { q: T('Quina pregunta és millor en una primera entrevista?'), o: [T('«Voleu que us fem un Instagram?»'), T('«Què ha canviat aquest darrer any al barri i al negoci?»'), T('«Us sembla car el pa?»')], c: 1, why: T('Les preguntes obertes revelen causes que no coneixies.') },
-      { q: T('Què és segmentar?'), o: [T('Fer descomptes a tothom'), T('Dividir el públic en grups amb necessitats semblants'), T('Publicar a moltes xarxes')], c: 1, why: T('Segmentar permet adaptar missatge, canal i moment a cada grup.') }
+      { q: T('«Les vendes de la tarda han baixat.» Això és…'), o: [T('Una causa'), T('Un símptoma'), T('Un diagnòstic'), T('Un objectiu')], c: 1, why: T('És el que s\'observa; encara cal descobrir per què passa.') },
+      { q: T('Quina pregunta és millor en una primera entrevista?'), o: [T('«Quin pressupost teniu per a xarxes socials aquest any?»'), T('«Què ha canviat aquest darrer any al barri i al negoci?»'), T('«Creieu que us falta publicitat a internet?»'), T('«Quins productes voleu promocionar primer?»')], c: 1, why: T('Les preguntes obertes revelen causes que no coneixies.') },
+      { q: T('Què és segmentar?'), o: [T('Triar el públic que més compra i oblidar-se de la resta'), T('Dividir el públic en grups amb necessitats semblants'), T('Dividir els clients segons el canal per on compren'), T('Fer una oferta diferent per a cada client')], c: 1, why: T('Segmentar permet adaptar missatge, canal i moment a cada grup.') }
     ]
   },
   L_smart: {
@@ -75,9 +75,9 @@ GD.lessons = {
     example: T('Objectiu dolent: «Tenir més presència». Objectiu SMART: «Aconseguir 40 reserves noves per als dilluns de març mitjançant la web».'),
     errors: [T('Triar un objectiu que no té relació amb el problema (per exemple, seguidors quan el problema són vendes).'), T('No definir el punt de partida per poder comparar.')],
     quiz: [
-      { q: T('Quin objectiu és SMART?'), o: [T('Ser el forn més conegut de Vic'), T('Augmentar un 15 % les vendes de la franja 16–19 h en 4 setmanes'), T('Tenir més seguidors')], c: 1, why: T('És específic, mesurable, rellevant, assolible i té termini.') },
-      { q: T('Què li falta a «Aconseguir 50 contactes comercials»?'), o: [T('Un termini'), T('Un color corporatiu'), T('Res')], c: 0, why: T('Sense data límit no pots avaluar si l\'has assolit.') },
-      { q: T('Per què l\'objectiu ha de ser rellevant?'), o: [T('Perquè quedi bé a l\'informe'), T('Perquè ha de respondre al problema real del negoci'), T('Perquè sigui fàcil')], c: 1, why: T('Pots assolir un objectiu irrellevant i continuar tenint el mateix problema.') }
+      { q: T('Quin objectiu és SMART?'), o: [T('Ser el forn de referència de Vic per al berenar abans de l\'estiu'), T('Augmentar un 15 % les vendes de la franja 16–19 h en 4 setmanes'), T('Augmentar molt les vendes de la tarda durant les properes setmanes'), T('Aconseguir 1.000 seguidors nous a Instagram en 4 setmanes')], c: 1, why: T('És específic, mesurable, rellevant, assolible i té termini. L\'objectiu de seguidors també es pot mesurar i té data, però no és rellevant: el problema del forn són les vendes de la tarda.') },
+      { q: T('Què li falta a «Aconseguir 50 contactes comercials»?'), o: [T('Un termini'), T('Que sigui mesurable'), T('Que sigui específic'), T('Res: ja és un objectiu SMART')], c: 0, why: T('Sense data límit no pots avaluar si l\'has assolit.') },
+      { q: T('Per què l\'objectiu ha de ser rellevant?'), o: [T('Perquè el client l\'entengui i l\'aprovi més de pressa'), T('Perquè ha de respondre al problema real del negoci'), T('Perquè es pugui mesurar amb les eines que ja tens'), T('Perquè sigui assolible amb el pressupost disponible')], c: 1, why: T('Pots assolir un objectiu irrellevant i continuar tenint el mateix problema.') }
     ]
   },
   L_metriques: {
@@ -91,9 +91,9 @@ GD.lessons = {
     example: T('Una cafeteria té 3.000 m\'agrada en un vídeo, però el nombre de cafès venuts no varia. En canvi, un cupó bescanviat a la caixa és una prova directa de visita.'),
     errors: [T('Presentar impressions com si fossin clients.'), T('Mesurar només el que és fàcil de mesurar.'), T('No tenir dades d\'abans per comparar.')],
     quiz: [
-      { q: T('Quin indicador està més a prop de les vendes?'), o: [T('Impressions'), T('M\'agrada'), T('Cupons bescanviats a la botiga')], c: 2, why: T('Un cupó bescanviat implica una visita i, normalment, una compra.') },
-      { q: T('Què és una mètrica de vanitat?'), o: [T('Una dada que fa bonic però no ajuda a decidir'), T('El cost per venda'), T('Les vendes per franja horària')], c: 0, why: T('Seguidors i m\'agrada poden créixer sense que el negoci millori.') },
-      { q: T('Per què cal saber les vendes de les setmanes anteriors?'), o: [T('Per tenir un punt de comparació'), T('No cal'), T('Per fer gràfics')], c: 0, why: T('Sense punt de partida no pots saber si la campanya ha canviat res.') }
+      { q: T('Quin indicador està més a prop de les vendes?'), o: [T('Clics a l\'enllaç de l\'anunci'), T('Visites a la pàgina de l\'oferta'), T('Cupons bescanviats a la botiga'), T('Persones que han desat la publicació')], c: 2, why: T('Un cupó bescanviat implica una visita i, normalment, una compra.') },
+      { q: T('Què és una mètrica de vanitat?'), o: [T('Una dada que fa bonic però no ajuda a decidir'), T('Una dada que creix sola sense fer res'), T('Una mètrica que només interessa a la competència'), T('Una dada que no es pot mesurar amb exactitud')], c: 0, why: T('Seguidors i m\'agrada poden créixer sense que el negoci millori.') },
+      { q: T('Per què cal saber les vendes de les setmanes anteriors?'), o: [T('Per tenir un punt de comparació'), T('Per calcular el pressupost de la campanya'), T('Per triar el millor dia per publicar'), T('Per saber quin producte promocionar')], c: 0, why: T('Sense punt de partida no pots saber si la campanya ha canviat res.') }
     ]
   },
   L_ads1: {
@@ -107,9 +107,9 @@ GD.lessons = {
     example: T('Un gimnàs local que segmenta «18–65 anys, tota Espanya» i optimitza per interaccions gasta el pressupost en persones que mai no hi aniran.'),
     errors: [T('Triar l\'objectiu equivocat.'), T('Segmentació massa àmplia.'), T('No mesurar la conversió.'), T('Gastar tot el pressupost en un sol dia.')],
     quiz: [
-      { q: T('Un gimnàs de Vic vol inscripcions. Quin objectiu ha de triar?'), o: [T('Interacció amb la publicació'), T('Conversions / contactes (inscripcions)'), T('Visualitzacions de vídeo')], c: 1, why: T('La plataforma optimitza per allò que li demanes.') },
-      { q: T('Quina segmentació té més sentit?'), o: [T('Tota Espanya, 18–65 anys'), T('10 km al voltant del gimnàs, 20–55 anys'), T('Tot el món')], c: 1, why: T('Un servei presencial necessita gent que hi pugui anar.') },
-      { q: T('Què passa si no configures la conversió?'), o: [T('Res, la plataforma ho endevina'), T('No pots saber quantes inscripcions genera ni quant costen'), T('Els anuncis són més barats')], c: 1, why: T('Sense mesura no hi ha optimització ni retiment de comptes.') }
+      { q: T('Un gimnàs de Vic vol inscripcions. Quin objectiu ha de triar?'), o: [T('Trànsit al web, perquè hi ha el formulari d\'inscripció'), T('Conversions / contactes (inscripcions)'), T('Abast, perquè com més gent ho vegi, més inscripcions'), T('Interacció, per fer créixer la comunitat primer')], c: 1, why: T('La plataforma optimitza per allò que li demanes.') },
+      { q: T('Quina segmentació té més sentit?'), o: [T('Tota la comarca d\'Osona, 18–65 anys, interessos en esport'), T('10 km al voltant del gimnàs, 20–55 anys'), T('Tot Catalunya, 20–55 anys, per tenir més abast'), T('2 km al voltant del gimnàs, només 25–30 anys')], c: 1, why: T('Un servei presencial necessita gent que hi pugui anar.') },
+      { q: T('Què passa si no configures la conversió?'), o: [T('La plataforma optimitza pels clics i acabes pagant més'), T('No pots saber quantes inscripcions genera ni quant costen'), T('L\'anunci no es pot publicar fins que la configuris'), T('Només perds les dades de les persones que no compren')], c: 1, why: T('Sense mesura no hi ha optimització ni retiment de comptes.') }
     ]
   },
 
@@ -125,9 +125,9 @@ GD.lessons = {
     example: T('Un restaurant que publica el menú del dilluns a la fitxa i activa les reserves en línia passa de 2 a 9 reserves els dilluns (cas simulat).'),
     errors: [T('Horaris desactualitzats.'), T('Respondre de manera defensiva a les crítiques.'), T('Comprar ressenyes falses (és enganyós i pot ser sancionat).')],
     quiz: [
-      { q: T('Quina cerca té intenció de visita?'), o: [T('«Història de la cuina catalana»'), T('«Restaurant obert dilluns a Vic»'), T('«Recepta de fricandó»')], c: 1, why: T('La persona vol anar a un lloc concret, ara.') },
-      { q: T('Com respons una ressenya negativa justa?'), o: [T('L\'ignores'), T('Agraeixes, expliques què canviaràs i ho fas'), T('Discuteixes amb el client')], c: 1, why: T('Una resposta honesta i útil genera confiança en els futurs clients.') },
-      { q: T('Què és prioritari en una fitxa local?'), o: [T('Horaris i informació correctes'), T('Un logo nou'), T('Moltes etiquetes')], c: 0, why: T('Si la informació és errònia, perds visites encara que siguis visible.') }
+      { q: T('Quina cerca té intenció de visita?'), o: [T('«Millors restaurants de Catalunya»'), T('«Restaurant obert dilluns a Vic»'), T('«Restaurant Can Jordi opinions»'), T('«Menú de migdia preu mitjà»')], c: 1, why: T('La persona vol anar a un lloc concret, ara.') },
+      { q: T('Com respons una ressenya negativa justa?'), o: [T('Agraeixes l\'opinió i convides el client a tornar'), T('Agraeixes, expliques què canviaràs i ho fas'), T('Demanes disculpes en privat perquè no es vegi'), T('Expliques per què va passar i que va ser excepcional')], c: 1, why: T('Una resposta honesta i útil genera confiança en els futurs clients.') },
+      { q: T('Què és prioritari en una fitxa local?'), o: [T('Horaris i informació correctes'), T('Moltes fotos i publicacions recents'), T('Una bona descripció amb paraules clau'), T('Respondre totes les preguntes dels usuaris')], c: 0, why: T('Si la informació és errònia, perds visites encara que siguis visible.') }
     ]
   },
   L_b2b: {
@@ -141,9 +141,9 @@ GD.lessons = {
     example: T('Una campanya genera 200 contactes a 5 € cadascun, però cap no és una empresa compradora. Una altra en genera 20 a 40 €, i 4 acaben en comanda. La segona és molt millor.'),
     errors: [T('Mesurar només el volum de contactes.'), T('No definir què és un contacte qualificat.'), T('Deixar passar dies abans de trucar.')],
     quiz: [
-      { q: T('Inverteixes 2.000 € i aconsegueixes 4 clients nous. Quin és el CAC?'), o: ['500 €', '8.000 €', '2.000 €'], c: 0, why: T('2.000 ÷ 4 = 500 € per client.') },
-      { q: T('Què és un contacte qualificat?'), o: [T('Qualsevol correu'), T('Algú amb necessitat, capacitat de compra i encaix amb el producte'), T('Un seguidor de LinkedIn')], c: 1, why: T('La qualificació separa curiosos de compradors potencials.') },
-      { q: T('Quin és un tret típic del B2B?'), o: [T('Compres impulsives'), T('Diverses persones decideixen i el cicle és llarg'), T('Preus molt baixos')], c: 1, why: T('Per això cal contingut tècnic i un seguiment comercial acurat.') }
+      { q: T('Inverteixes 2.000 € i aconsegueixes 4 clients nous. Quin és el CAC?'), o: [T('500 €'), T('8.000 €'), T('2.000 €'), T('250 €')], c: 0, why: T('2.000 ÷ 4 = 500 € per client.') },
+      { q: T('Què és un contacte qualificat?'), o: [T('Algú que ha descarregat un catàleg i ha deixat el correu'), T('Algú amb necessitat, capacitat de compra i encaix amb el producte'), T('Algú que ha demanat informació i té càrrec de direcció'), T('Algú que coneix la marca i interactua a LinkedIn')], c: 1, why: T('La qualificació separa curiosos de compradors potencials.') },
+      { q: T('Quin és un tret típic del B2B?'), o: [T('Les compres es decideixen sobretot pel preu'), T('Diverses persones decideixen i el cicle és llarg'), T('El client compra sovint i en quantitats petites'), T('La publicitat massiva és el canal principal')], c: 1, why: T('Per això cal contingut tècnic i un seguiment comercial acurat.') }
     ]
   },
   L_seo: {
@@ -157,9 +157,9 @@ GD.lessons = {
     example: T('Una fàbrica crea una pàgina per a cada família de producte amb fitxa tècnica descarregable. En sis mesos rep consultes de compradors que abans no la trobaven (cas simulat).'),
     errors: [T('Escriure per a robots en lloc de persones.'), T('Una sola pàgina genèrica per a tots els productes.'), T('Esperar resultats en una setmana.')],
     quiz: [
-      { q: T('Quina cerca indica intenció de compra B2B?'), o: [T('«Què és un engranatge»'), T('«Fabricant engranatges a mida pressupost»'), T('«Fotos de fàbriques»')], c: 1, why: T('Inclou paraules com «fabricant» i «pressupost».') },
-      { q: T('Quin és un problema de SEO tècnic?'), o: [T('La web no funciona bé al mòbil'), T('El logo és lleig'), T('Hi ha massa productes')], c: 0, why: T('El rendiment i l\'accessibilitat tècnica afecten la indexació i l\'experiència.') },
-      { q: T('Quant triga normalment el SEO a donar resultats?'), o: [T('Hores'), T('Setmanes o mesos'), T('Mai')], c: 1, why: T('És una inversió a mitjà termini.') }
+      { q: T('Quina cerca indica intenció de compra B2B?'), o: [T('«Com funciona un engranatge helicoïdal»'), T('«Fabricant engranatges a mida pressupost»'), T('«Tipus d\'engranatges industrials»'), T('«Engranatges millors marques»')], c: 1, why: T('Inclou paraules com «fabricant» i «pressupost».') },
+      { q: T('Quin és un problema de SEO tècnic?'), o: [T('La web no funciona bé al mòbil'), T('Els textos no tenen prou paraules clau'), T('El blog no s\'actualitza des de fa mesos'), T('Poques webs enllacen a la pàgina')], c: 0, why: T('El rendiment i l\'accessibilitat tècnica afecten la indexació i l\'experiència.') },
+      { q: T('Quant triga normalment el SEO a donar resultats?'), o: [T('Uns dies, si el contingut és bo'), T('Setmanes o mesos'), T('Més d\'un any, sempre'), T('Immediatament, si la web és ràpida')], c: 1, why: T('És una inversió a mitjà termini.') }
     ]
   },
   L_ecom: {
@@ -174,9 +174,9 @@ GD.lessons = {
     example: T('Una botiga d\'embotits mostra el cost de l\'enviament refrigerat només al final. Quan el mostra a la fitxa i ofereix enviament gratuït a partir de 45 €, l\'abandonament baixa (cas simulat).'),
     errors: [T('Prioritzar l\'estètica per sobre de la usabilitat.'), T('Amagar costos fins al darrer pas.'), T('Oblidar la logística i l\'atenció al client.')],
     quiz: [
-      { q: T('2.000 visites i 30 comandes. Quina és la conversió?'), o: ['15 %', '1,5 %', '0,15 %'], c: 1, why: '30 ÷ 2.000 = 0,015 → 1,5 %.' },
-      { q: T('Quina és una causa típica d\'abandonament?'), o: [T('Costos d\'enviament que apareixen al final'), T('Fotos massa clares'), T('Massa informació sobre el producte')], c: 0, why: T('Les sorpreses de preu al final fan desconfiar.') },
-      { q: T('Per què cal calcular el marge per comanda?'), o: [T('Per saber si cada venda deixa diners després de tots els costos'), T('Per decidir el color de la web'), T('No cal')], c: 0, why: T('Pots vendre molt i perdre diners en cada comanda.') }
+      { q: T('2.000 visites i 30 comandes. Quina és la conversió?'), o: [T('15 %'), T('1,5 %'), T('0,15 %'), T('6,6 %')], c: 1, why: '30 ÷ 2.000 = 0,015 → 1,5 %.' },
+      { q: T('Quina és una causa típica d\'abandonament?'), o: [T('Costos d\'enviament que apareixen al final'), T('Poques fotos de cada producte'), T('No tenir xat a la web'), T('Massa productes a la pàgina d\'inici')], c: 0, why: T('Les sorpreses de preu al final fan desconfiar.') },
+      { q: T('Per què cal calcular el marge per comanda?'), o: [T('Per saber si cada venda deixa diners després de tots els costos'), T('Per saber quant pots gastar en publicitat cada mes'), T('Per fixar el preu final dels productes'), T('Per calcular els impostos de cada venda')], c: 0, why: T('Pots vendre molt i perdre diners en cada comanda.') }
     ]
   },
   L_xarxes: {
@@ -190,9 +190,9 @@ GD.lessons = {
     example: T('Una marca de roba guanya 8.000 seguidors amb un sorteig d\'un mòbil. Les vendes no es mouen: la majoria de nous seguidors només volien el mòbil.'),
     errors: [T('Publicar per publicar.'), T('Mesurar l\'èxit només en seguidors.'), T('No indicar que un contingut és publicitat.')],
     quiz: [
-      { q: T('Un sorteig d\'un mòbil fa créixer molt els seguidors d\'una botiga de llana. Què és probable?'), o: [T('Que les vendes es tripliquin'), T('Que molts seguidors no siguin clients potencials'), T('Que el SEO millori')], c: 1, why: T('El premi atrau gent interessada en el premi, no en el producte.') },
-      { q: T('Què ha d\'incloure una estratègia editorial?'), o: [T('Públic, temes, freqüència i acció desitjada'), T('Només el calendari de publicacions'), T('Els hashtags de moda')], c: 0, why: T('Sense propòsit, la freqüència no serveix de res.') },
-      { q: T('Quan treballes amb un creador de contingut pagat…'), o: [T('No cal dir res'), T('Cal indicar clarament que és publicitat'), T('Només si ho demana')], c: 1, why: T('La transparència és una obligació i protegeix la confiança.') }
+      { q: T('Un sorteig d\'un mòbil fa créixer molt els seguidors d\'una botiga de llana. Què és probable?'), o: [T('Que les vendes pugin, però menys que els seguidors'), T('Que molts seguidors no siguin clients potencials'), T('Que l\'abast de les publicacions millori durant mesos'), T('Que la marca es faci coneguda entre les teixidores')], c: 1, why: T('El premi atrau gent interessada en el premi, no en el producte.') },
+      { q: T('Què ha d\'incloure una estratègia editorial?'), o: [T('Públic, temes, freqüència i acció desitjada'), T('Temes, formats, freqüència i hashtags'), T('Públic, xarxes, horaris i pressupost'), T('Calendari, formats i to de comunicació')], c: 0, why: T('Sense propòsit, la freqüència no serveix de res.') },
+      { q: T('Quan treballes amb un creador de contingut pagat…'), o: [T('Només cal dir-ho si el creador cobra diners, no si rep producte'), T('Cal indicar clarament que és publicitat'), T('N\'hi ha prou amb etiquetar la marca a la publicació'), T('Cal dir-ho només si té més de 100.000 seguidors')], c: 1, why: T('La transparència és una obligació i protegeix la confiança.') }
     ]
   },
   L_kpi: {
@@ -206,9 +206,9 @@ GD.lessons = {
     example: T('Un informe honest: «Hem publicat 20 vegades (activitat), han arribat 1.200 visites des d\'Instagram (màrqueting) i 18 han comprat, 540 € (comercial)».'),
     errors: [T('Barrejar activitat amb resultats.'), T('Atribuir tot el canvi a la campanya.'), T('Enllaços sense etiquetar.')],
     quiz: [
-      { q: T('«Hem publicat 30 vídeos.» Quin nivell és?'), o: [T('Activitat'), T('Resultat comercial'), T('Conversió')], c: 0, why: T('Descriu la feina feta, no el resultat obtingut.') },
-      { q: T('Per a què serveixen els paràmetres UTM?'), o: [T('Per identificar de quina campanya ve cada visita'), T('Per accelerar la web'), T('Per evitar el correu brossa')], c: 0, why: T('Permeten atribuir visites i vendes a cada acció.') },
-      { q: T('Les vendes pugen al desembre i la campanya també era al desembre. Què pots afirmar?'), o: [T('La campanya ha causat la pujada'), T('Hi ha correlació, però cal descartar l\'estacionalitat'), T('La campanya no ha servit')], c: 1, why: T('Cal comparar amb anys anteriors o un grup de control.') }
+      { q: T('«Hem publicat 30 vídeos.» Quin nivell és?'), o: [T('Activitat'), T('Resultat comercial'), T('Interacció'), T('Abast')], c: 0, why: T('Descriu la feina feta, no el resultat obtingut.') },
+      { q: T('Per a què serveixen els paràmetres UTM?'), o: [T('Per identificar de quina campanya ve cada visita'), T('Per saber quantes vegades s\'ha vist l\'anunci'), T('Per comptar les vendes de cada producte'), T('Per evitar que les visites es dupliquin a Analytics')], c: 0, why: T('Permeten atribuir visites i vendes a cada acció.') },
+      { q: T('Les vendes pugen al desembre i la campanya també era al desembre. Què pots afirmar?'), o: [T('La campanya ha causat la pujada, perquè coincideixen'), T('Hi ha correlació, però cal descartar l\'estacionalitat'), T('La campanya ha funcionat si les vendes han pujat més d\'un 10 %'), T('No es pot saber res de cap campanya feta al desembre')], c: 1, why: T('Cal comparar amb anys anteriors o un grup de control.') }
     ]
   },
 
@@ -224,9 +224,9 @@ GD.lessons = {
     example: T('Després d\'una fira, en lloc d\'enviar el mateix correu a 80 targetes, l\'agència prioritza les 8 empreses que han explicat un problema concret i tenen pressupost.'),
     errors: [T('Perseguir tothom per igual.'), T('Parlar només dels teus serveis.'), T('No fer seguiment en 48 hores.')],
     quiz: [
-      { q: T('Quin contacte té més potencial?'), o: [T('Un estudiant curiós'), T('Una gerent amb un problema concret, pressupost i data límit'), T('Algú que només vol bolígrafs')], c: 1, why: T('Necessitat, capacitat de decisió, pressupost i urgència.') },
-      { q: T('Una fira costa 600 € i et porta 2 clients amb 1.500 € de marge total. Quin és el retorn?'), o: ['150 %', '250 %', '60 %'], c: 0, why: '(1.500 − 600) ÷ 600 = 1,5 → 150 %.' },
-      { q: T('Què hauria d\'incloure un bon argumentari?'), o: [T('Preguntes, exemples i respostes a objeccions'), T('Un discurs llarg sobre l\'agència'), T('Només preus')], c: 0, why: T('Una conversa útil per al client ven més que un monòleg.') }
+      { q: T('Quin contacte té més potencial?'), o: [T('Un director que ha descarregat tres catàlegs aquest mes'), T('Una gerent amb un problema concret, pressupost i data límit'), T('Una empresa gran del sector que encara no et coneix'), T('Un client antic que et recomana a tothom')], c: 1, why: T('Necessitat, capacitat de decisió, pressupost i urgència.') },
+      { q: T('Una fira costa 600 € i et porta 2 clients amb 1.500 € de marge total. Quin és el retorn?'), o: [T('150 %'), T('250 %'), T('60 %'), T('40 %')], c: 0, why: '(1.500 − 600) ÷ 600 = 1,5 → 150 %.' },
+      { q: T('Què hauria d\'incloure un bon argumentari?'), o: [T('Preguntes, exemples i respostes a objeccions'), T('Preus, descomptes i condicions de pagament'), T('Serveis, casos d\'èxit i premis de l\'agència'), T('Una presentació breu de l\'agència i del seu equip')], c: 0, why: T('Una conversa útil per al client ven més que un monòleg.') }
     ]
   },
   L_posicionament: {
@@ -240,9 +240,9 @@ GD.lessons = {
     example: T('Una agència petita no pot igualar els recursos d\'una de Barcelona, però pot ser la que millor coneix els comerços i la indústria d\'Osona i respondre en el mateix dia.'),
     errors: [T('Competir només en preu.'), T('Prometre més del que pots complir.'), T('Copiar el discurs del competidor gran.')],
     quiz: [
-      { q: T('Quina diferenciació és més creïble per a una agència petita de Vic?'), o: [T('Som els més grans'), T('Coneixement local i servei proper amb resultats mesurables'), T('Fem de tot')], c: 1, why: T('És veritat, és difícil de copiar i és valuós per al client.') },
-      { q: T('Competir només amb preus baixos…'), o: [T('És sempre la millor estratègia'), T('Redueix el marge i atrau clients que marxaran per un preu més baix'), T('Augmenta la reputació')], c: 1, why: T('Sempre hi haurà algú més barat.') },
-      { q: T('Quan té sentit aliar-se amb un competidor?'), o: [T('Mai'), T('Quan les habilitats són complementàries i hi ha confiança'), T('Només si et compra l\'empresa')], c: 1, why: T('La col·laboració permet accedir a projectes que sol no podries fer.') }
+      { q: T('Quina diferenciació és més creïble per a una agència petita de Vic?'), o: [T('Preus més baixos que les agències de Barcelona'), T('Coneixement local i servei proper amb resultats mesurables'), T('Experiència en tots els sectors i tots els canals'), T('Les últimes eines d\'IA per a tots els serveis')], c: 1, why: T('És veritat, és difícil de copiar i és valuós per al client.') },
+      { q: T('Competir només amb preus baixos…'), o: [T('Funciona si tens costos més baixos que la competència'), T('Redueix el marge i atrau clients que marxaran per un preu més baix'), T('Fa créixer la cartera de clients sense riscos'), T('És la millor manera d\'entrar en un mercat nou')], c: 1, why: T('Sempre hi haurà algú més barat.') },
+      { q: T('Quan té sentit aliar-se amb un competidor?'), o: [T('Quan l\'altre és més gran i et pot passar clients'), T('Quan les habilitats són complementàries i hi ha confiança'), T('Quan feu els mateixos serveis i així baixeu preus'), T('Quan us voleu repartir els clients per zones')], c: 1, why: T('La col·laboració permet accedir a projectes que sol no podries fer.') }
     ]
   },
   L_pressupost: {
@@ -256,9 +256,9 @@ GD.lessons = {
     example: T('Un projecte de 1.200 € que requereix 30 hores a un cost de 25 €/h té un cost directe de 750 €: marge brut del 37,5 %. Si el client demana 20 hores més sense pagar, el marge passa a ser negatiu.'),
     errors: [T('Acceptar «encarrega\'t de tot» sense límits.'), T('No comptar el temps de reunions i correus.'), T('Fer canvis gratis per por de perdre el client.')],
     quiz: [
-      { q: T('Preu 2.000 €, cost directe 1.200 €. Quin és el marge brut?'), o: ['40 %', '60 %', '800 %'], c: 0, why: '(2.000 − 1.200) ÷ 2.000 = 0,40.' },
-      { q: T('Què ha de dir l\'abast d\'un projecte?'), o: [T('Què inclou, què no, revisions i terminis'), T('Només el preu'), T('El nom del client')], c: 0, why: T('Un abast clar evita conflictes.') },
-      { q: T('El client demana una feina que no era al contracte. Què fas?'), o: [T('La fas gratis'), T('L\'expliques i la pressuposteu a part o canvieu prioritats'), T('T\'enfades')], c: 1, why: T('És professional i manté la confiança.') }
+      { q: T('Preu 2.000 €, cost directe 1.200 €. Quin és el marge brut?'), o: [T('40 %'), T('60 %'), T('67 %'), T('800 €, que és un 80 %')], c: 0, why: '(2.000 − 1.200) ÷ 2.000 = 0,40.' },
+      { q: T('Què ha de dir l\'abast d\'un projecte?'), o: [T('Què inclou, què no, revisions i terminis'), T('Què inclou, el preu i la forma de pagament'), T('Els objectius, el públic i els canals'), T('Les tasques, les persones i les eines')], c: 0, why: T('Un abast clar evita conflictes.') },
+      { q: T('El client demana una feina que no era al contracte. Què fas?'), o: [T('La fas per mantenir la relació i la factures al final'), T('L\'expliques i la pressuposteu a part o canvieu prioritats'), T('La fas gratis aquesta vegada i avises que serà l\'última'), T('Li dius que no és possible fins al contracte següent')], c: 1, why: T('És professional i manté la confiança.') }
     ]
   },
   L_planificacio: {
@@ -272,9 +272,9 @@ GD.lessons = {
     example: T('Tres clients demanen canvis la mateixa setmana. L\'agència resol primer l\'error que impedeix vendre a la botiga en línia, programa la campanya per dijous i avisa el tercer client que el redisseny arribarà dilluns.'),
     errors: [T('Treballar de nit sistemàticament: la qualitat cau.'), T('Ajornar sense avisar.'), T('Dir que sí a tot.')],
     quiz: [
-      { q: T('Què resols primer?'), o: [T('Un canvi de color al logo'), T('Un error que impedeix comprar a la botiga en línia d\'un client'), T('Un informe trimestral que vencerà d\'aquí a un mes')], c: 1, why: T('És urgent i té un gran impacte en el negoci del client.') },
-      { q: T('Si has d\'ajornar una tasca…'), o: [T('Ho fas sense dir res'), T('Avises el client amb una data nova realista'), T('Esperes que no se n\'adoni')], c: 1, why: T('La transparència preserva la confiança.') },
-      { q: T('Subcontractar una tasca té sentit quan…'), o: [T('No tens capacitat i algú la pot fer bé amb un cost raonable'), T('Mai'), T('Vols estalviar-te la responsabilitat')], c: 0, why: T('Continues sent responsable del resultat davant del client.') }
+      { q: T('Què resols primer?'), o: [T('Un informe trimestral que el client vol veure demà'), T('Un error que impedeix comprar a la botiga en línia d\'un client'), T('La proposta per a un client nou que pot ser molt gran'), T('Les publicacions de la setmana vinent d\'un client')], c: 1, why: T('És urgent i té un gran impacte en el negoci del client.') },
+      { q: T('Si has d\'ajornar una tasca…'), o: [T('Avises el client el dia de l\'entrega'), T('Avises el client amb una data nova realista'), T('Ho fas tu el cap de setmana per no ajornar-la'), T('Entregues una versió parcial sense dir res')], c: 1, why: T('La transparència preserva la confiança.') },
+      { q: T('Subcontractar una tasca té sentit quan…'), o: [T('No tens capacitat i algú la pot fer bé amb un cost raonable'), T('Algú la pot fer més barata, encara que sigui pitjor'), T('El client no ho ha de saber mai'), T('Així la responsabilitat del resultat passa a l\'altre')], c: 0, why: T('Continues sent responsable del resultat davant del client.') }
     ]
   },
 
@@ -290,9 +290,9 @@ GD.lessons = {
     example: T('Una analista amb un sou de 1.900 € bruts al mes costa a l\'empresa uns 2.500 € amb cotitzacions i eines. Si allibera 60 hores al mes del director per vendre, pot ser rendible (xifres orientatives i simplificades).'),
     errors: [T('Contractar amb ingressos puntuals, no recurrents.'), T('Delegar sense instruccions clares.'), T('No preveure el temps de formació.')],
     quiz: [
-      { q: T('Què cal comparar abans de contractar?'), o: [T('El cost total amb el valor i el temps que aportarà'), T('Només el sou'), T('El nombre de seguidors de l\'agència')], c: 0, why: T('Una contractació és una inversió.') },
-      { q: T('Quin ingrés és més segur per cobrir un sou?'), o: [T('Un projecte puntual'), T('Quotes mensuals de clients recurrents'), T('Un premi')], c: 1, why: T('Els sous es paguen cada mes.') },
-      { q: T('Delegar bé vol dir…'), o: [T('Donar la tasca i oblidar-se\'n'), T('Definir objectius, criteris i revisions'), T('Fer-ho tot tu igualment')], c: 1, why: T('Així la persona té autonomia i tu tens control de qualitat.') }
+      { q: T('Què cal comparar abans de contractar?'), o: [T('El cost total amb el valor i el temps que aportarà'), T('El sou amb el que cobren a altres agències'), T('L\'experiència de la persona amb el sou que demana'), T('El cost de la persona amb el d\'una eina d\'IA')], c: 0, why: T('Una contractació és una inversió.') },
+      { q: T('Quin ingrés és més segur per cobrir un sou?'), o: [T('Un projecte gran que acabes de signar'), T('Quotes mensuals de clients recurrents'), T('La previsió de vendes del trimestre'), T('Una subvenció per a la contractació')], c: 1, why: T('Els sous es paguen cada mes.') },
+      { q: T('Delegar bé vol dir…'), o: [T('Explicar la tasca i revisar-la quan estigui acabada'), T('Definir objectius, criteris i revisions'), T('Donar llibertat total perquè la persona aprengui'), T('Revisar cada pas perquè no hi hagi errors')], c: 1, why: T('Així la persona té autonomia i tu tens control de qualitat.') }
     ]
   },
   L_brief: {
@@ -306,9 +306,9 @@ GD.lessons = {
     example: T('La Berta proposa un vídeo poètic per a una fàbrica. Amb el brief, adapta la idea: imatges espectaculars de la maquinària, però amb el missatge «entrega en 48 hores» que és el que valoren els compradors.'),
     errors: [T('Començar a dissenyar sense brief.'), T('Decidir per gust personal.'), T('Canviar de to a cada campanya.')],
     quiz: [
-      { q: T('Què NO és part d\'un brief creatiu?'), o: [T('Públic objectiu'), T('Missatge principal'), T('El color preferit del director')], c: 2, why: T('El brief parteix de l\'objectiu i el públic, no de gustos personals.') },
-      { q: T('Com decideixes entre dues propostes creatives?'), o: [T('Per votació de l\'equip'), T('Amb una prova A/B davant del públic real'), T('Tries la més cara')], c: 1, why: T('Les dades del públic són millors que les opinions internes.') },
-      { q: T('Coherència de marca vol dir…'), o: [T('Fer sempre el mateix anunci'), T('Mantenir valors, to i estil en tots els canals'), T('Fer servir un sol color')], c: 1, why: T('Ajuda a reconèixer la marca i confiar-hi.') }
+      { q: T('Què NO és part d\'un brief creatiu?'), o: [T('El públic objectiu'), T('El missatge principal'), T('El color preferit del director'), T('Els límits de pressupost i terminis')], c: 2, why: T('El brief parteix de l\'objectiu i el públic, no de gustos personals.') },
+      { q: T('Com decideixes entre dues propostes creatives?'), o: [T('Les ensenyes al client i tria la que li agradi més'), T('Amb una prova A/B davant del públic real'), T('Fas una enquesta entre l\'equip de l\'agència'), T('Tries la que segueix millor les tendències')], c: 1, why: T('Les dades del públic són millors que les opinions internes.') },
+      { q: T('Coherència de marca vol dir…'), o: [T('Fer servir el mateix logo i colors a tot arreu'), T('Mantenir valors, to i estil en tots els canals'), T('Publicar el mateix contingut a totes les xarxes'), T('No canviar mai el missatge principal')], c: 1, why: T('Ajuda a reconèixer la marca i confiar-hi.') }
     ]
   },
   L_processos: {
@@ -322,9 +322,9 @@ GD.lessons = {
     example: T('Abans: peticions per WhatsApp, correu i trucades, i tres errors de coordinació al mes. Després: formulari de peticions + tauler de tasques + revisió dels dilluns.'),
     errors: [T('Massa processos: ningú no els segueix.'), T('Tasques sense responsable.'), T('No documentar les decisions del client.')],
     quiz: [
-      { q: T('Quin és el primer pas per ordenar les peticions dels clients?'), o: [T('Un canal únic d\'entrada'), T('Més reunions'), T('Respondre més de pressa')], c: 0, why: T('Si les peticions entren per tot arreu, es perden.') },
-      { q: T('Tota tasca hauria de tenir…'), o: [T('Un responsable i una data'), T('Tres responsables'), T('Cap data per no pressionar')], c: 0, why: T('Si és de tothom, no és de ningú.') },
-      { q: T('Una llista de comprovació abans d\'enviar un informe serveix per…'), o: [T('Reduir errors evitables'), T('Allargar la feina'), T('Res')], c: 0, why: T('És el control de qualitat més barat que existeix.') }
+      { q: T('Quin és el primer pas per ordenar les peticions dels clients?'), o: [T('Un canal únic d\'entrada'), T('Una reunió setmanal amb cada client'), T('Respondre totes les peticions el mateix dia'), T('Un gestor de tasques per a l\'equip')], c: 0, why: T('Si les peticions entren per tot arreu, es perden.') },
+      { q: T('Tota tasca hauria de tenir…'), o: [T('Un responsable i una data'), T('Dos responsables, per si un falla'), T('Una data i una prioritat'), T('Un responsable i una prioritat')], c: 0, why: T('Si és de tothom, no és de ningú.') },
+      { q: T('Una llista de comprovació abans d\'enviar un informe serveix per…'), o: [T('Reduir errors evitables'), T('Que el client vegi que hi ha un procés'), T('Fer l\'informe més de pressa'), T('Que no calgui que ningú el revisi')], c: 0, why: T('És el control de qualitat més barat que existeix.') }
     ]
   },
   L_crm: {
@@ -338,9 +338,9 @@ GD.lessons = {
     example: T('Quan algú descarrega una fitxa tècnica (i accepta rebre informació), el CRM li envia un correu útil al cap de 3 dies i avisa el comercial si torna a visitar la pàgina de preus.'),
     errors: [T('Comprar llistes de correus.'), T('Automatitzar respostes a queixes.'), T('No segmentar: enviar el mateix a tothom.')],
     quiz: [
-      { q: T('Quina tasca és millor automatitzar?'), o: [T('Respondre una crisi de reputació'), T('Enviar un correu de benvinguda a qui s\'ha subscrit'), T('Decidir l\'estratègia anual')], c: 1, why: T('És repetitiva i no necessita criteri humà en cada cas.') },
-      { q: T('Pots enviar butlletins a una llista de correus comprada?'), o: [T('Sí, si és barata'), T('No: cal consentiment o una base legal'), T('Sí, si poses un logo')], c: 1, why: T('Sense consentiment vulneres la normativa i la confiança.') },
-      { q: T('Què és un CRM?'), o: [T('Una xarxa social'), T('Una eina per gestionar contactes i relacions comercials'), T('Un tipus d\'anunci')], c: 1, why: T('Centralitza la informació dels clients i el seguiment.') }
+      { q: T('Quina tasca és millor automatitzar?'), o: [T('Respondre una ressenya negativa d\'un client habitual'), T('Enviar un correu de benvinguda a qui s\'ha subscrit'), T('Decidir quins clients reben un descompte especial'), T('Preparar la proposta per a un client nou')], c: 1, why: T('És repetitiva i no necessita criteri humà en cada cas.') },
+      { q: T('Pots enviar butlletins a una llista de correus comprada?'), o: [T('Sí, si el proveïdor garanteix que les dades són legals'), T('No: cal consentiment o una base legal'), T('Sí, si cada correu inclou l\'enllaç de baixa'), T('Sí, si són adreces d\'empreses i no de particulars')], c: 1, why: T('Sense consentiment vulneres la normativa i la confiança.') },
+      { q: T('Què és un CRM?'), o: [T('Una eina per enviar butlletins i automatitzar campanyes'), T('Una eina per gestionar contactes i relacions comercials'), T('Un programa de facturació i comptabilitat'), T('Una base de dades de clients potencials comprada')], c: 1, why: T('Centralitza la informació dels clients i el seguiment.') }
     ]
   },
   L_rendibilitat: {
@@ -354,9 +354,9 @@ GD.lessons = {
     example: T('Client A: 1.500 €/mes, 80 h reals × 25 € = 2.000 € de cost → −500 €. Client B: 600 €/mes, 12 h × 25 € = 300 € → +300 €.'),
     errors: [T('Mirar només la facturació.'), T('No registrar les hores reals.'), T('Rebaixar preus per por.')],
     quiz: [
-      { q: T('Un client paga 1.000 €/mes i consumeix 50 h a 25 €/h. Quin marge deixa?'), o: ['−250 €', '+250 €', '+1.000 €'], c: 0, why: T('50 × 25 = 1.250 € de cost: 1.000 − 1.250 = −250 €.') },
-      { q: T('Quina dada necessites per calcular la rendibilitat per client?'), o: [T('Les hores reals dedicades'), T('Els seus seguidors'), T('La mida de la seva empresa')], c: 0, why: T('Sense hores reals no saps el cost.') },
-      { q: T('Davant d\'un client poc rendible, la primera opció hauria de ser…'), o: [T('Deixar-lo de cop'), T('Parlar-hi per revisar abast o preu'), T('Treballar menys sense dir-ho')], c: 1, why: T('Sovint es pot redreçar amb una conversa clara.') }
+      { q: T('Un client paga 1.000 €/mes i consumeix 50 h a 25 €/h. Quin marge deixa?'), o: [T('−250 €'), T('+250 €'), T('0 €'), T('−1.250 €')], c: 0, why: T('50 × 25 = 1.250 € de cost: 1.000 − 1.250 = −250 €.') },
+      { q: T('Quina dada necessites per calcular la rendibilitat per client?'), o: [T('Les hores reals dedicades'), T('Les hores pressupostades al contracte'), T('La facturació anual del client'), T('El nombre de projectes que t\'ha encarregat')], c: 0, why: T('Sense hores reals no saps el cost.') },
+      { q: T('Davant d\'un client poc rendible, la primera opció hauria de ser…'), o: [T('Pujar-li el preu a partir del mes següent'), T('Parlar-hi per revisar abast o preu'), T('Dedicar-hi menys hores fins que quadri'), T('Passar-lo a un becari per reduir el cost')], c: 1, why: T('Sovint es pot redreçar amb una conversa clara.') }
     ]
   },
 
@@ -372,9 +372,9 @@ GD.lessons = {
     example: T('CTR del 3 % (bo), 400 clics, 0 compres registrades. En revisar-ho, la pàgina de pagament no funcionava en mòbils Android (cas simulat).'),
     errors: [T('Canviar l\'anunci quan el problema és la web.'), T('Mirar el ROAS sense restar el marge del producte.'), T('Treure conclusions amb poques dades.')],
     quiz: [
-      { q: T('10.000 impressions i 200 clics. Quin és el CTR?'), o: ['0,2 %', '2 %', '20 %'], c: 1, why: '200 ÷ 10.000 = 0,02 → 2 %.' },
-      { q: T('Has gastat 600 € i has fet 20 vendes. Quin és el CPA?'), o: ['30 €', '12.000 €', '620 €'], c: 0, why: '600 ÷ 20 = 30 €.' },
-      { q: T('Molts clics, CTR alt, zero conversions. On mires primer?'), o: [T('La pàgina de destinació i el seguiment de conversions'), T('El color de l\'anunci'), T('L\'horari de l\'oficina')], c: 0, why: T('L\'anunci funciona; el problema és després del clic.') }
+      { q: T('10.000 impressions i 200 clics. Quin és el CTR?'), o: [T('0,2 %'), T('2 %'), T('20 %'), T('5 %')], c: 1, why: '200 ÷ 10.000 = 0,02 → 2 %.' },
+      { q: T('Has gastat 600 € i has fet 20 vendes. Quin és el CPA?'), o: [T('30 €'), T('3,3 €'), T('300 €'), T('20 €')], c: 0, why: '600 ÷ 20 = 30 €.' },
+      { q: T('Molts clics, CTR alt, zero conversions. On mires primer?'), o: [T('La pàgina de destinació i el seguiment de conversions'), T('La segmentació del públic de l\'anunci'), T('El text i la imatge de l\'anunci'), T('La puja màxima per clic')], c: 0, why: T('L\'anunci funciona; el problema és després del clic.') }
     ]
   },
   L_crisi: {
@@ -388,9 +388,9 @@ GD.lessons = {
     example: T('Un restaurant canvia el menú i apuja preus sense explicar-ho. Rep crítiques. Resposta efectiva: reconèixer-ho, recuperar el plat més demanat i explicar el perquè dels preus.'),
     errors: [T('Esborrar comentaris crítics.'), T('Culpar els clients.'), T('Prometre canvis que no es faran.')],
     quiz: [
-      { q: T('Quin és el primer pas en una crisi?'), o: [T('Esborrar els comentaris'), T('Entendre què ha passat'), T('Fer un sorteig')], c: 1, why: T('Sense diagnòstic, la resposta pot empitjorar-ho.') },
-      { q: T('Esborrar crítiques legítimes…'), o: [T('Resol la crisi'), T('Sol amplificar-la i destrueix la confiança'), T('És obligatori')], c: 1, why: T('Els clients ho noten i se sumen més veus.') },
-      { q: T('Quan tornes a fer promoció?'), o: [T('Immediatament'), T('Quan el problema de fons està resolt'), T('Mai més')], c: 1, why: T('La promoció amplifica tant les bones com les males experiències.') }
+      { q: T('Quin és el primer pas en una crisi?'), o: [T('Publicar un comunicat de disculpa de seguida'), T('Entendre què ha passat'), T('Respondre un per un tots els comentaris'), T('Aturar totes les publicacions i anuncis')], c: 1, why: T('Sense diagnòstic, la resposta pot empitjorar-ho.') },
+      { q: T('Esborrar crítiques legítimes…'), o: [T('Evita que la crítica arribi a més gent'), T('Sol amplificar-la i destrueix la confiança'), T('Està permès si són a la teva pàgina'), T('Funciona si després publiques una resposta general')], c: 1, why: T('Els clients ho noten i se sumen més veus.') },
+      { q: T('Quan tornes a fer promoció?'), o: [T('Quan han passat dues setmanes i la gent ho ha oblidat'), T('Quan el problema de fons està resolt'), T('De seguida, amb una oferta per compensar els clients'), T('Quan els comentaris negatius deixen d\'arribar')], c: 1, why: T('La promoció amplifica tant les bones com les males experiències.') }
     ]
   },
   L_atribucio: {
@@ -404,9 +404,9 @@ GD.lessons = {
     example: T('Meta diu 120 vendes, Google 90, el correu 40. La botiga n\'ha fet 160. No hi ha cap error greu: els models d\'atribució se solapen.'),
     errors: [T('Sumar les vendes de totes les plataformes.'), T('Creure que atribuir és demostrar causalitat.'), T('Canviar de model d\'atribució per fer quedar bé un canal.')],
     quiz: [
-      { q: T('Les plataformes sumen 250 vendes però la botiga n\'ha fet 160. Per què?'), o: [T('Algú ha robat dades'), T('Diversos canals s\'atribueixen la mateixa venda'), T('La botiga menteix')], c: 1, why: T('Cada plataforma compta les vendes on ha participat.') },
-      { q: T('Com mesures la incrementalitat?'), o: [T('Amb un experiment amb grup de control'), T('Mirant el ROAS de la plataforma'), T('Preguntant al client')], c: 0, why: T('Compara el que passa amb i sense la campanya.') },
-      { q: T('Què és una finestra de conversió?'), o: [T('El període després d\'un clic o impressió en què una venda s\'atribueix a l\'anunci'), T('Una finestra de la web'), T('L\'horari de la botiga')], c: 0, why: T('Finestres més llargues atribueixen més vendes.') }
+      { q: T('Les plataformes sumen 250 vendes però la botiga n\'ha fet 160. Per què?'), o: [T('Les plataformes compten també les vendes de la competència'), T('Diversos canals s\'atribueixen la mateixa venda'), T('La botiga no ha instal·lat bé el píxel'), T('Hi ha vendes cancel·lades que no s\'han restat')], c: 1, why: T('Cada plataforma compta les vendes on ha participat.') },
+      { q: T('Com mesures la incrementalitat?'), o: [T('Amb un experiment amb grup de control'), T('Comparant el ROAS de cada plataforma'), T('Amb el model d\'atribució de l\'últim clic'), T('Comparant el mes de la campanya amb el mes anterior')], c: 0, why: T('Compara el que passa amb i sense la campanya.') },
+      { q: T('Què és una finestra de conversió?'), o: [T('El període després d\'un clic o impressió en què una venda s\'atribueix a l\'anunci'), T('El temps que l\'anunci es mostra a cada usuari'), T('Els dies que dura una campanya d\'anuncis'), T('El temps que triga un usuari a fer clic a l\'anunci')], c: 0, why: T('Finestres més llargues atribueixen més vendes.') }
     ]
   },
   L_tresoreria: {
@@ -420,9 +420,9 @@ GD.lessons = {
     example: T('Una agència cobra el 40 % a l\'inici de cada projecte. Quan un client retarda el pagament final, la bestreta i la reserva cobreixen les nòmines.'),
     errors: [T('Començar a treballar sense bestreta en projectes grans.'), T('No reclamar les factures vençudes.'), T('Dependre d\'un sol client.')],
     quiz: [
-      { q: T('Què és la concentració de clients?'), o: [T('Molts clients petits'), T('Dependre molt d\'un o pocs clients'), T('Tenir clients a la mateixa ciutat')], c: 1, why: T('És un risc: si aquell client falla, l\'empresa trontolla.') },
-      { q: T('Quina mesura redueix el risc de cobrament?'), o: [T('Cobrar una bestreta a l\'inici'), T('Facturar més tard'), T('No fer factures')], c: 0, why: T('Asseguren part dels ingressos abans de treballar.') },
-      { q: T('Un client no paga i no tens reserva. Què és prioritari?'), o: [T('Fer un pla de tresoreria i parlar amb el client per pactar un calendari'), T('Contractar una persona'), T('Comprar eines noves')], c: 0, why: T('Cal saber quants diners necessites i quan, i negociar.') }
+      { q: T('Què és la concentració de clients?'), o: [T('Tenir molts clients del mateix sector'), T('Dependre molt d\'un o pocs clients'), T('Tenir els clients a la mateixa comarca'), T('Cobrar tots els clients el mateix dia')], c: 1, why: T('És un risc: si aquell client falla, l\'empresa trontolla.') },
+      { q: T('Quina mesura redueix el risc de cobrament?'), o: [T('Cobrar una bestreta a l\'inici'), T('Allargar el termini de pagament a 90 dies'), T('Fer un descompte per pagament al final'), T('Facturar tot el projecte quan s\'acabi')], c: 0, why: T('Asseguren part dels ingressos abans de treballar.') },
+      { q: T('Un client no paga i no tens reserva. Què és prioritari?'), o: [T('Fer un pla de tresoreria i parlar amb el client per pactar un calendari'), T('Demanar un préstec de seguida per cobrir el forat'), T('Deixar de treballar per a aquell client fins que pagui'), T('Retardar el pagament dels sous fins que cobris')], c: 0, why: T('Cal saber quants diners necessites i quan, i negociar.') }
     ]
   },
 
@@ -438,9 +438,9 @@ GD.lessons = {
     example: T('Un inversor ofereix 80.000 € pel 30 % de l\'agència i demana duplicar la facturació en dos anys. L\'agència ha de valorar si hi ha prou demanda i equip.'),
     errors: [T('Acceptar diners sense un pla d\'ús.'), T('Augmentar costos fixos abans de tenir ingressos.'), T('Cedir el control sense adonar-se\'n.')],
     quiz: [
-      { q: T('Què implica acceptar un inversor?'), o: [T('Diners gratuïts'), T('Cedir una part de l\'empresa i assumir expectatives de creixement'), T('Pagar menys impostos')], c: 1, why: T('L\'inversor espera un retorn.') },
-      { q: T('Quin és el principal risc de créixer massa de pressa?'), o: [T('Massa beneficis'), T('Despeses fixes que superen els ingressos'), T('Massa reputació')], c: 1, why: T('La tresoreria pot no aguantar.') },
-      { q: T('Créixer amb beneficis propis és…'), o: [T('Més lent però dona més control'), T('Impossible'), T('Sempre millor')], c: 0, why: T('No hi ha una resposta universal: depèn del mercat i del risc que vols assumir.') }
+      { q: T('Què implica acceptar un inversor?'), o: [T('Rebre diners que s\'han de retornar amb interessos'), T('Cedir una part de l\'empresa i assumir expectatives de creixement'), T('Obtenir diners sense perdre el control de les decisions'), T('Rebre un ajut públic que no cal retornar')], c: 1, why: T('L\'inversor espera un retorn.') },
+      { q: T('Quin és el principal risc de créixer massa de pressa?'), o: [T('No poder atendre tots els clients nous'), T('Despeses fixes que superen els ingressos'), T('Perdre la cultura de l\'empresa'), T('Que la competència copiï el model')], c: 1, why: T('La tresoreria pot no aguantar.') },
+      { q: T('Créixer amb beneficis propis és…'), o: [T('Més lent però dona més control'), T('Més ràpid perquè no depens de ningú'), T('Més arriscat perquè poses els teus diners'), T('Només possible en empreses grans')], c: 0, why: T('No hi ha una resposta universal: depèn del mercat i del risc que vols assumir.') }
     ]
   },
   L_marca: {
@@ -454,9 +454,9 @@ GD.lessons = {
     example: T('«Fem créixer els negocis d\'Osona amb dades i proximitat» atrau comerços i pimes locals, i deixa clar que no és una agència de grans campanyes de televisió.'),
     errors: [T('Voler agradar a tothom.'), T('Promeses que l\'equip no pot complir.'), T('Canviar de posicionament cada any.')],
     quiz: [
-      { q: T('Una marca clara…'), o: [T('Atrau tothom'), T('Atrau els clients adequats i n\'allunya d\'altres'), T('No serveix per a agències')], c: 1, why: T('Filtra i redueix el cost de captar clients que encaixen.') },
-      { q: T('Si promets «resultats mesurables»…'), o: [T('Has de ser rigorós en els informes'), T('Pots fer informes de seguidors'), T('No cal mesurar')], c: 0, why: T('La marca es demostra amb fets.') },
-      { q: T('Rebutjar projectes que no encaixen…'), o: [T('És un error sempre'), T('Reforça el posicionament i protegeix l\'equip'), T('És de mala educació')], c: 1, why: T('Focalitza recursos on aportes més valor.') }
+      { q: T('Una marca clara…'), o: [T('Fa que tothom la reconegui i la recordi'), T('Atrau els clients adequats i n\'allunya d\'altres'), T('Permet cobrar més a qualsevol client'), T('Evita haver de fer publicitat')], c: 1, why: T('Filtra i redueix el cost de captar clients que encaixen.') },
+      { q: T('Si promets «resultats mesurables»…'), o: [T('Has de ser rigorós en els informes'), T('Has de mostrar sobretot el creixement de seguidors'), T('Has de garantir resultats per contracte'), T('N\'hi ha prou amb un informe a final d\'any')], c: 0, why: T('La marca es demostra amb fets.') },
+      { q: T('Rebutjar projectes que no encaixen…'), o: [T('Fa perdre ingressos que l\'agència necessita'), T('Reforça el posicionament i protegeix l\'equip'), T('Només té sentit quan l\'agència és gran'), T('Dona mala imatge davant dels clients')], c: 1, why: T('Focalitza recursos on aportes més valor.') }
     ]
   },
   L_ltv: {
@@ -470,9 +470,9 @@ GD.lessons = {
     example: T('Un client deixa 400 €/mes de marge i es queda 24 mesos: LTV = 9.600 €. Si costa 1.200 € captar-lo, la relació LTV/CAC és 8.'),
     errors: [T('Dedicar tota l\'energia a captar i oblidar els clients actuals.'), T('Esperar la renovació per parlar de resultats.')],
     quiz: [
-      { q: T('Marge de 300 €/mes durant 20 mesos. Quin és el LTV?'), o: ['6.000 €', '320 €', '15 €'], c: 0, why: '300 × 20 = 6.000 €.' },
-      { q: T('LTV 2.000 €, CAC 2.500 €. Què passa?'), o: [T('Es perden diners amb cada client nou'), T('És un negoci excel·lent'), T('No es pot saber res')], c: 0, why: T('Costa més captar el client del que deixa.') },
-      { q: T('Quan has de parlar de resultats amb un client?'), o: [T('Només quan amenaça de marxar'), T('Periòdicament, amb objectius revisats'), T('Mai')], c: 1, why: T('La retenció es construeix cada mes.') }
+      { q: T('Marge de 300 €/mes durant 20 mesos. Quin és el LTV?'), o: [T('6.000 €'), T('3.000 €'), T('320 €'), T('15 €')], c: 0, why: '300 × 20 = 6.000 €.' },
+      { q: T('LTV 2.000 €, CAC 2.500 €. Què passa?'), o: [T('Es perden diners amb cada client nou'), T('Es guanyen 500 € per client'), T('És normal: el LTV sempre és més baix que el CAC'), T('Només és un problema si el client marxa aviat')], c: 0, why: T('Costa més captar el client del que deixa.') },
+      { q: T('Quan has de parlar de resultats amb un client?'), o: [T('Quan s\'acaba el contracte i cal renovar-lo'), T('Periòdicament, amb objectius revisats'), T('Quan els resultats són bons'), T('Quan el client ho demana')], c: 1, why: T('La retenció es construeix cada mes.') }
     ]
   },
 
@@ -488,9 +488,9 @@ GD.lessons = {
     example: T('Una marca de cosmètica descobreix que a França els compradors busquen «cosmétique naturelle certifiée bio» i valoren molt les certificacions, més que l\'origen.'),
     errors: [T('Traducció automàtica sense revisió.'), T('Mateixos preus i missatges a tots els mercats.'), T('Oblidar la logística i les devolucions.')],
     quiz: [
-      { q: T('Localitzar vol dir…'), o: [T('Traduir literalment'), T('Adaptar missatge, preus, pagament i servei al mercat'), T('Posar la bandera del país')], c: 1, why: T('Cada mercat té hàbits i expectatives diferents.') },
-      { q: T('Per al SEO en un altre idioma…'), o: [T('Tradueixes les paraules clau'), T('Investigues com busca la gent d\'aquell país'), T('No cal SEO')], c: 1, why: T('Les cerques reals no coincideixen amb les traduccions.') },
-      { q: T('Què has de comprovar abans d\'una gran campanya internacional?'), o: [T('Demanda, competència i capacitat de servei'), T('Només el pressupost'), T('El clima')], c: 0, why: T('Sense capacitat de servei, l\'èxit es converteix en un problema.') }
+      { q: T('Localitzar vol dir…'), o: [T('Traduir els textos amb un traductor professional'), T('Adaptar missatge, preus, pagament i servei al mercat'), T('Obrir una oficina al país de destinació'), T('Fer servir el domini del país (.fr, .de...)')], c: 1, why: T('Cada mercat té hàbits i expectatives diferents.') },
+      { q: T('Per al SEO en un altre idioma…'), o: [T('Tradueixes les paraules clau que ja funcionen aquí'), T('Investigues com busca la gent d\'aquell país'), T('Fas servir les mateixes paraules clau en anglès'), T('Copies les paraules clau del competidor local')], c: 1, why: T('Les cerques reals no coincideixen amb les traduccions.') },
+      { q: T('Què has de comprovar abans d\'una gran campanya internacional?'), o: [T('Demanda, competència i capacitat de servei'), T('Pressupost, idioma i xarxes socials del país'), T('Preus, impostos i tipus de canvi'), T('Competència, influencers i festius locals')], c: 0, why: T('Sense capacitat de servei, l\'èxit es converteix en un problema.') }
     ]
   },
   L_experiments: {
@@ -504,9 +504,9 @@ GD.lessons = {
     example: T('França: 12 vendes amb 1.000 €. Bèlgica: 4 vendes amb 300 €. El CPA és semblant (83 € vs 75 €); no hi ha prou dades per dir que Bèlgica és millor.'),
     errors: [T('Declarar guanyador després de dos dies.'), T('Canviar diverses variables alhora.'), T('No definir el criteri d\'èxit abans.')],
     quiz: [
-      { q: T('Anunci A: 2 vendes. Anunci B: 1 venda. Conclusió?'), o: [T('A és el doble de bo'), T('No hi ha prou dades'), T('B és millor')], c: 1, why: T('Amb tan poques dades, la diferència pot ser atzar.') },
-      { q: T('Quan defineixes el criteri d\'èxit d\'una prova?'), o: [T('Abans de començar'), T('Quan veus els resultats'), T('No cal')], c: 0, why: T('Així evites interpretar les dades a conveniència.') },
-      { q: T('Per comparar dos mercats…'), o: [T('Fes servir el mateix indicador i període'), T('Compara vendes d\'un mes amb visites de l\'altre'), T('Mira només el que ha gastat més')], c: 0, why: T('Només així la comparació és justa.') }
+      { q: T('Anunci A: 2 vendes. Anunci B: 1 venda. Conclusió?'), o: [T('A és el doble de bo que B'), T('No hi ha prou dades'), T('A és millor, però només una mica'), T('Cal invertir tot el pressupost en A')], c: 1, why: T('Amb tan poques dades, la diferència pot ser atzar.') },
+      { q: T('Quan defineixes el criteri d\'èxit d\'una prova?'), o: [T('Abans de començar'), T('A meitat de la prova, amb les primeres dades'), T('Quan acaba la prova'), T('Quan el client veu els resultats')], c: 0, why: T('Així evites interpretar les dades a conveniència.') },
+      { q: T('Per comparar dos mercats…'), o: [T('Fes servir el mateix indicador i període'), T('Fes servir el mateix pressupost als dos'), T('Compara el mercat que més ha venut'), T('Fes servir indicadors diferents adaptats a cada mercat')], c: 0, why: T('Només així la comparació és justa.') }
     ]
   },
   L_lideratge: {
@@ -520,9 +520,9 @@ GD.lessons = {
     example: T('L\'agència crea tres responsables (estratègia, analítica i creativitat) amb objectius trimestrals. {En} deixa de revisar cada peça i es dedica a clients grans i direcció.'),
     errors: [T('Microgestionar-ho tot.'), T('Rols ambigus.'), T('Sobrecarregar les persones més competents.')],
     quiz: [
-      { q: T('Quin és el canvi principal del director quan l\'equip creix?'), o: [T('Treballar més hores'), T('Passar de fer les tasques a dirigir i definir objectius'), T('Fer totes les revisions')], c: 1, why: T('Si tot passa per tu, ets el coll d\'ampolla.') },
-      { q: T('Un objectiu d\'equip ha de ser…'), o: [T('Alineat amb l\'estratègia i mesurable'), T('Secret'), T('Igual per a tothom')], c: 0, why: T('L\'equip ha de saber cap a on va i com es mesura.') },
-      { q: T('Què és un risc en equips que creixen?'), o: [T('Sobrecarregar els més competents'), T('Massa feedback'), T('Rols massa clars')], c: 0, why: T('Porta a esgotament i a perdre talent.') }
+      { q: T('Quin és el canvi principal del director quan l\'equip creix?'), o: [T('Revisar personalment totes les feines abans d\'entregar-les'), T('Passar de fer les tasques a dirigir i definir objectius'), T('Contractar perfils sèniors per a cada àrea'), T('Dedicar més temps a captar clients nous')], c: 1, why: T('Si tot passa per tu, ets el coll d\'ampolla.') },
+      { q: T('Un objectiu d\'equip ha de ser…'), o: [T('Alineat amb l\'estratègia i mesurable'), T('Ambiciós, encara que no es pugui mesurar'), T('El mateix per a cada persona de l\'equip'), T('Decidit per l\'equip sense la direcció')], c: 0, why: T('L\'equip ha de saber cap a on va i com es mesura.') },
+      { q: T('Què és un risc en equips que creixen?'), o: [T('Sobrecarregar els més competents'), T('Tenir massa reunions de seguiment'), T('Que la gent demani més formació'), T('Que els rols siguin massa definits')], c: 0, why: T('Porta a esgotament i a perdre talent.') }
     ]
   },
   L_ia: {
@@ -536,9 +536,9 @@ GD.lessons = {
     example: T('L\'agència usa IA per generar 20 variants de títols, però una persona les revisa, en tria 4 i comprova que no fan promeses falses abans de provar-les.'),
     errors: [T('Publicar sense revisar.'), T('Pujar dades de clients a eines públiques.'), T('Fer servir la imatge o la veu d\'algú sense permís.')],
     quiz: [
-      { q: T('Quin ús de la IA és responsable?'), o: [T('Publicar automàticament 100 textos sense revisió'), T('Generar esborranys que una persona revisa i valida'), T('Inventar ressenyes')], c: 1, why: T('La supervisió humana garanteix qualitat i veracitat.') },
-      { q: T('Pots introduir la base de dades de clients en una eina d\'IA qualsevol?'), o: [T('Sí, és més ràpid'), T('No sense garanties de protecció de dades i base legal'), T('Només els dimarts')], c: 1, why: T('Les dades personals estan protegides.') },
-      { q: T('Què NO hauria de delegar-se a la IA?'), o: [T('Variants de títols'), T('La decisió estratègica i la responsabilitat davant del client'), T('Resums d\'informes')], c: 1, why: T('L\'estratègia i la responsabilitat són humanes.') }
+      { q: T('Quin ús de la IA és responsable?'), o: [T('Fer servir la IA per escriure tots els textos i publicar-los si sonen bé'), T('Generar esborranys que una persona revisa i valida'), T('Deixar que la IA respongui les ressenyes sense supervisió'), T('Fer servir la IA només per a imatges i mai per a textos')], c: 1, why: T('La supervisió humana garanteix qualitat i veracitat.') },
+      { q: T('Pots introduir la base de dades de clients en una eina d\'IA qualsevol?'), o: [T('Sí, si després esborres l\'historial de l\'eina'), T('No sense garanties de protecció de dades i base legal'), T('Sí, si l\'eina és d\'una empresa coneguda'), T('Sí, si només hi poses els noms i no els telèfons')], c: 1, why: T('Les dades personals estan protegides.') },
+      { q: T('Què NO hauria de delegar-se a la IA?'), o: [T('La redacció dels primers esborranys'), T('La decisió estratègica i la responsabilitat davant del client'), T('L\'anàlisi de les dades de la campanya'), T('La traducció dels textos a altres idiomes')], c: 1, why: T('L\'estratègia i la responsabilitat són humanes.') }
     ]
   }
 };

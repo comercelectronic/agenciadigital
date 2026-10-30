@@ -586,3 +586,4 @@ button { font-family: inherit; font-size: inherit; color: inherit; cursor: point
 .tm-now summary { cursor: pointer; font-weight: 800; color: #2c56b0; }
 .tm-now ul { margin: 6px 0 0; padding-left: 18px; }
 .tm-now li { margin: 3px 0; }
+.study-cost { font-size: .85em; color: #b4423a; background: #fdecea; border-radius: 8px; padding: 6px 10px; margin: 10px 0 6px; }

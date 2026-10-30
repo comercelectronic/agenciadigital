@@ -851,16 +851,21 @@
     const next = () => {
       if (i >= qs.length) return onEnd(score);
       const q = qs[i];
-      menu(`${title} (${i + 1}/${qs.length})\n${q.q}`, q.o.map((o, k) => ({ t: o, fn: () => { const ok = k === q.c; if (ok) score++; say([['', (ok ? '✔ ' : '✘ ') + q.why]], () => { i++; next(); }); } })), true);
+      const ord = [...q.o.keys()].sort(() => Math.random() - 0.5);
+      menu(`${title} (${i + 1}/${qs.length})\n${q.q}`, ord.map(k => ({ t: q.o[k], fn: () => {
+        const ok = k === q.c; if (ok) score++;
+        const cost = ok ? 0 : API.payStudy(title.replace(/^\S+\s/, ''));
+        say([['', ok ? '✔ ' + q.why : '✘ −' + API.eur(cost) + ' · ' + q.why]], () => { API.hudRefresh(); if (!ok && API.bankrupt()) return close(); i++; next(); });
+      } })), true);
     };
     next();
   }
   function googleListing() {
     quiz(T_('📍 Fitxa de Google del forn'), [
-      { q: T_('Quin horari hi poses?'), o: [T_('De 7 a 14 h (com ara)'), T_('De 7 a 14 h i de 16 a 20 h'), T_('Obert 24 hores')], c: 1, why: T_('El forn obre tarda i vespre: l\'horari ha de ser exacte, també els festius.') },
-      { q: T_('Quina categoria principal tries?'), o: [T_('Supermercat'), T_('Forn de pa'), T_('Restaurant')], c: 1, why: T_('La categoria principal decideix en quines cerques apareix. «Forn de pa» és la correcta.') },
-      { q: T_('Quina foto de portada poses?'), o: [T_('Una foto fosca del taulell feta amb flaix'), T_('La coca de vidre i el pa a prop de la finestra, amb llum natural'), T_('Un logo genèric descarregat d\'internet')], c: 1, why: T_('Fotos reals, ben il·luminades i del producte estrella: són el que fa entrar la gent.') },
-      { q: T_('Què publiques com a novetat?'), o: [T_('L\'oferta «Berenar de tarda»: coca + suc de 16 a 19 h'), T_('«Visiteu-nos!»'), T_('Res: les publicacions no serveixen')], c: 0, why: T_('Una novetat amb oferta concreta i franja horària dona un motiu per venir a la tarda.') }
+      { q: T_('Quin horari hi poses?'), o: [T_('De 7 a 14 h, com ara, i ja ho canviarem'), T_('De 7 a 14 h i de 16 a 20 h, i els festius a part'), T_('De 7 a 20 h seguit, per simplificar'), T_('De 16 a 20 h, que és la franja que volem promocionar')], c: 1, why: T_('El forn obre tarda i vespre: l\'horari ha de ser exacte, també els festius.') },
+      { q: T_('Quina categoria principal tries?'), o: [T_('Pastisseria'), T_('Forn de pa'), T_('Cafeteria'), T_('Botiga d\'alimentació')], c: 1, why: T_('La categoria principal decideix en quines cerques apareix. «Forn de pa» és la correcta.') },
+      { q: T_('Quina foto de portada poses?'), o: [T_('Una foto de la façana amb el rètol, perquè la gent trobi el forn'), T_('La coca de vidre i el pa a prop de la finestra, amb llum natural'), T_('Una foto de la Carme somrient darrere el taulell'), T_('Un collage amb tots els productes del forn')], c: 1, why: T_('Fotos reals, ben il·luminades i del producte estrella: són el que fa entrar la gent.') },
+      { q: T_('Què publiques com a novetat?'), o: [T_('L\'oferta «Berenar de tarda»: coca + suc de 16 a 19 h'), T_('«Ara també obrim a la tarda!»'), T_('Una foto del pa del dia amb el preu'), T_('La història del forn des de 1980')], c: 0, why: T_('Una novetat amb oferta concreta i franja horària dona un motiu per venir a la tarda.') }
     ], (sc) => {
       S.f.f_google = true; S.f.fitxaFeta = sc;
       say([['carme.' + (sc >= 3 ? 'h' : 'n'), sc >= 3 ? T_('Mira! Ja surt que obrim a la tarda. Avui han vingut tres clientes que ho han vist al mòbil!') : T_('Bé... algunes coses no les tinc gaire clares. Ho revisarem.')]], () =>
@@ -881,9 +886,9 @@
   }
   function reviewsAction() {
     const tables = [
-      { q: T_('Una parella acaba de dinar i somriu. Com els demanes una ressenya?'), o: [T_('«Si us ha agradat, ens ajudaria molt una ressenya: aquí teniu el QR.»'), T_('«Poseu-nos cinc estrelles i us convidem al cafè.»'), T_('No dir res i esperar que ho facin sols')], c: 0, why: T_('Demanar-ho en el moment, amb el QR a mà, és honest i efectiu. Oferir regals a canvi de ressenyes va contra les normes de Google.') },
-      { q: T_('Un client es queixa que el segon plat ha trigat molt.'), o: [T_('Ignorar-lo: ja marxarà'), T_('Disculpar-se, explicar-ho i convidar-lo a les postres'), T_('Demanar-li igualment una ressenya de cinc estrelles')], c: 1, why: T_('Resoldre la queixa al moment evita una ressenya negativa i guanya un client.') },
-      { q: T_('Tres treballadors del polígon dinen el menú per primera vegada.'), o: [T_('Donar-los una targeta amb el menú setmanal i el WhatsApp per reservar'), T_('Explicar-los la història del restaurant durant mitja hora'), T_('Res: ja tornaran')], c: 0, why: T_('Facilitar la repetició (menú i reserva fàcil) és el que omple els dilluns.') }
+      { q: T_('Una parella acaba de dinar i somriu. Com els demanes una ressenya?'), o: [T_('«Si us ha agradat, ens ajudaria molt una ressenya: aquí teniu el QR.»'), T_('«Si ens poseu cinc estrelles, el cafè us el convidem.»'), T_('«Us enviarem un correu demà per demanar-vos l\'opinió.»'), T_('«Busqueu-nos a Google i poseu-nos una ressenya, si us plau.»')], c: 0, why: T_('Demanar-ho en el moment, amb el QR a mà, és honest i efectiu. Oferir regals a canvi de ressenyes va contra les normes de Google.') },
+      { q: T_('Un client es queixa que el segon plat ha trigat molt.'), o: [T_('Disculpar-se i oferir-li un descompte per a la propera vegada'), T_('Disculpar-se, explicar-ho i convidar-lo a les postres'), T_('Explicar-li que la cuina va plena i que és normal'), T_('Demanar-li que ho escrigui a la ressenya perquè ho millorin')], c: 1, why: T_('Resoldre la queixa al moment evita una ressenya negativa i guanya un client.') },
+      { q: T_('Tres treballadors del polígon dinen el menú per primera vegada.'), o: [T_('Donar-los una targeta amb el menú setmanal i el WhatsApp per reservar'), T_('Demanar-los el correu per enviar-los ofertes'), T_('Convidar-los al cafè perquè tornin'), T_('Demanar-los que segueixin el restaurant a Instagram')], c: 0, why: T_('Facilitar la repetició (menú i reserva fàcil) és el que omple els dilluns.') }
     ];
     quiz(T_('⭐ Ressenyes a Can Jordi'), tables, (sc) => {
       say([['jordi.' + (sc >= 2 ? 'h' : 'n'), sc >= 2 ? T_('Cinc ressenyes noves en un dia i dues reserves pel WhatsApp! Això funciona.') : T_('No sé si ha anat gaire bé...')]], () =>
@@ -892,9 +897,9 @@
   }
   function posterAction() {
     quiz(T_('🪧 Cartell de l\'aparador'), [
-      { q: T_('Titular principal del cartell:'), o: [T_('«Cansaladeria Núria, des de 1962»'), T_('«Fuet de Vic a casa teva en 48 h · Compra a fuetnuria.cat»'), T_('«Visiteu la nostra web!!!»')], c: 1, why: T_('Un benefici concret i on fer l\'acció: és el que llegeix qui passa per davant.') },
-      { q: T_('Quants elements hi poses?'), o: [T_('Titular, foto del fuet, QR i preu d\'enviament'), T_('Tota la llista de productes amb preus'), T_('Només el logo')], c: 0, why: T_('Pocs elements i jerarquia clara: es llegeix en tres segons.') },
-      { q: T_('Colors:'), o: [T_('Groc sobre blanc'), T_('Blanc sobre el verd de la marca, amb contrast alt'), T_('Set colors diferents per cridar l\'atenció')], c: 1, why: T_('El contrast alt fa que es llegeixi des del carrer i reforça la marca.') }
+      { q: T_('Titular principal del cartell:'), o: [T_('«Cansaladeria Núria, des de 1962 · Ara també en línia»'), T_('«Fuet de Vic a casa teva en 48 h · Compra a fuetnuria.cat»'), T_('«Descobreix la nostra nova botiga en línia»'), T_('«El millor fuet de Vic, ara a internet»')], c: 1, why: T_('Un benefici concret i on fer l\'acció: és el que llegeix qui passa per davant.') },
+      { q: T_('Quants elements hi poses?'), o: [T_('Titular, foto del fuet, QR i preu d\'enviament'), T_('Titular, foto, QR, horari, telèfon i xarxes socials'), T_('Titular i els cinc productes més venuts amb preus'), T_('Logo, titular i adreça de la web')], c: 0, why: T_('Pocs elements i jerarquia clara: es llegeix en tres segons.') },
+      { q: T_('Colors:'), o: [T_('Vermell sobre negre, per cridar l\'atenció'), T_('Blanc sobre el verd de la marca, amb contrast alt'), T_('Verd clar sobre blanc, colors suaus de la marca'), T_('Els colors de la bandera catalana, per al producte local')], c: 1, why: T_('El contrast alt fa que es llegeixi des del carrer i reforça la marca.') }
     ], (sc) => {
       say([['nuria.' + (sc >= 2 ? 'h' : 'n'), sc >= 2 ? T_('L\'he penjat i ja m\'han preguntat tres persones per l\'enviament!') : T_('Hmm... la gent no s\'hi fixa gaire.')]], () =>
         finishAction('cartell', sc, 3, { xp: 20 * sc, rep: sc >= 2 ? 1 : 0 }, T_('Va dissenyar el cartell de l\'aparador de la Cansaladeria Núria ({0}/3).', [sc])));
