@@ -52,7 +52,7 @@ A Empresa → 🛒 **Millores**: eines (Canva Pro, analítica, CRM, gestor de pr
 
 ## Economia exigent i fallida
 
-- **Tests de les lliçons:** cada pregunta té 4 opcions semblants, en ordre aleatori. Cada resposta incorrecta costa diners (30 € a l'etapa 1 i 20 € més a cada etapa), també a les preguntes de repàs dels encàrrecs i als tests del món: estudiar té un cost.
+- **Tests de les lliçons:** cada lliçó té 5 preguntes (3 de concepte i 2 de casos reals d'empreses: Kodak, Zara, Amazon, Patagonia, KFC...). Cada pregunta té 4 opcions semblants, en ordre aleatori. Cada resposta incorrecta costa diners (30 € a l'etapa 1 i 20 € més a cada etapa), també a les preguntes de repàs dels encàrrecs i als tests del món: estudiar té un cost.
 
 Els errors econòmics costen diners: treballar gratis, acceptar feines sense capacitat, comprar bases de dades, campanyes fallides (compensació al client), encàrrecs mal resolts (devolució), préstecs amb interessos... Si la liquiditat (diners + reserva) queda en negatiu, **l'agència fa fallida** i cal començar de zero (es conserven el personatge, el codi de classe, els projectes reals i les webs del Taller). El professorat veu el nombre de fallides de cada alumne.
 
