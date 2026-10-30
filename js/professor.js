@@ -155,7 +155,7 @@
     const list = [...rows.values()];
     const col = COLS.find(c => c[0] === sortKey) || COLS[1];
     list.sort((a, b) => { const x = col[2](a), y = col[2](b); return (x > y ? 1 : x < y ? -1 : fullName(a).localeCompare(fullName(b))) * sortDir; });
-    $('#csv').disabled = !list.length;
+    $('#csv').disabled = !list.length; $('#csvTemari').disabled = !list.length;
     const avg = (f) => { const v = list.map(f).filter(x => x != null); return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : '—'; };
     $('#stats').innerHTML = list.length ? `
       <div class="metric"><small>${T("Alumnes")}</small><b>${list.length}</b></div>
@@ -269,14 +269,52 @@
   }
 
   // CSV per a Excel: separador «;», BOM UTF-8 i una columna per lliçó
+  /* ===== Temari: a quin punt pertany cada contingut ===== */
+  const tag = (codes) => (codes && codes.length ? `[${codes.join(', ')}] ` : '');
+  const QL = () => ({ 1: T('Bona'), 0.5: T('Regular'), 0: T('Dolenta') });
+  // Totes les decisions puntuades de les missions del temari, en ordre
+  const TM_CHOICES = Object.values(GD.chapters).filter(ch => ch.temari).flatMap(ch => ch.steps.filter(st => st.t === 'choice' && st.key && st.opts.some(o => o.q != null)).map(st => ({ key: st.key, ch, prompt: st.prompt })));
+  // Llista de tot el que ha fet un alumne, amb els punts del temari i una puntuació en %
+  function temariItems(r) {
+    const C = GD.codes, out = [], ll = r.llicons || {};
+    LESSONS.forEach(id => { const q = ll[id]; if (q) out.push({ codes: C.lessons[id] || [], tipus: T('Lliçó'), nom: GD.lessons[id].title, res: T('1r intent {0}/{1} · millor {2}/{1} · {3} intents', [q.first, q.total, q.best, q.tries]), pct: Math.round(q.best / q.total * 100) }); });
+    GD.projects.forEach(p => { const st = projState(r, p), rv = (r.revisions || {})[p.id]; if (st !== 'none') out.push({ codes: C.projects[p.id] || [], tipus: T('Projecte real'), nom: p.title, res: PLB()[st][1] + (rv && rv.grade != null ? ' · ' + T('Nota: {0}', [rv.grade]) : ''), pct: rv && rv.grade != null ? rv.grade * 10 : null }); });
+    TM_CHOICES.forEach(c => { const d = (r.decisionsTemari || {})[c.key]; if (d) out.push({ codes: c.ch.codes || [], tipus: T('Missió del temari'), nom: `${c.ch.id} ${c.ch.title} · ${c.prompt}`, res: QL()[d.q], pct: Math.round(d.q * 100) }); });
+    GD.webLevels.forEach(L => { const w = (r.webs || {})[L.n]; if (w) out.push({ codes: C.web[L.n] || [], tipus: T('Taller web'), nom: T('Nivell {0}: {1}', [L.n, L.title]), res: w.url, pct: 100 }); });
+    const M = r.mon || {};
+    Object.entries(M.accions || {}).forEach(([k, a]) => out.push({ codes: C.actions[k] || [], tipus: T('Acció al món'), nom: k, res: `${a.score}/${a.max}`, pct: Math.round(a.score / a.max * 100) }));
+    Object.entries(M.problemes || {}).forEach(([k, v]) => out.push({ codes: C.problems[k] || [], tipus: T('Botiguer del món'), nom: k, res: v, pct: v === 'ok' ? 100 : v === 'mig' ? 50 : 0 }));
+    return out;
+  }
+  function codePct(items, code) {
+    const v = items.filter(i => i.codes.includes(code) && i.pct != null).map(i => i.pct);
+    return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : '';
+  }
+  // CSV llarg: una fila per alumne, contingut i punt del temari (ideal per a taules dinàmiques)
+  function exportTemariCsv() {
+    const list = [...rows.values()].sort((a, b) => (a.classe || '').localeCompare(b.classe || '') || fullName(a).localeCompare(fullName(b)));
+    const cell = (v) => { const s = v == null ? '' : String(v); return /[;"\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+    const lines = [[T('Classe'), T('Alumne'), T('Bloc'), T('Punt del temari'), T('Títol del punt'), T('Tipus de contingut'), T('Contingut'), T('Resultat'), T('Puntuació (%)')].map(cell).join(';')];
+    // Una fila per punt del temari i contingut, ordenades per punt (1.1, 1.2... 1.10) dins de cada alumne
+    const ord = (c) => { const [b, n] = c.split('.').map(Number); return (b || 99) * 100 + (n || 0); };
+    list.forEach(r => temariItems(r).flatMap(it => (it.codes.length ? it.codes : ['—']).map(c => [c, it])).sort((x, y) => ord(x[0]) - ord(y[0]))
+      .forEach(([c, it]) => lines.push([r.classe, fullName(r), c.split('.')[0], c, c === '—' ? T("Complementari: gestió de l'agència") : GD.temariTitle(c), it.tipus, it.nom, it.res, it.pct == null ? '' : it.pct].map(cell).join(';'))));
+    const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a'); const cls = normClass($('#cls').value);
+    a.href = URL.createObjectURL(blob); a.download = `agencia-digital_temari${cls ? '_' + cls : ''}_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
   function exportCsv() {
     const list = [...rows.values()].sort((a, b) => (a.classe || '').localeCompare(b.classe || '') || fullName(a).localeCompare(fullName(b)));
     const head = [T('Classe'), T('Nom'), T('Cognom'), T('Agència'), T('Perfil'), T('Nivell'), T('Etapa actual'), T('Etapes completades'), T('Capítols completats'), T('Capítols totals'), T('Capítol en curs'),
       T('Lliçons superades'), T('Lliçons totals'), T('Mitjana 1r intent (%)'), T('Mitjana millor (%)'), T('Reputació'), T('Liquiditat (€)'), T('Clients'), T('Equip'), T('Camí'), T('Final'),
       T('Campanyes bones'), T('Campanyes'), T('Encàrrecs'), T('Setmana de joc'), T('Iniciat'), T('Darrera actualització'), T('Decisions clau'), T('Projectes aprovats'), T('Fallides'), T('Webs entregades'), T('Plataformes web'),
-      ...GD.projects.flatMap(p => [T('{0} · estat', [p.title]), T('{0} · nota', [p.title]), T('{0} · enllaç', [p.title])]),
-      ...GD.webLevels.flatMap(L => [T('Web {0} · plataforma', [L.n]), T('Web {0} · enllaç', [L.n])]),
-      ...LESSONS.flatMap(id => [T("{0} · 1r intent", [GD.lessons[id].title]), T("{0} · millor", [GD.lessons[id].title])])];
+      ...GD.temari.map(([c, t]) => T('Temari {0} · {1} (%)', [c, t])),
+      ...GD.projects.flatMap(p => { const tg = tag(GD.codes.projects[p.id]); return [tg + T('{0} · estat', [p.title]), tg + T('{0} · nota', [p.title]), tg + T('{0} · enllaç', [p.title])]; }),
+      ...TM_CHOICES.map(c => tag(c.ch.codes) + T('Missió {0} · {1}', [c.ch.id, c.prompt])),
+      ...GD.webLevels.flatMap(L => { const tg = tag(GD.codes.web[L.n]); return [tg + T('Web {0} · plataforma', [L.n]), tg + T('Web {0} · enllaç', [L.n])]; }),
+      ...LESSONS.flatMap(id => { const tg = tag(GD.codes.lessons[id]); return [tg + T("{0} · 1r intent", [GD.lessons[id].title]), tg + T("{0} · millor", [GD.lessons[id].title])]; })];
     const cell = (v) => { const s = v == null ? '' : String(v); return /[;"\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
     const lines = [head.map(cell).join(';')];
     list.forEach(r => {
@@ -284,7 +322,9 @@
       lines.push([r.classe, r.nom, r.cognom, r.agencia, r.perfil, r.nivell, r.etapaActual, r.etapesCompletades, r.capitolsCompletats, r.capitolsTotal, r.capitolActual,
         r.llicionsSuperades, r.llicionsTotal, r.mitjanaPrimerIntent, r.mitjanaMillor, r.reputacio, r.liquiditat, r.clients, r.equip, r.cami, r.final,
         r.campanyesBones, r.campanyes, r.encarrecs, r.setmana, dateTxt(r.iniciat), dateTxt(r.actualitzat), (r.decisions || []).join(' | '), projCount(r, 'passed'), r.fallides || 0, r.websEntregades || 0, (r.webPlataformes || []).join(', '),
+        ...(() => { const it = temariItems(r); return GD.temari.map(([c]) => codePct(it, c)); })(),
         ...GD.projects.flatMap(p => { const st = projState(r, p), sub = (r.projectes || {})[p.id], rv = (r.revisions || {})[p.id]; return [st === 'none' ? '' : PLB()[st][1], rv && rv.grade != null ? rv.grade : '', sub ? sub.url : '']; }),
+        ...TM_CHOICES.map(c => { const d = (r.decisionsTemari || {})[c.key]; return d ? QL()[d.q] : ''; }),
         ...GD.webLevels.flatMap(L => { const w = (r.webs || {})[L.n]; return w ? [w.platform, w.url] : ['', '']; }),
         ...LESSONS.flatMap(id => ll[id] ? [`${ll[id].first}/${ll[id].total}`, `${ll[id].best}/${ll[id].total}`] : ['', ''])].map(cell).join(';'));
     });
@@ -299,6 +339,7 @@
   $('#load').onclick = load;
   $('#pw').onkeydown = $('#cls').onkeydown = (e) => { if (e.key === 'Enter') load(); };
   $('#csv').onclick = exportCsv;
+  $('#csvTemari').onclick = exportTemariCsv;
   $('#files').onchange = async (e) => {
     const list = [];
     for (const f of e.target.files) {

@@ -21,7 +21,7 @@
     const quote = p.brief.find(l => !l[0].startsWith('pau'));
     return `<article class="card" id="${p.id}">
       <div class="pj-h"><span class="pj-ava">${ART.portrait(p.who, 'n')}</span>
-        <div><small>${T('Projecte {0}', [n])} · ${esc(p.kind)} · ${T('després del capítol {0}', [p.after])}</small><h2>${esc(p.title)}</h2></div></div>
+        <div><small>${T('Projecte {0}', [n])} · ${esc(p.kind)} · ${T('després del capítol {0}', [p.after])}</small><h2>${esc(p.title)}</h2>${(GD.codes.projects[p.id] || []).map(c => `<em class="tm-chip" title="${esc(GD.temariTitle(c))}">${c}</em>`).join('')}</div></div>
       ${quote ? `<p><i>«${esc(clean(quote[1]))}»</i> — ${esc(GD.names[p.who] || '')}</p>` : ''}
       <div class="meta"><p><b>${T('Objectiu:')}</b> ${esc(p.goal)}</p><p><b>${T('Format:')}</b> ${esc(p.format)}</p></div>
       <h3>${T('Què ha de contenir')}</h3>

@@ -355,7 +355,7 @@
             <header><span class="st-num">${String(st.id).padStart(2, '0')}</span><div><h3>${txt(st.title)}</h3><p>${esc(st.sub)} ${T("· Nivells")} ${st.levels}</p></div><span class="st-prog">${done}/${st.chapters.length}</span></header>
             ${lock ? T('<p class="lockmsg">🔒 Completa l\'etapa anterior per desbloquejar-la.</p>') : `<ol>${st.chapters.map(c => {
               const s = chapterState(c);
-              return `<li class="ch ${s}"><button ${s === 'open' || s === 'done' ? `data-ch="${c}"` : s === 'proj' ? `data-proj="${projGate(c).id}"` : 'disabled'}><span class="ch-id">${c}</span><span class="ch-t">${txt(GD.chapters[c].title)}</span><span class="ch-s">${s === 'done' ? '✔' : s === 'open' ? '▶' : s === 'proj' ? '📋' : s === 'level' ? T("Nv {0}", [st.minLevel]) : '🔒'}</span></button></li>`;
+              return `<li class="ch ${s}"><button ${s === 'open' || s === 'done' ? `data-ch="${c}"` : s === 'proj' ? `data-proj="${projGate(c).id}"` : 'disabled'}><span class="ch-id">${c}</span><span class="ch-t">${GD.chapters[c].temari ? '<em class="tm-badge">📘 ' + T('Temari') + '</em> ' : ''}${txt(GD.chapters[c].title)}</span><span class="ch-s">${s === 'done' ? '✔' : s === 'open' ? '▶' : s === 'proj' ? '📋' : s === 'level' ? T("Nv {0}", [st.minLevel]) : '🔒'}</span></button></li>`;
             }).join('')}</ol>`}
           </section>`;
         }).join('')}
@@ -396,16 +396,32 @@
       <div class="know">${Object.entries(GD.areas).map(([k, n]) => `<div class="kn"><span>${n}</span><span class="kbar"><i style="width:${Math.min(100, (S.know[k] || 0) * 20)}%"></i></span><b>${S.know[k] || 0}</b></div>`).join('')}</div>`;
   }
 
+  // Punts del temari que l'alumne ja ha treballat (lliçons, missions, projectes, webs i accions del món)
+  function temariDone() {
+    const C = GD.codes, done = new Set(), add = (l) => (l || []).forEach(c => done.add(c));
+    Object.keys(S.lessons).forEach(id => add(C.lessons[id]));
+    Object.keys(S.done).forEach(id => add(GD.chapters[id] && GD.chapters[id].codes));
+    GD.projects.forEach(p => { if (projStatus(p) === 'approved') add(C.projects[p.id]); });
+    Object.keys((S.web && S.web.levels) || {}).forEach(n => add(C.web[n]));
+    Object.keys((S.world && S.world.actions) || {}).forEach(k => add(C.actions[k]));
+    Object.keys((S.world && S.world.problems) || {}).forEach(k => add(C.problems[k]));
+    return done;
+  }
   function tabLibrary(el) {
     const ids = Object.keys(GD.lessons);
     const byArea = {};
     ids.forEach(id => { const l = GD.lessons[id]; (byArea[l.area] = byArea[l.area] || []).push(id); });
-    el.innerHTML = `<p class="muted">${T("Les lliçons es desbloquegen durant les missions. Pots repassar-les i repetir-ne l'exercici quan vulguis.")}</p>
+    const td = temariDone();
+    const chips = (id) => (GD.codes.lessons[id] || []).map(c => `<em class="tm-chip">${c}</em>`).join('');
+    el.innerHTML = `<div class="card"><h3>${T('📚 El temari')}</h3>
+      <p class="small">${T('Punts treballats: <b>{0}</b> de {1}. Cada lliçó, missió, projecte, web i acció del món treballa uns punts del temari.', [td.size, GD.temari.length])}</p>
+      ${Object.entries(GD.temariBlocks).map(([b, n]) => `<p class="tm-block"><b>${b}. ${esc(n)}</b><br>${GD.temari.filter(([c]) => c.split('.')[0] === b).map(([c, t]) => `<span class="tm-c ${td.has(c) ? 'on' : ''}" title="${esc(t)}">${td.has(c) ? '✔' : '·'} ${c}</span>`).join('')}</p>`).join('')}</div>
+      <p class="muted">${T("Les lliçons es desbloquegen durant les missions. Pots repassar-les i repetir-ne l'exercici quan vulguis.")}</p>
       ${Object.entries(GD.areas).map(([a, n]) => byArea[a] ? `
         <h3 class="sec">${n}</h3>
         <div class="lessons">${byArea[a].map(id => {
           const l = GD.lessons[id], r = S.lessons[id];
-          return `<button class="lesson-card ${r ? '' : 'locked'}" ${r ? `data-lesson="${id}"` : 'disabled'}><b>${r ? esc(l.title) : '🔒 ' + esc(l.title)}</b><small>${r ? T("Millor resultat: {0}/{1}", [r.best, l.quiz.length]) : T('Es desbloqueja en una missió')}</small></button>`;
+          return `<button class="lesson-card ${r ? '' : 'locked'}" ${r ? `data-lesson="${id}"` : 'disabled'}><b>${r ? esc(l.title) : '🔒 ' + esc(l.title)}</b><span class="tm-chips">${chips(id)}</span><small>${r ? T("Millor resultat: {0}/{1}", [r.best, l.quiz.length]) : T('Es desbloqueja en una missió')}</small></button>`;
         }).join('')}</div>` : '').join('')}`;
   }
 
@@ -1216,6 +1232,8 @@
         p.querySelectorAll('.opt').forEach(b => b.onclick = () => {
           const o = opts[+b.dataset.i];
           if (st.key) S.f[st.key] = o.v != null ? o.v : +b.dataset.i;
+          // Qualitat de les decisions de les missions del temari (per al professorat)
+          if (o.q != null && st.key) (S.choiceLog || (S.choiceLog = {}))[st.key] = { q: o.q, ch: curCh.id, i: +b.dataset.i };
           applyFx(o.fx);
           save();
           if (o.say) playLines(o.say, () => nextStep(o.go || st.go)); else nextStep(o.go || st.go);
@@ -1614,6 +1632,8 @@
       projectesEntregats: Object.values(S.proj || {}).filter(r => r && r.v).length,
       projectesAprovats: GD.projects.filter(p => projStatus(p) === 'approved').length,
       projectesTotal: GD.projects.length,
+      decisionsTemari: S.choiceLog || {},
+      mon: { accions: (S.world && S.world.actions) || {}, problemes: (S.world && S.world.problems) || {}, pistes: Object.keys((S.world && S.world.clues) || {}) },
       fallides: S.fallides || 0, fallidesDetall: S.fallidesLog || [],
       millores: Object.keys(S.upgrades || {}),
       tractesTancats: (S.market && S.market.closed) || 0,

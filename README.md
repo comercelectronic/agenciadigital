@@ -21,6 +21,7 @@ El joc i el panell del professor es poden fer servir en **català, castellà i a
 - **Creació del personatge:** en començar, l'alumne tria nom, cognom, tractament (masculí «en», femení «la» o neutre sense article), pentinat, colors, to de pell i complement. El nom i el tractament substitueixen «Pau» a tot el guió (marcadors `{nom}`, `{nomc}`, `{en}`, `{En}`, `{den}` i `{g:masculí|femení|neutre}` als fitxers de dades). Es pot canviar després des de la pestanya del personatge.
 - **Codi de classe:** si l'alumne escriu el codi que li dona el professor, els resultats s'envien automàticament cada vegada que acaba un capítol, un encàrrec o una lliçó (funció `netlify/functions/joc-resultats.js`, desada a Netlify Blobs). Sense connexió, pot descarregar un fitxer de resultats des de la pestanya Empresa.
 - **Panell del professor:** `/professor.html`. Amb la contrasenya, mostra els alumnes (filtrables per classe), el detall de cada un (lliçons amb primer intent, millor resultat i intents; habilitats; decisions clau) i exporta-ho tot a un CSV per a Excel amb una columna per lliçó. També accepta els fitxers que hagin descarregat els alumnes.
+- **Temari:** cada lliçó, missió, projecte, nivell del taller web i acció del món està etiquetat amb els punts del temari que treballa (1.1–5.9; vegeu [TEMARI.md](TEMARI.md)). L'alumne veu els punts treballats a la Biblioteca. El CSV general afegeix una columna de percentatge per punt i el codi del punt a cada columna de projecte, web, lliçó i decisió; el botó **CSV per punts del temari** exporta una fila per alumne, punt i contingut (bloc, punt, títol, tipus de contingut, contingut, resultat i puntuació).
 - **Contrasenya:** variable d'entorn `TEACHER_PASSWORD` del lloc de Netlify (obligatòria perquè funcioni el panell).
 - **Dades personals:** només s'envia el nom i cognom que escrigui l'alumne i els resultats del joc. No es demana correu ni cap altra dada.
 
@@ -87,6 +88,7 @@ Pestanya 🛠️ **Taller**: un curs a part on l'alumne aprèn a crear webs prof
 | Campanya de 8 etapes amb gating per nivell (1, 4, 7, 11, 15, 19, 23, 27) | `js/data-story1.js` (etapes 1–2), `js/data-story2.js` (3–5), `js/data-story3.js` (6–8) |
 | Estructura de missió: narració → investigació → lliçó → decisió → resultats simulats → recompensa | Tipus de pas `dlg`, `invest`, `lesson`, `choice`/`budget`/`multi`, `sim`, `reward` a `js/game.js` |
 | Biblioteca de lliçons amb exercicis, retroacció i repàs | `js/data-lessons.js` |
+| Temari: punts 1.1–5.9, etiquetes de cada contingut, 21 lliçons i 14 missions del temari (dues per etapa, de 1.6–1.7 a 7.6–7.7) | `js/data-temari.js`, [TEMARI.md](TEMARI.md) |
 | Millora del personatge: nivells 1–30, EXP, punts d'habilitat (5 habilitats × 5 nivells), rangs i vestuari que evoluciona | `js/game.js` (SKILLS, RANKS) i `js/art.js` (PAU_OUTFITS) |
 | Variables persistents: reputació, confiança per personatge, coneixement per àrea, liquiditat, reserva, clients recurrents, equip, historial de decisions | estat `S` a `js/game.js` |
 | Economia setmanal: quotes recurrents, lloguer, eines i sous; els pressupostos dels clients no compten com a ingressos | `advanceWeeks()` a `js/game.js` |
