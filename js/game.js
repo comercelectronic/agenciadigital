@@ -307,12 +307,12 @@
         <div class="hub-body" id="hubBody"></div>
       </main>
       <nav class="tabs">
-        ${[['campanya', '🗺️', T('Campanya')], ['pau', '🧑', esc(S.player.name)], ['encarrecs', '📨', T('Encàrrecs')], ['projectes', '📋', T('Projectes')], ['taller', '🛠️', T('Taller')], ['biblioteca', '📚', T('Biblioteca')], ['empresa', '🏢', T('Empresa')]]
-          .map(([k, i, n]) => `<button class="tab ${hubTab === k ? 'on' : ''}" data-tab="${k}"><span>${i}</span>${n}${k === 'pau' && S.sp ? `<em class="dot">${S.sp}</em>` : ''}${k === 'projectes' && projTodo() ? `<em class="dot">${projTodo()}</em>` : ''}</button>`).join('')}
+        ${[['campanya', '🗺️', T('Campanya')], ['pau', '🧑', esc(S.player.name)], ['encarrecs', '📨', T('Encàrrecs')], ['projectes', '📋', T('Projectes')], ['classe', '🏆', T('Classe')], ['taller', '🛠️', T('Taller')], ['biblioteca', '📚', T('Biblioteca')], ['empresa', '🏢', T('Empresa')]]
+          .map(([k, i, n]) => `<button class="tab ${hubTab === k ? 'on' : ''}" data-tab="${k}"><span>${i}</span>${n}${k === 'pau' && S.sp ? `<em class="dot">${S.sp}</em>` : ''}${k === 'projectes' && projTodo() ? `<em class="dot">${projTodo()}</em>` : ''}${k === 'classe' && S.market && S.market.myTurn ? `<em class="dot">${S.market.myTurn}</em>` : ''}</button>`).join('')}
       </nav>`;
     hud();
     const body = $('#hubBody');
-    ({ campanya: tabCampanya, pau: tabPau, encarrecs: tabGigs, projectes: tabProjectes, taller: tabTaller, biblioteca: tabLibrary, empresa: tabEmpresa })[hubTab](body);
+    ({ campanya: tabCampanya, pau: tabPau, encarrecs: tabGigs, projectes: tabProjectes, classe: tabClasse, taller: tabTaller, biblioteca: tabLibrary, empresa: tabEmpresa })[hubTab](body);
   }
 
   function chapterState(chId) {
@@ -835,6 +835,164 @@
     }
     if (changed) { save(); queueSync(); if ($('.hub')) hubScreen(); }
     else if (manual) toast(T('Encara no hi ha revisions noves.'));
+  }
+
+  /* ================= Classe: rànquing i mercat entre agències ================= */
+  const CAPI = '/.netlify/functions/joc-classe';
+  let classView = 'rank', rankSort = 'punts', classData = null, lastMarket = 0;
+  async function capi(body) {
+    const r = await fetch(CAPI, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ classe: S.classe, id: S.player.id }, body)) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || 'Error ' + r.status);
+    return j;
+  }
+  const mk = () => { if (!S.market) S.market = { recsApplied: 0, seen: [], myTurn: 0 }; return S.market; };
+  // Liquida els tractes acceptats, aplica les recomanacions rebudes i avisa de les ofertes noves
+  async function marketSync(force) {
+    if (!S || !S.classe || (!force && Date.now() - lastMarket < 25000)) return null;
+    lastMarket = Date.now();
+    let m;
+    try { m = await capi({ action: 'market' }); } catch (e) { return null; }
+    const M = mk();
+    for (const o of m.offers) {
+      if (!o.pendingSettle) continue;
+      try {
+        const r = await capi({ action: 'settle', offer: o.id });
+        if (r.fx) {
+          const sv = GD.serviceById(o.kind), other = o.names[o.buyer === m.me ? o.seller : o.buyer];
+          const keep = RUN; RUN = null;
+          applyFx(Object.assign({ fee: false, log: o.buyer === m.me ? T('Va contractar «{0}» a {1} per {2}.', [sv.n, other, eur(o.price)]) : T('Va fer «{0}» per a {1} i en va cobrar {2}.', [sv.n, other, eur(o.price)]) }, r.fx), true);
+          RUN = keep; M.closed = (M.closed || 0) + 1;
+          toast(T('🤝 Tracte tancat amb {0}: {1}{2}', [esc(other), r.fx.money > 0 ? '+' : '', eur(r.fx.money)]), 'good');
+        }
+      } catch (e) { }
+    }
+    if (m.recsReceived > M.recsApplied) {
+      const n = m.recsReceived - M.recsApplied; M.recsApplied = m.recsReceived;
+      applyFx({ rep: n, log: T('Ha rebut {0} recomanació/ns d\'agències de la classe.', [n]) }, true);
+      toast(T('⭐ Una agència de la classe t\'ha recomanat (+{0} reputació)', [n]), 'good');
+    }
+    const mine = m.offers.filter(o => o.status === 'pending' && o.turn === m.me);
+    const fresh = mine.filter(o => !M.seen.includes(o.id + o.rounds));
+    if (fresh.length) { toast(T('🤝 Tens {0} proposta/es de tracte per respondre (pestanya Classe).', [fresh.length]), 'good'); M.seen = M.seen.concat(fresh.map(o => o.id + o.rounds)).slice(-60); }
+    M.myTurn = mine.length;
+    save(); queueSync();
+    if (bankrupt()) return m;
+    return m;
+  }
+
+  async function tabClasse(el) {
+    if (!S.classe) {
+      el.innerHTML = `<div class="card"><h3>${T('🏆 Classe')}</h3><p>${T('Posa el codi de classe del professor per veure el rànquing i fer tractes amb les agències dels companys.')}</p><button class="btn primary" data-act="setClass">${T('🏷️ Posar codi de classe')}</button></div>`;
+      return;
+    }
+    el.innerHTML = `<div class="card"><p class="muted">${T('Carregant la classe…')}</p></div>`;
+    try {
+      const [rk, m] = await Promise.all([capi({ action: 'ranking' }), marketSync(true)]);
+      classData = { rk, m: m || { offers: [], me: rk.me } };
+    } catch (e) {
+      el.innerHTML = `<div class="card warn">${T('No s\'ha pogut carregar la classe: {0}. Comprova la connexió i torna-ho a provar.', [esc(e.message)])}</div>`;
+      return;
+    }
+    drawClasse(el);
+  }
+  function drawClasse(el) {
+    if (!el || !el.isConnected) return;
+    const { rk, m } = classData, me = rk.me;
+    const turn = m.offers.filter(o => o.status === 'pending' && o.turn === me).length;
+    const head = `<div class="card web-head"><h3>${T('🏆 Classe {0}', [esc(S.classe)])}</h3>
+      <p class="small">${T('Cada agència juga en el seu propi món, però aquí podeu comparar-vos, contractar-vos serveis, negociar preus i recomanar-vos.')}</p>
+      <div class="seg cls-seg"><button data-cv="rank" class="${classView === 'rank' ? 'on' : ''}">${T('🏆 Rànquing')}</button><button data-cv="market" class="${classView === 'market' ? 'on' : ''}">${T('🤝 Mercat')}${turn ? ` <em class="dot">${turn}</em>` : ''}</button></div></div>`;
+    if (classView === 'rank') {
+      const sorts = [['punts', T('Global')], ['reputacio', T('Reputació')], ['liquiditat', T('Liquiditat')], ['projectes', T('Projectes')], ['nivell', T('Nivell')], ['capitols', T('Capítols')]];
+      const rows = rk.rows.slice().sort((a, b) => (b[rankSort] - a[rankSort]) || (b.punts - a.punts));
+      const given = rk.recsGiven || [];
+      el.innerHTML = head + `<div class="card">
+        <div class="seg sort-seg">${sorts.map(([k, n]) => `<button data-rs="${k}" class="${rankSort === k ? 'on' : ''}">${n}</button>`).join('')}</div>
+        <p class="muted small">${T('Punts globals = capítols × 10 + projectes aprovats × 25 + webs × 10 + nivell × 5 + reputació + liquiditat (fins a 100) − fallides × 30.')}</p>
+        <ol class="rank">${rows.map((r, i) => `<li class="${r.pid === me ? 'me' : ''}">
+          <span class="rk-pos">${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</span>
+          <span class="rk-ava">${(ART.setPlayer(r.aspecte), ART.portrait('pau', 'n', { rank: Math.min(4, Math.floor((r.etapa - 1) / 2)) }))}</span>
+          <span class="rk-txt"><b>${esc(r.nom)}${r.pid === me ? ` <em>${T('(tu)')}</em>` : ''}</b><small>${esc(r.agencia)}${r.especialitat && SKILLS[r.especialitat] ? ` · ${SKILLS[r.especialitat].i} ${SKILLS[r.especialitat].n}` : ''}</small>
+            <small class="rk-stats">⭐ ${r.reputacio} · 💶 ${eur(r.liquiditat)} · ${T('Nv')} ${r.nivell} · 📖 ${r.capitols} · 📋 ${r.projectes}${r.recomanacions ? ` · 👍 ${r.recomanacions}` : ''}${r.fallides ? ` · 💸 ${r.fallides}` : ''}</small></span>
+          <span class="rk-score"><b>${rankSort === 'liquiditat' ? eur(r.liquiditat) : r[rankSort]}</b>
+            ${r.pid === me ? '' : `<span class="rk-btns"><button class="btn small primary" data-deal="${r.pid}">🤝</button><button class="btn small" data-rec="${r.pid}" ${given.includes(r.pid) || given.length >= rk.maxRecs ? 'disabled' : ''} title="${T('Recomanar')}">${given.includes(r.pid) ? '✔' : '👍'}</button></span>`}</span>
+        </li>`).join('')}</ol>
+        <p class="muted small">${T('🤝 proposa un tracte · 👍 recomana una agència (+1 de reputació per a ella). Pots fer {0} recomanacions; te\'n queden {1}.', [rk.maxRecs, Math.max(0, rk.maxRecs - given.length)])}</p></div>`;
+      applyPlayer();
+    } else {
+      const list = m.offers;
+      const svc = (o) => { const s = GD.serviceById(o.kind); return s ? `${s.i} ${esc(s.n)}` : o.kind; };
+      const who = (o) => esc(o.names[o.buyer === me ? o.seller : o.buyer] || '');
+      const desc = (o) => o.buyer === me ? T('Contractes {0} per fer: {1}', [who(o), svc(o)]) : T('{0} et contracta per fer: {1}', [who(o), svc(o)]);
+      const hist = (o) => o.history.map(h => `${h.by === me ? T('Tu') : esc((o.names[h.by] || '').split(' · ')[0])}: ${({ offer: T('proposta'), counter: T('contraoferta'), accept: T('accepta'), reject: T('rebutja'), cancel: T('anul·la') })[h.act]}${h.price ? ' ' + eur(h.price) : ''}`).join(' → ');
+      const mineTurn = list.filter(o => o.status === 'pending' && o.turn === me), waiting = list.filter(o => o.status === 'pending' && o.turn !== me), closed = list.filter(o => o.status !== 'pending').slice(0, 12);
+      const ST = { accepted: T('✅ Tancat'), rejected: T('❌ Rebutjat'), cancelled: T('🚫 Anul·lat'), expired: T('⌛ Caducat') };
+      el.innerHTML = head + `<div class="card"><h4>${T('Com funciona')}</h4>
+        <p class="small">${T('Si <b>contractes</b> una altra agència, pagues el preu i el teu client queda content: guanyes reputació (més com més especialitzada és l\'agència en aquell servei) i experiència. Si <b>et contracten</b>, cobres el preu i guanyes experiència. El preu es negocia: podeu fer contraofertes fins a quatre vegades. Els tractes caduquen en 7 dies.')}</p>
+        <p class="small">${T('Per començar un tracte, ves al rànquing i prem 🤝 al costat d\'una agència.')}</p></div>
+        <div class="card"><h4>${T('📥 Et toca respondre ({0})', [mineTurn.length])}</h4>
+        ${mineTurn.length ? mineTurn.map(o => `<div class="deal"><b>${desc(o)}</b><div class="deal-p">${eur(o.price)}</div><small class="muted">${hist(o)}</small>
+          <div class="row-btns"><button class="btn small primary" data-dr="accept" data-o="${o.id}">${T('✅ Acceptar')}</button>
+          ${o.rounds < 4 ? `<input class="inp deal-in" type="number" min="50" max="5000" step="10" value="${o.price}" data-ci="${o.id}"><button class="btn small" data-dr="counter" data-o="${o.id}">${T('💬 Contraoferta')}</button>` : ''}
+          <button class="btn small danger" data-dr="reject" data-o="${o.id}">${T('Rebutjar')}</button></div></div>`).join('') : `<p class="muted">${T('Cap proposta pendent.')}</p>`}</div>
+        <div class="card"><h4>${T('⏳ Esperant l\'altra agència ({0})', [waiting.length])}</h4>
+        ${waiting.length ? waiting.map(o => `<div class="deal"><b>${desc(o)}</b><div class="deal-p">${eur(o.price)}</div><small class="muted">${hist(o)}</small>${o.creator === me ? `<div class="row-btns"><button class="btn small ghost" data-dr="cancel" data-o="${o.id}">${T('Anul·lar')}</button></div>` : ''}</div>`).join('') : `<p class="muted">${T('Res pendent.')}</p>`}</div>
+        <div class="card"><h4>${T('📁 Tractes tancats')}</h4>
+        ${closed.length ? `<ul class="list">${closed.map(o => `<li><span>${desc(o)}<br><small class="muted">${hist(o)}</small></span><span>${ST[o.status] || o.status}${o.status === 'accepted' ? '<br>' + eur(o.price) : ''}</span></li>`).join('')}</ul>` : `<p class="muted">${T('Encara cap.')}</p>`}</div>`;
+    }
+    el.querySelectorAll('[data-cv]').forEach(b => b.onclick = () => { classView = b.dataset.cv; drawClasse(el); });
+    el.querySelectorAll('[data-rs]').forEach(b => b.onclick = () => { rankSort = b.dataset.rs; drawClasse(el); });
+    el.querySelectorAll('[data-deal]').forEach(b => b.onclick = () => dealModal(b.dataset.deal));
+    el.querySelectorAll('[data-rec]').forEach(b => b.onclick = async () => {
+      const r = classData.rk.rows.find(x => x.pid === b.dataset.rec);
+      confirmBox(T('Recomanar {0}? Només en pots fer {1} en tota la partida.', [esc(r.agencia || r.nom), classData.rk.maxRecs]), async () => {
+        try { await capi({ action: 'recommend', to: r.pid }); toast(T('👍 Has recomanat {0}', [esc(r.agencia)]), 'good'); tabClasse(el); } catch (e) { toast(esc(e.message), 'bad'); }
+      });
+    });
+    el.querySelectorAll('[data-dr]').forEach(b => b.onclick = () => {
+      const o = classData.m.offers.find(x => x.id === b.dataset.o), d = b.dataset.dr;
+      const go = async () => {
+        try {
+          if (d === 'cancel') await capi({ action: 'cancel', offer: o.id });
+          else await capi({ action: 'respond', offer: o.id, decision: d, price: d === 'counter' ? +el.querySelector(`[data-ci="${o.id}"]`).value : undefined });
+          toast(d === 'accept' ? T('🤝 Tracte acceptat!') : d === 'counter' ? T('💬 Contraoferta enviada') : d === 'reject' ? T('Tracte rebutjat') : T('Tracte anul·lat'), 'good');
+          await marketSync(true); tabClasse(el);
+        } catch (e) { toast(esc(e.message), 'bad'); }
+      };
+      if (d === 'accept' && o.buyer === classData.m.me) confirmBox(T('Acceptar i pagar {0}? Tens {1} de liquiditat.', [eur(o.price), eur(S.money)]), go); else go();
+    });
+  }
+  function dealModal(pid) {
+    const r = classData.rk.rows.find(x => x.pid === pid); if (!r) return;
+    const d = document.createElement('div'); d.className = 'modal';
+    const lvl = (k) => (r.habilitats || {})[k] || 0;
+    d.innerHTML = `<div class="modal-box"><h3 style="margin-top:0">🤝 ${T('Tracte amb {0}', [esc(r.agencia || r.nom)])}</h3>
+      <div class="seg"><button data-role="buy" class="on">${T('Vull contractar-los')}</button><button data-role="sell">${T('Els ofereixo un servei')}</button></div>
+      <label class="fld">${T('Servei')}<select class="inp" id="dk">${GD.services.map(s => `<option value="${s.id}">${s.i} ${esc(s.n)}</option>`).join('')}</select></label>
+      <p class="small" id="dq"></p>
+      <label class="fld">${T('Preu proposat (€)')}<input class="inp" id="dp" type="number" min="50" max="5000" step="10"></label>
+      <p class="muted small">${T('L\'altra agència podrà acceptar, rebutjar o fer-te una contraoferta.')}</p>
+      <div class="row-btns"><button class="btn primary" id="ds">${T('Enviar la proposta')}</button><button class="btn ghost" id="dc">${T('Cancel·lar')}</button></div></div>`;
+    document.body.appendChild(d);
+    let role = 'buy';
+    const upd = () => {
+      const s = GD.serviceById(d.querySelector('#dk').value), sk2 = SKILLS[s.skill];
+      d.querySelector('#dq').innerHTML = role === 'buy'
+        ? T('Especialitat de l\'agència en aquest servei: {0} {1} nivell {2}. Com més alta, més reputació guanyaràs.', [sk2.i, sk2.n, lvl(s.skill)])
+        : T('La teva habilitat en aquest servei: {0} {1} nivell {2}. Si et contracten, cobraràs el preu acordat.', [sk2.i, sk2.n, sk(s.skill)]);
+      if (!d.querySelector('#dp').dataset.touched) d.querySelector('#dp').value = s.sug;
+    };
+    d.querySelectorAll('[data-role]').forEach(b => b.onclick = () => { role = b.dataset.role; d.querySelectorAll('[data-role]').forEach(x => x.classList.toggle('on', x === b)); upd(); });
+    d.querySelector('#dk').onchange = upd; d.querySelector('#dp').oninput = (e) => { e.target.dataset.touched = 1; };
+    d.querySelector('#dc').onclick = () => d.remove();
+    d.querySelector('#ds').onclick = async () => {
+      try {
+        await capi({ action: 'offer', to: pid, role, kind: d.querySelector('#dk').value, price: +d.querySelector('#dp').value });
+        d.remove(); toast(T('🤝 Proposta enviada a {0}', [esc(r.agencia)]), 'good'); classView = 'market'; hubScreen('classe');
+      } catch (e) { toast(esc(e.message), 'bad'); }
+    };
+    upd();
   }
 
   function tabGigs(el) {
@@ -1458,6 +1616,7 @@
       projectesTotal: GD.projects.length,
       fallides: S.fallides || 0, fallidesDetall: S.fallidesLog || [],
       millores: Object.keys(S.upgrades || {}),
+      tractesTancats: (S.market && S.market.closed) || 0,
       decisions: S.history.filter(h => h.key).map(h => T("Cap. {0}: {1}", [h.ch, h.t]))
     };
   }
@@ -1494,7 +1653,7 @@
   }
   window.addEventListener('online', () => { if (S && S.syncPending) doSync(false); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden && $('.hub')) checkReviews(false); });
-  setInterval(() => { if (!document.hidden && $('.hub')) checkReviews(false); }, 13000);
+  setInterval(() => { if (!document.hidden && ($('.hub') || $('.world'))) { checkReviews(false); marketSync(false); } }, 13000);
   function projTodo() { return GD.projects.filter(p => ['todo', 'changes'].includes(projStatus(p))).length; }
 
   /* ================= Món explorable ================= */

@@ -24,6 +24,16 @@ El joc i el panell del professor es poden fer servir en **català, castellà i a
 - **Contrasenya:** variable d'entorn `TEACHER_PASSWORD` del lloc de Netlify (obligatòria perquè funcioni el panell).
 - **Dades personals:** només s'envia el nom i cognom que escrigui l'alumne i els resultats del joc. No es demana correu ni cap altra dada.
 
+## Classe: rànquing i mercat entre agències
+
+Pestanya 🏆 **Classe** (també a la Cambra de Comerç de Vic i a l'ordinador del despatx). Cal el codi de classe.
+
+- **Rànquing** de la classe per punts globals, reputació, liquiditat, projectes, nivell o capítols. Mostra el nom i la inicial del cognom, l'agència i la seva especialitat (habilitat més alta).
+- **Mercat:** cada agència juga en el seu propi món, però pot proposar tractes a una altra: contractar-li un servei (vídeo, web, anuncis, analítica, traducció...) o oferir-n'hi un. El preu es negocia amb fins a quatre contraofertes; els tractes caduquen en 7 dies. En tancar-se, qui contracta paga i guanya reputació (més si l'altra agència és especialista en el servei) i qui fa la feina cobra i guanya experiència.
+- **Recomanacions:** cada alumne en pot fer 3; l'agència recomanada guanya reputació.
+- El professorat veu tots els tractes i recomanacions de la classe al panell (secció «Mercat entre agències»).
+- Funció `netlify/functions/joc-classe.js`; dades a Netlify Blobs (`joc-mercat`). Als companys no se'ls mostra mai l'identificador secret de cada alumne.
+
 ## Món explorable (estil RPG)
 
 En sortir d'una missió, l'alumne es mou per **Vic** en vista zenital (fletxes o WASD, tocar el mapa o la creu de control al mòbil; A/Espai per parlar i mirar, B per a la llibreta, Esc per al menú). Pot entrar al despatx, al forn de la Carme, a la cansaladeria, al súper, al bar, a la merceria, a Cim Trail, al recinte firal i, en bus, a Tona (Can Jordi) i al polígon de Gurb (Mecanitzats Bellmunt).

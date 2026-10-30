@@ -248,7 +248,24 @@
       [...rows.keys()].forEach(k => { if (rows.get(k)._font === 'servidor') rows.delete(k); });
       add(results, 'servidor');
       $('#msg').innerHTML = `<span class="pos">✔ ${T(results.length === 1 ? '{0} alumne' : '{0} alumnes', [results.length])} ${classe ? T('a la classe ') + esc(classe) : T('en total')}.</span>`;
+      loadMarket(pw, classe);
     } catch (e) { $('#msg').innerHTML = `<span class="err">${esc(e.message)}</span>`; }
+  }
+
+  // Mercat entre agències (només amb una classe concreta)
+  async function loadMarket(pw, classe) {
+    $('#mktSec').hidden = !classe;
+    if (!classe) return;
+    try {
+      const r = await fetch('/.netlify/functions/joc-classe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'teacher', password: pw, classe }) });
+      const j = await r.json(); if (!r.ok) throw new Error(j.error);
+      const nm = (p) => esc(j.names[p] || p);
+      const ST = { pending: T('⏳ En negociació'), accepted: T('✅ Tancat'), rejected: T('❌ Rebutjat'), cancelled: T('🚫 Anul·lat'), expired: T('⌛ Caducat') };
+      $('#mkt').innerHTML = (j.offers.length ? `<div class="table-wrap"><table class="tbl"><thead><tr><th>${T('Data')}</th><th>${T('Contracta')}</th><th>${T('Fa la feina')}</th><th>${T('Servei')}</th><th>${T('Preu')}</th><th>${T('Contraofertes')}</th><th>${T('Estat')}</th></tr></thead><tbody>
+        ${j.offers.map(o => { const sv = GD.serviceById(o.kind); return `<tr><td><small>${dateTxt(o.updated)}</small></td><td>${nm(o.buyer)}</td><td>${nm(o.seller)}</td><td>${sv ? sv.i + ' ' + esc(sv.n) : esc(o.kind)}</td><td>${o.price.toLocaleString(LOCALE)} €</td><td>${o.rounds}</td><td>${ST[o.status] || o.status}</td></tr>`; }).join('')}
+        </tbody></table></div>` : `<p class="muted">${T('Encara no hi ha cap tracte.')}</p>`)
+        + (j.recs.length ? `<p class="small"><b>${T('Recomanacions:')}</b> ${j.recs.map(([a, b]) => `${nm(a)} → ${nm(b)}`).join(' · ')}</p>` : '');
+    } catch (e) { $('#mkt').innerHTML = `<p class="err">${esc(e.message)}</p>`; }
   }
 
   // CSV per a Excel: separador «;», BOM UTF-8 i una columna per lliçó

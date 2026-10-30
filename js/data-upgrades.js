@@ -30,3 +30,17 @@ GD.upgrades = [
   { id: 'mobles', cat: 'local', i: '🛋️', n: T("Despatx renovat amb sala de reunions"), d: T("Un espai professional per rebre clients grans."), use: T("Honoraris més alts: els clients grans valoren la imatge."), price: 1200, monthly: 0, stage: 3, rep: 2, bonus: { fee: 5 } }
 ];
 GD.upgradeById = (id) => GD.upgrades.find(u => u.id === id);
+
+// Serveis que les agències de la classe es poden contractar entre elles (l'habilitat de qui el fa en decideix la qualitat)
+GD.services = [
+  { id: 'video', i: '🎥', n: T("Vídeo per a un client"), skill: 'creativitat', sug: 400 },
+  { id: 'fotos', i: '📸', n: T("Sessió de fotos de producte"), skill: 'creativitat', sug: 250 },
+  { id: 'disseny', i: '🎨', n: T("Disseny gràfic i cartells"), skill: 'creativitat', sug: 300 },
+  { id: 'web', i: '🌐', n: T("Muntar una web"), skill: 'estrategia', sug: 800 },
+  { id: 'ads', i: '📣', n: T("Gestionar una campanya d'anuncis"), skill: 'estrategia', sug: 600 },
+  { id: 'analitica', i: '📊', n: T("Informe d'analítica"), skill: 'analitica', sug: 350 },
+  { id: 'traduccio', i: '🌍', n: T("Traducció i localització"), skill: 'comercial', sug: 300 },
+  { id: 'lead', i: '🤝', n: T("Presentar un client potencial"), skill: 'comercial', sug: 500 },
+  { id: 'processos', i: '🗂️', n: T("Organitzar processos i eines"), skill: 'gestio', sug: 400 }
+];
+GD.serviceById = (id) => GD.services.find(s => s.id === id);

@@ -310,7 +310,7 @@
         const tree = (x, y, k) => O.push({ t: k || 'tree', x, y, solid: true });
         for (let x = 0; x < 44; x++) { if (x < 16 || x > 27) tree(x, 0, x % 3 ? 'tree' : 'pine'); tree(x, 35); }
         for (let y = 1; y < 35; y++) { if (y < 31 || y > 32) { if (!(y === 19 || y === 20 || y === 33 || y === 34)) tree(0, y); if (!(y === 19 || y === 20)) tree(43, y, y % 2 ? 'pine' : 'tree'); } }
-        [[2, 3], [5, 4], [8, 2], [11, 5], [3, 8], [33, 3], [36, 6], [39, 3], [41, 7], [30, 4], [2, 12], [12, 14], [36, 12], [42, 12], [1, 24], [2, 25], [17, 24], [24, 24], [41, 23], [13, 22], [5, 29], [37, 29], [12, 29], [30, 29], [2, 30], [42, 30], [5, 33], [16, 34], [30, 34], [38, 33]].forEach(([x, y]) => { if (G[y][x] === '.' || G[y][x] === ',') tree(x, y, (x + y) % 4 ? 'tree' : 'pine'); });
+        [[2, 3], [8, 2], [11, 5], [33, 3], [36, 6], [39, 3], [41, 7], [30, 4], [2, 12], [12, 14], [36, 12], [42, 12], [1, 24], [2, 25], [17, 24], [24, 24], [41, 23], [13, 22], [5, 29], [37, 29], [12, 29], [30, 29], [2, 30], [42, 30], [5, 33], [16, 34], [30, 34], [38, 33]].forEach(([x, y]) => { if (G[y][x] === '.' || G[y][x] === ',') tree(x, y, (x + y) % 4 ? 'tree' : 'pine'); });
         [[18, 6], [25, 6], [13, 18], [30, 18], [18, 26], [25, 26], [20, 30], [23, 30]].forEach(([x, y]) => O.push({ t: 'lamp', x, y, solid: true }));
         [[14, 13], [29, 13]].forEach(([x, y]) => O.push({ t: 'bench', x, y, solid: true }));
         O.push({ t: 'fountain', x: 21, y: 14, w: 2, h: 2, solid: true, anim: true, say: () => [['', T_('La font de la plaça. Hi ha monedes al fons... i un colom que et mira malament.')]] });
@@ -331,7 +331,7 @@
         B({ id: 'cimtrail', x: 37, y: 14, w: 5, h: 5, wall: '#e0e6ea', roof: '#3a4a5a', awning: '#d63c6b', door: 2, label: T_('🏔️ Cim Trail') });
         B({ id: 'escola', x: 3, y: 22, w: 7, h: 5, wall: '#f6efcf', roof: '#c8853d', door: 3, doorCol: '#2f9a6e', flag: true, label: T_('🏫 Escola') });
         B({ id: 'traspas', x: 11, y: 23, w: 5, h: 4, wall: '#d8d4cc', roof: '#7a6a5a', door: 2, shutter: true, label: T_('🔒 Es traspassa') });
-        B({ id: 'perruqueria', x: 16, y: 1, w: 0, h: 0, hidden: true });
+        B({ id: 'cambra', x: 3, y: 4, w: 6, h: 5, wall: '#efe6d8', roof: '#5a4a7a', door: 2, doorCol: '#5a3fa0', flag: true, label: T_('🏛️ Cambra de Comerç') });
         B({ id: 'super', x: 26, y: 21, w: 8, h: 6, wall: '#f2f2f2', roof: '#d6a020', awning: '#2f6fc8', door: 3, doorCol: '#5ac8e8', label: T_('🛒 SuperPreu') });
         B({ id: 'estacio', x: 35, y: 21, w: 7, h: 6, wall: '#e8d8c0', roof: '#6a4a3a', door: 3, label: T_('🚆 Estació') });
         O.push({ t: 'sign', x: 10, y: 27, solid: true, id: 'perruqueriaSign', say: () => [['', T_('«Perruqueria Marisa» — fletxa cap al carrer de baix.')]] });
@@ -793,7 +793,7 @@
     switch (id) {
       case 'ordinador': return menu(T_('💻 L\'ordinador de l\'agència'), [
         { t: T_('🗺️ Campanya i missions'), fn: () => openHub('campanya') }, { t: T_('📋 Projectes reals'), fn: () => openHub('projectes') },
-        { t: T_('🛒 Millores de l\'agència'), fn: () => openHub('empresa') }, { t: T_('🛠️ Taller web'), fn: () => openHub('taller') }, { t: T_('🏢 Empresa i finances'), fn: () => openHub('empresa') }, { t: T_('Tancar'), fn: () => { } }]);
+        { t: T_('🛒 Millores de l\'agència'), fn: () => openHub('empresa') }, { t: T_('🏆 Classe: rànquing i mercat'), fn: () => openHub('classe') }, { t: T_('🛠️ Taller web'), fn: () => openHub('taller') }, { t: T_('🏢 Empresa i finances'), fn: () => openHub('empresa') }, { t: T_('Tancar'), fn: () => { } }]);
       case 'prestatge': return openHub('biblioteca');
       case 'telefon': return say([['', T_('El telèfon de l\'agència. Hi ha encàrrecs nous esperant.')]], () => openHub('encarrecs'));
       case 'pissarra': return notebook();
@@ -817,6 +817,7 @@
     if (w.closed === 'escola') return schoolGate();
     if (w.closed === 'traspas') return say([['', T_('«Es traspassa». La persiana està abaixada i plena de cartells vells.')]]);
     if (w.closed === 'estacio') return say([['', T_('L\'estació de tren. Cap a Barcelona cada hora.')]]);
+    if (w.closed === 'cambra') return say([['', T_('La Cambra de Comerç d\'Osona. Al tauler hi ha el rànquing de les agències de la classe i les ofertes de col·laboració.')]], () => openHub('classe'));
     if (w.closed === 'catedral') return say([['', T_('La catedral és tancada a aquesta hora.')]]);
     if (w.to === 'fira' && !unlock.fira()) return say([['', T_('El recinte firal està tancat. Obrirà quan arribi la fira (etapa 3).')]]);
     return false;
