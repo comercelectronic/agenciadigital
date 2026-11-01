@@ -7,6 +7,8 @@
   const KEY = 'agencia-digital-lang';
   const SUPPORTED = ['ca', 'es', 'en'];
   let lang = null;
+  // Un enllaç amb ?lang=es (per exemple, des d'ECONEXO) tria l'idioma i el desa
+  try { const q = new URLSearchParams(location.search).get('lang'); if (SUPPORTED.includes(q)) localStorage.setItem(KEY, q); } catch (e) { }
   try { lang = localStorage.getItem(KEY); } catch (e) { }
   if (!SUPPORTED.includes(lang)) {
     const n = (navigator.language || 'ca').slice(0, 2).toLowerCase();
