@@ -344,7 +344,7 @@
         const ps = projStatus(gp);
         return `<button class="next-mission proj-gate" data-proj="${gp.id}">
           <span class="nm-ava">${ART.portrait(gp.who, ps === 'changes' ? 't' : 'n')}</span>
-          <span class="nm-txt"><small>${T('📋 Projecte real · entrega\'l per continuar')}</small><b>${txt(gp.title)}</b><i>${T('Per continuar amb el capítol {0}, fes aquest projecte i entrega\'l.', [gc])}</i></span>
+          <span class="nm-txt"><small>${T('📋 Projecte real · entrega\'l per continuar')}</small><b>${txt(gp.title)}</b><i>${T('Per continuar amb el capítol {0}, fes aquest projecte i entrega\'l.', [gc])} 💶 ${T('Pagament: fins a {0}', [eur(GD.projMax(gp))])}</i></span>
           <span class="nm-go">${PST()[ps][0]}</span></button>`;
       })() : ''}
       <div class="stages">
@@ -551,6 +551,14 @@
   /* ================= Taller web (curs opcional) ================= */
   const WP = () => GD.webPlatforms;
   function webState() { if (!S.web) S.web = { platforms: [], levels: {} }; return S.web; }
+  // Estat d'una web del taller: per fer, en revisió, cal millorar-la, aprovada o entregada abans de les notes (sense nota)
+  function webStatus(L) {
+    const r = webState().levels[L.n];
+    if (!r) return 'todo';
+    if (r.review && r.review.status === 'approved') return 'approved';
+    if (r.review && r.review.status === 'changes' && r.review.v >= r.v) return 'changes';
+    return r.v ? 'sent' : 'legacy';
+  }
   function webOpen(n) { return n === 1 || !!webState().levels[n - 1]; }
   const safeUrl = (u) => /^https?:\/\//i.test(u || '') ? esc(u) : '#';
 
@@ -570,10 +578,10 @@
         const d = W.levels[L.n], open = webOpen(L.n), p = d && WP()[d.platform];
         return `<div class="web-level card ${d ? 'done' : open ? 'open' : 'locked'}">
           <span class="wl-ava">${ART.portrait(L.who, d ? 'h' : 'n')}</span>
-          <div class="wl-txt"><small>${T('Nivell {0}', [L.n])} · ${txt(L.sub)}</small><b>${txt(L.title)}</b>
-            ${d ? `<a href="${safeUrl(d.url)}" target="_blank" rel="noopener">${esc(d.url)}</a>${p ? ` <em class="plat-chip">${p.i} ${esc(p.n)}</em>` : ''}` : ''}
+          <div class="wl-txt"><small>${T('Nivell {0}', [L.n])} · ${txt(L.sub)} · 💶 ${GD.webMax(L) ? (d && d.paid > 0 && webStatus(L) === 'approved' ? T('Cobrat: {0}', [eur(d.paid)]) : T('fins a {0}', [eur(GD.webMax(L))])) : T('sense pagament')}</small><b>${txt(L.title)}</b>
+            ${d ? `<em class="pstat ${webStatus(L)}">${webStatus(L) === 'legacy' ? T('📤 Entregada (sense nota)') : PST()[webStatus(L)].join(' ')}${d.review && d.review.status === 'approved' && d.review.grade != null ? ' · ' + T('Nota: {0}', [d.review.grade]) : ''}</em><br><a href="${safeUrl(d.url)}" target="_blank" rel="noopener">${esc(d.url)}</a>${p ? ` <em class="plat-chip">${p.i} ${esc(p.n)}</em>` : ''}` : ''}
           </div>
-          ${open ? `<button class="btn ${d ? 'small' : 'primary'}" data-web="${L.n}">${d ? T('Revisar') : T('Començar')}</button>` : '<span class="ch-s">🔒</span>'}
+          ${open ? `<button class="btn ${d ? 'small' : 'primary'}" data-web="${L.n}">${d ? (webStatus(L) === 'changes' ? T('Corregir') : T('Revisar')) : T('Començar')}</button>` : '<span class="ch-s">🔒</span>'}
         </div>`;
       }).join('')}</div>`;
   }
@@ -602,6 +610,17 @@
     return T('⚠️ L\'adreça no sembla de {0}. Si fas servir un domini propi, cap problema.', [p ? p.n : '']);
   }
 
+  // Nota i comentaris d'una web corregida (automàticament o pel professor)
+  function webFeedback(L, rec) {
+    const rv = rec && rec.review, st = webStatus(L);
+    if (!rec || !rec.v) return '';
+    if (st === 'sent') return `<div class="warn small">${rv && rv.autoError && rv.autoError.v >= rec.v ? `<b>${T('🤖 No s\'ha pogut fer la correcció automàtica.')}</b> ${autoErrorText(rv.autoError.reason)} ${T('El professor el revisarà igualment.')}` : T('⏳ Correcció automàtica en curs: pot trigar uns minuts. Després, el professor la pot revisar.')}</div>`;
+    if (!rv || !rv.status) return '';
+    const auto = rv.by === 'auto';
+    return `<div class="${rv.status === 'approved' ? 'info' : 'errors'}"><b>${rv.status === 'approved' ? (auto ? T('✅ Aprovat per la correcció automàtica') : T('✅ Aprovat pel professor')) : (auto ? T('✏️ La correcció automàtica demana canvis') : T('✏️ El professor demana canvis'))}${rv.grade != null ? ' · ' + T('Nota: {0}', [rv.grade]) : ''}</b>
+      ${auto ? `<p class="muted small">${T('El professor pot revisar i modificar aquesta nota i els comentaris.')}</p>` : ''}${rv.feedback ? `<p class="pre">${esc(rv.feedback)}</p>` : ''}</div>`;
+  }
+
   function webLevel(n) {
     const L = GD.webLevels.find(x => x.n === n); const W = webState();
     const prev = W.levels[n];
@@ -612,9 +631,11 @@
     const brief = () => panel(`<div class="pn-h"><b>🧾 ${txt(L.title)}</b><small>${T('Taller web · Nivell {0}', [n])} · ${txt(L.sub)}</small></div>
       <h4>${T('Què demana el client')}</h4>
       <ul class="req-list">${L.reqs.map(r => `<li>${txt(r)}</li>`).join('')}</ul>
+      ${GD.webMax(L) ? payBox(GD.webMax(L), prev && prev.paid) : `<div class="pay-box">💶 <b>${T('Sense pagament: és la teva pròpia web, però la nota compta igualment.')}</b></div>`}
       ${prev ? `<div class="info">${T('Ja has entregat aquest nivell:')} <a href="${safeUrl(prev.url)}" target="_blank" rel="noopener">${esc(prev.url)}</a></div>` : ''}
-      <div class="row-btns"><button class="btn primary" id="learn">${T('📚 Aprèn a fer-la')}</button><button class="btn" id="deliver">${T('📤 Entregar')}</button><button class="btn ghost" id="back">${T('Tornar al taller')}</button></div>`, (p) => {
-      p.querySelector('#learn').onclick = learn; p.querySelector('#deliver').onclick = deliver; p.querySelector('#back').onclick = back;
+      ${webFeedback(L, prev)}
+      <div class="row-btns"><button class="btn primary" id="learn">${T('📚 Aprèn a fer-la')}</button>${webStatus(L) === 'approved' ? '' : `<button class="btn" id="deliver">${prev ? T('📤 Tornar a entregar') : T('📤 Entregar')}</button>`}<button class="btn ghost" id="back">${T('Tornar al taller')}</button></div>`, (p) => {
+      p.querySelector('#learn').onclick = learn; const dl = p.querySelector('#deliver'); if (dl) dl.onclick = deliver; p.querySelector('#back').onclick = back;
     });
     const learn = () => panel(`<div class="lesson"><div class="ls-h"><small>${T('🛠️ Taller web · Nivell {0}', [n])}</small><h2>${txt(L.title)}</h2></div>
         ${L.concepts.map(c => `<p>${txt(c)}</p>`).join('')}
@@ -629,6 +650,12 @@
     });
     const deliver = () => {
       const d = prev || {};
+      if (!S.classe) {
+        panel(`<div class="pn-h"><b>📤 ${T('Entrega de la web')}</b><small>${txt(L.title)}</small></div>
+          <p>${T('Per entregar webs necessites el codi de classe del professor: és el que permet corregir-les i que cobris.')}</p>
+          <div class="row-btns"><button class="btn primary" data-act="setClass">${T('🏷️ Posar codi de classe')}</button><button class="btn ghost" id="b">${T('Tornar')}</button></div>`, (pn) => { pn.querySelector('#b').onclick = brief; });
+        return;
+      }
       panel(`<div class="pn-h"><b>📤 ${T('Entrega de la web')}</b><small>${txt(L.title)}</small></div>
         <label class="fld">${T('Plataforma amb què l\'has feta')}<select class="inp" id="wPlat">${W.platforms.map(k => `<option value="${k}" ${k === (d.platform || plat) ? 'selected' : ''}>${esc(WP()[k].n)}</option>`).join('')}</select></label>
         <label class="fld">${T('Enllaç públic de la web')}<input class="inp" id="wUrl" type="url" inputmode="url" placeholder="https://..." value="${esc(d.url || '')}"></label>
@@ -665,21 +692,26 @@
   }
 
   function webDelivered(L, rec, first) {
+    const old = webState().levels[L.n], R = L.reward;
+    // Les entregues anteriors al pagament per nota ja van cobrar l'import antic: només es cobra el que falti
+    rec.v = old ? (old.v || 0) + 1 : 1;
+    rec.paid = old ? (old.paid != null ? old.paid : (old.v ? 0 : (R.money || 0))) : 0;
     webState().levels[L.n] = rec;
-    const R = L.reward;
     if (first) {
-      applyFx({ xp: R.xp, money: R.money, fee: true, rep: R.rep, trust: R.trust ? { [R.trust]: 1 } : null, log: T('Va entregar la web «{0}» feta amb {1}.', [txt(L.title), WP()[rec.platform].n]), key: true }, true);
+      applyFx({ xp: R.xp, rep: R.rep, trust: R.trust ? { [R.trust]: 1 } : null, log: T('Va entregar la web «{0}» feta amb {1}.', [txt(L.title), WP()[rec.platform].n]), key: true }, true);
       advanceWeeks(1);
     }
-    save(); queueSync();
+    save();
+    doSync(false).then(ok => { if (ok) requestAutograde('web-' + L.n, rec.v); else { rec.autoPending = true; save(); } });
     showActors(L.who, 'h');
     playLines([[L.who + '.h', T('Ja la tinc! Moltes gràcies, {nom}. Ara mateix l\'ensenyo a tothom.')]], () => {
       const next = GD.webLevels.find(x => x.n === L.n + 1);
       panel(`<div class="reward"><div class="rw-h"><small>${T('Taller web · Nivell {0}', [L.n])}</small><h2>🎉 ${T('Web entregada!')}</h2></div>
         <p><a href="${safeUrl(rec.url)}" target="_blank" rel="noopener">${esc(rec.url)}</a></p>
         ${first ? `<div class="metrics"><div class="metric good"><small>${T('Experiència')}</small><b>+${R.xp}</b></div>
-          ${R.money ? `<div class="metric good"><small>${T('Honoraris cobrats')}</small><b>+${eur(R.money * (1 + 0.05 * sk('comercial')))}</b></div>` : ''}
-          <div class="metric good"><small>${T('Reputació')}</small><b>+${R.rep}</b></div></div>` : `<p class="muted">${T('Entrega actualitzada. Les recompenses només es donen la primera vegada.')}</p>`}
+          <div class="metric good"><small>${T('Reputació')}</small><b>+${R.rep}</b></div></div>` : `<p class="muted">${T('Entrega actualitzada. L\'experiència i la reputació només es donen la primera vegada.')}</p>`}
+        ${GD.webMax(L) ? payBox(GD.webMax(L), rec.paid) : ''}
+        <p class="small">${T('La correcció automàtica puntuarà la web en pocs minuts i el professor en pot modificar la nota. El que cobres depèn de la nota.')}</p>
         ${next ? `<div class="stage-clear" style="--sc:#38d1c4"><b>🔓 ${T('Nou encàrrec desbloquejat:')}</b><p>${txt(next.title)}</p></div>` : `<div class="stage-clear" style="--sc:#ffd24a"><b>🏆 ${T('Has completat el Taller web!')}</b></div>`}
         <button class="btn primary big" data-act="hubTaller">${T('Tornar al taller')}</button></div>`);
       if (first) petals($('.scene'), 20);
@@ -688,6 +720,19 @@
 
   /* ================= Projectes reals (revisats pel professor) ================= */
   const CH_ORDER = GD.stages.flatMap(s => s.chapters);
+  // Pagament segons la nota: «import màxim × nota ÷ 10». Si la nota puja, es cobra la diferència; mai es treu res.
+  const payBox = (max, paid) => max > 0 ? `<div class="pay-box">💶 <b>${T('Pagament: fins a {0}', [eur(max)])}</b>
+      <span class="small">${T('Cobraràs segons la nota: amb un 5 → {0} · amb un 7 → {1} · amb un 10 → {2}. Si la nota puja, cobres la diferència.', [eur(GD.payFor(max, 5)), eur(GD.payFor(max, 7)), eur(max)])}</span>
+      ${paid > 0 ? `<span class="paid">✅ ${T('Has cobrat {0}.', [eur(paid)])}</span>` : ''}</div>` : '';
+  function settlePay(rec, max, rv, title) {
+    if (!rv || rv.status !== 'approved' || !(max > 0)) return 0;
+    const g = rv.grade != null ? rv.grade : GD.PASS_GRADE, target = GD.payFor(max, g), delta = target - (rec.paid || 0);
+    if (delta <= 0) return 0;
+    const keep = RUN; RUN = null;
+    applyFx({ money: delta, fee: false, log: T('Cobrament pel projecte «{0}» (nota {1}): {2}.', [title, g, eur(delta)]), key: true }, true);
+    RUN = keep; rec.paid = target;
+    return delta;
+  }
   function projRec(id) { if (!S.proj) S.proj = {}; return S.proj[id] || null; }
   function projStatus(p) {
     const r = projRec(p.id);
@@ -737,7 +782,7 @@
         const rv = r && r.review;
         return `<div class="web-level card proj ${s}">
           <span class="wl-ava">${ART.portrait(p.who, s === 'approved' ? 'h' : s === 'changes' ? 't' : 'n')}</span>
-          <div class="wl-txt"><small>${T('Capítol {0}', [p.after])} · ${txt(p.kind)}</small><b>${txt(p.title)}</b>
+          <div class="wl-txt"><small>${T('Capítol {0}', [p.after])} · ${txt(p.kind)} · 💶 ${s === 'approved' && r && r.paid > 0 ? T('Cobrat: {0}', [eur(r.paid)]) : T('fins a {0}', [eur(GD.projMax(p))])}</small><b>${txt(p.title)}</b>
             <em class="pstat ${s}">${ic} ${lb}${rv && rv.grade != null && s === 'approved' ? ' · ' + T('Nota: {0}', [rv.grade]) : ''}</em></div>
           ${s === 'locked' ? `<span class="ch-s small">${T('Cap. {0}', [p.after])}</span>` : `<button class="btn ${s === 'todo' || s === 'changes' ? 'primary' : 'small'}" data-proj="${p.id}">${s === 'todo' ? T('Començar') : s === 'changes' ? T('Corregir') : T('Veure')}</button>`}
         </div>`;
@@ -757,6 +802,7 @@
       : s === 'sent' ? `<div class="warn small">${ae ? `<b>${T('🤖 No s\'ha pogut fer la correcció automàtica.')}</b> ${autoErrorText(ae.reason)} ${T('El professor el revisarà igualment.')}` : T('⏳ Correcció automàtica en curs: pot trigar uns minuts. Després, el professor la pot revisar.')}</div>` : '';
     const brief = () => panel(`<div class="pn-h"><b>📋 ${txt(p.title)}</b><small>${txt(p.kind)} · ${T('Capítol {0}', [p.after])} · ${PST()[s].join(' ')}</small></div>
       ${fb}
+      ${payBox(GD.projMax(p), r.paid)}
       <p><b>${T('Objectiu:')}</b> ${txt(p.goal)}</p>
       <p><b>${T('Format:')}</b> ${txt(p.format)}</p>
       <h4>${T('Què ha de contenir')}</h4>
@@ -819,6 +865,7 @@
           playLines([[p.who + '.h', T('Rebut! Ho miraré amb calma, {nom}. T\'ho tornaré revisat.')]], () => {
             panel(`<div class="reward"><div class="rw-h"><small>${txt(p.kind)}</small><h2>📤 ${T('Projecte entregat!')}</h2></div>
               <p><a href="${safeUrl(url)}" target="_blank" rel="noopener">${esc(url)}</a></p>
+              ${payBox(GD.projMax(p))}
               <p>${ok ? T('Ja pots continuar la campanya. La correcció automàtica el puntuarà en pocs minuts i el professor en revisarà la nota. Si cal millorar alguna cosa, rebràs un avís; la recompensa arriba quan s\'aprova.') : T('No s\'ha pogut enviar ara (sense connexió?). S\'enviarà automàticament quan tornis a tenir connexió; també ho pots fer des d\'Empresa → Enviar resultats ara.')}</p>
               <button class="btn primary big" data-act="hubProj">${T('Tornar als projectes')}</button></div>`);
           });
@@ -849,7 +896,8 @@
   async function checkReviews(manual) {
     if (!S || !S.classe || !S.proj) return;
     // Mentre hi ha correccions en curs es comprova sovint; després, cada minut per si el professor canvia alguna revisió
-    const waiting = GD.projects.some(p => projStatus(p) === 'sent'), delivered = GD.projects.some(p => S.proj[p.id] && S.proj[p.id].v);
+    const waiting = GD.projects.some(p => projStatus(p) === 'sent') || GD.webLevels.some(L => webStatus(L) === 'sent'),
+      delivered = GD.projects.some(p => S.proj[p.id] && S.proj[p.id].v) || GD.webLevels.some(L => { const w = webState().levels[L.n]; return w && w.v; });
     if (!manual && (!delivered || Date.now() - lastReviewCheck < (waiting ? 12000 : 60000))) return;
     lastReviewCheck = Date.now();
     let reviews;
@@ -867,14 +915,32 @@
       }
       if (!r || !rv || (r.review && r.review.at === rv.at)) continue;
       r.review = rv; changed = true;
-      if (rv.status === 'approved' && !r.rewarded) {
-        r.rewarded = true;
-        const R = p.reward, keep = RUN; RUN = null;
-        applyFx({ xp: R.xp, money: R.money, fee: true, rep: R.rep, trust: R.trust ? { [R.trust]: 1 } : null, log: T('Projecte aprovat: «{0}».', [txt(p.title)]), key: true }, true);
-        RUN = keep;
-        toast(T('✅ Projecte aprovat: {0} (+{1} EXP)', [txt(p.title), R.xp]), 'good');
+      if (r.paid == null) r.paid = r.rewarded ? ((p.reward && p.reward.money) || 0) : 0; // projectes aprovats abans del pagament per nota
+      if (rv.status === 'approved') {
+        if (!r.rewarded) {
+          r.rewarded = true;
+          const R = p.reward, keep = RUN; RUN = null;
+          applyFx({ xp: R.xp, rep: R.rep, trust: R.trust ? { [R.trust]: 1 } : null, log: T('Projecte aprovat: «{0}».', [txt(p.title)]), key: true }, true);
+          RUN = keep;
+        }
+        const got = settlePay(r, GD.projMax(p), rv, txt(p.title));
+        toast(got ? T('✅ Projecte aprovat: {0} · nota {1} · +{2}', [txt(p.title), rv.grade != null ? rv.grade : GD.PASS_GRADE, eur(got)]) : T('✅ Projecte aprovat: {0} (+{1} EXP)', [txt(p.title), p.reward.xp]), 'good');
       } else if (rv.status === 'changes' && rv.v >= r.v) toast((rv.by === 'teacher' ? T('✏️ El professor demana canvis a «{0}» (nota {1}).', [txt(p.title), rv.grade != null ? rv.grade : '—']) : T('✏️ Cal millorar «{0}» (nota {1}).', [txt(p.title), rv.grade != null ? rv.grade : '—'])) + ' ' + T('Pots continuar jugant: corregeix-lo a 📋 Projectes.'), 'bad');
       else if (rv.autoError && rv.autoError.v >= r.v) toast(T('🤖 No s\'ha pogut corregir automàticament «{0}». Obre el projecte per veure-ne el motiu.', [txt(p.title)]), 'bad');
+    }
+    for (const L of GD.webLevels) {
+      const r = webState().levels[L.n], rv = reviews['web-' + L.n], title = txt(L.title);
+      if (r && rv && rv.autoError && rv.autoError.reason === 'ai' && rv.autoError.v >= r.v && !rv.status && (r.aiRetry || 0) < 3 && Date.now() - (r.aiRetryAt || 0) > 300000) {
+        r.aiRetry = (r.aiRetry || 0) + 1; r.aiRetryAt = Date.now(); requestAutograde('web-' + L.n, r.v); changed = true;
+      }
+      if (!r || !rv || (r.review && r.review.at === rv.at)) continue;
+      r.review = rv; changed = true;
+      if (r.paid == null) r.paid = r.v ? 0 : ((L.reward && L.reward.money) || 0);
+      if (rv.status === 'approved') {
+        const got = settlePay(r, GD.webMax(L), rv, title);
+        toast(got ? T('✅ Web aprovada: {0} · nota {1} · +{2}', [title, rv.grade != null ? rv.grade : GD.PASS_GRADE, eur(got)]) : T('✅ Web aprovada: {0} · nota {1}', [title, rv.grade != null ? rv.grade : GD.PASS_GRADE]), 'good');
+      } else if (rv.status === 'changes' && rv.v >= r.v) toast(T('✏️ Cal millorar la web «{0}» (nota {1}).', [title, rv.grade != null ? rv.grade : '—']));
+      else if (rv.autoError && rv.autoError.v >= r.v) toast(T('🤖 No s\'ha pogut corregir automàticament «{0}». Obre el projecte per veure-ne el motiu.', [title]), 'bad');
     }
     if (changed) { save(); queueSync(); if ($('.hub')) hubScreen(); }
     else if (manual) toast(T('Encara no hi ha revisions noves.'));
@@ -1669,9 +1735,11 @@
       habilitats: S.skills, coneixement: S.know, confianca: S.trust,
       encarrecs: S.stats.gigs, campanyes: S.stats.campaigns, campanyesBones: S.stats.good,
       webPlataformes: (S.web && S.web.platforms) || [],
-      webs: Object.fromEntries(Object.entries((S.web && S.web.levels) || {}).map(([k, v]) => [k, { url: v.url, platform: v.platform, at: v.at, reflection: v.reflection, note: v.note, reachable: v.reachable }])),
+      webs: Object.fromEntries(Object.entries((S.web && S.web.levels) || {}).map(([k, v]) => [k, { url: v.url, platform: v.platform, at: v.at, reflection: v.reflection, note: v.note, reachable: v.reachable, v: v.v || 0 }])),
       websEntregades: Object.keys((S.web && S.web.levels) || {}).length,
-      projectes: Object.fromEntries(Object.entries(S.proj || {}).filter(([, r]) => r && r.v).map(([k, r]) => [k, { url: r.url, url2: r.url2 || '', resum: r.summary, ia: r.ai, canvis: r.changes || '', at: r.at, primer: r.first || r.at, v: r.v }])),
+      projectes: Object.assign(Object.fromEntries(Object.entries(S.proj || {}).filter(([, r]) => r && r.v).map(([k, r]) => [k, { url: r.url, url2: r.url2 || '', resum: r.summary, ia: r.ai, canvis: r.changes || '', at: r.at, primer: r.first || r.at, v: r.v }])),
+        // Les webs del taller es corregeixen com els projectes, amb la clau «web-N»
+        Object.fromEntries(Object.entries((S.web && S.web.levels) || {}).filter(([, v]) => v && v.v).map(([k, v]) => ['web-' + k, { url: v.url, url2: '', resum: v.reflection || '', nota: v.note || '', ia: '', canvis: '', at: v.at, primer: v.at, v: v.v }]))),
       projectesEntregats: Object.values(S.proj || {}).filter(r => r && r.v).length,
       projectesAprovats: GD.projects.filter(p => projStatus(p) === 'approved').length,
       projectesTotal: GD.projects.length,
@@ -1697,6 +1765,7 @@
       if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || 'Error ' + r.status);
       S.syncPending = false; S.lastSync = Date.now(); save();
       Object.entries(S.proj || {}).forEach(([k, r]) => { if (r && r.autoPending) { r.autoPending = false; requestAutograde(k, r.v); } });
+      Object.entries((S.web && S.web.levels) || {}).forEach(([k, r]) => { if (r && r.autoPending) { r.autoPending = false; requestAutograde('web-' + k, r.v); } });
       if (manual) { toast(T('📤 Resultats enviats al professor'), 'good'); if ($('.hub')) hubScreen(); }
       return true;
     } catch (e) {

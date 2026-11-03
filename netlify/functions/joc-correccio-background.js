@@ -13,6 +13,7 @@ const Anthropic = AnthropicModule.default || AnthropicModule;
 // Les dades dels projectes són un fitxer del navegador: les carreguem amb un T() que retorna el text català
 globalThis.window = globalThis;
 globalThis.T = (s, a) => (a ? String(s).replace(/\{(\d+)\}/g, (m, i) => a[i]) : s);
+require('../../js/data-web.js');
 require('../../js/data-projects.js');
 const GD = globalThis.GD;
 
@@ -39,7 +40,7 @@ function htmlToText(html) {
     .replace(/[ \t]+/g, ' ').replace(/\n\s*\n+/g, '\n\n').trim();
 }
 
-async function download(url) {
+async function download(url, raw) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 25000);
   try {
@@ -55,7 +56,7 @@ async function download(url) {
     const body = buf.toString('utf8');
     if (type.includes('html')) {
       if (/ServiceLogin|accounts\.google\.com\/v3\/signin/.test(body) && body.length < 400000) return { error: 'private' };
-      return { kind: 'text', text: htmlToText(body) };
+      return { kind: 'text', text: raw ? body : htmlToText(body) };
     }
     if (type.startsWith('text/') || type.includes('json') || type.includes('csv')) return { kind: 'text', text: body };
     return { error: 'format ' + type };
@@ -83,6 +84,28 @@ async function readLink(raw) {
     if (id) return download(`https://drive.google.com/uc?export=download&id=${id}`);
   }
   return download(u.href);
+}
+
+// Webs del Taller web: el model ha de veure el codi (HTML + CSS + JS propis), no només el text, per jutjar l'estructura,
+// l'accessibilitat, el mòbil i les animacions. Es descarreguen els fitxers que la pàgina carrega del mateix domini.
+async function readWeb(raw) {
+  let u;
+  try { u = new URL(raw); } catch (e) { return { error: 'url' }; }
+  if (!/^https?:$/.test(u.protocol) || isPrivateHost(u.hostname)) return { error: 'url' };
+  const page = await download(u.href, true);
+  if (page.error || page.kind !== 'text') return page.error ? page : { error: 'format' };
+  let html = page.text.replace(/<!--[\s\S]*?-->/g, '');
+  const extra = [];
+  const refs = [...html.matchAll(/<link[^>]+rel=["']?stylesheet["']?[^>]*>|<script[^>]+src=["'][^"']+["'][^>]*>/gi)]
+    .map((m) => (m[0].match(/(?:href|src)=["']([^"']+)["']/i) || [])[1]).filter(Boolean);
+  for (const r of [...new Set(refs)].slice(0, 6)) {
+    let ru; try { ru = new URL(r, u); } catch (e) { continue; }
+    if (ru.hostname !== u.hostname || isPrivateHost(ru.hostname)) continue;
+    const d = await download(ru.href, true);
+    if (!d.error && d.kind === 'text') extra.push(`/* ${ru.pathname} */\n${d.text.slice(0, 60000)}`);
+  }
+  const text = `<page_source url="${u.href}">\n${html.slice(0, 90000)}\n</page_source>` + (extra.length ? `\n<linked_files>\n${extra.join('\n\n')}\n</linked_files>` : '');
+  return { kind: 'text', text };
 }
 
 /* ---------- Correcció amb Claude ---------- */
@@ -137,7 +160,31 @@ Instructions:
 - Write every comment, strength, improvement and the feedback in ${LANG_NAME[lang] || 'Catalan'}.`;
 }
 
-async function grade(p, sub, docs, lang) {
+function buildWebPrompt(p, sub, lang) {
+  const levels = GD.rubricLevels.map((l, i) => `${i} = ${l.n}: ${l.d}`).join('\n');
+  return `You are a web-design and marketing teacher assessing a website built by a vocational-training student for a fictional client, as part of "Agència Digital", an educational game set in Vic (Osona, Catalonia). The student may have built it with a no-code platform (Wix, WordPress, Webflow, Shopify) or with HTML/CSS/JS written with AI help. You receive the page source (HTML plus the CSS/JS files it links on the same domain). You cannot see the rendered page, so judge from the code and the visible text.
+
+WEB LEVEL: ${p.title} (${p.goal})
+CLIENT CONTEXT (what the client asked for): ${p.brief.map(l => l[1]).join(' ')}
+
+RUBRIC — score each requirement of the client with one level:
+${levels}
+REQUIREMENTS (in this order, one criterion each):
+${p.rubric.map((c, i) => `${i + 1}. ${c}`).join('\n')}
+
+STUDENT'S EXPLANATION OF HOW THEY BUILT IT: ${sub.resum || '(none)'}
+${sub.nota ? `NOTE FOR THE CLIENT: ${sub.nota}` : ''}
+${sub.canvis ? '' : ''}Instructions:
+- Judge only what the source shows. Check real evidence: text content, sections, meta viewport and responsive CSS (media queries, flexible layouts), alt attributes on images, tel: links, map iframes, forms, semantic tags, and animations in CSS or JS (and prefers-reduced-motion where relevant).
+- Platform-generated pages (Wix, Webflow, WordPress...) often hide structure behind scripts: if a requirement cannot be verified from the source but the visible text is coherent with it, give level 1 or 2 and say what could not be checked; do not invent evidence.
+- Be fair but demanding: level 2 means the requirement is met correctly for this client; level 3 needs polish, accessibility or insight beyond the minimum. A requirement that is absent scores 0.
+- If the page is empty, a placeholder, a login/error page, or clearly not a site for this client, set matches_project to false and score low.
+- Give one short, specific comment per requirement explaining the level and how to improve it.
+- "feedback" is addressed directly to the student (second person), 80–200 words, encouraging and concrete, ending with the most important next step.
+- Write every comment, strength, improvement and the feedback in ${LANG_NAME[lang] || 'Catalan'}.`;
+}
+
+async function grade(p, sub, docs, lang, isWeb) {
   const content = [];
   docs.forEach((d, i) => {
     if (d.kind === 'pdf') content.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: d.data }, title: `Student document ${i + 1}` });
@@ -147,7 +194,7 @@ async function grade(p, sub, docs, lang) {
       content.push({ type: 'text', text: `<student_document index="${i + 1}"${cut ? ' truncated="true"' : ''}>\n${d.text.slice(0, MAX_TEXT)}\n</student_document>` });
     }
   });
-  content.push({ type: 'text', text: buildPrompt(p, sub, lang) });
+  content.push({ type: 'text', text: isWeb ? buildWebPrompt(p, sub, lang) : buildPrompt(p, sub, lang) });
   const client = new Anthropic();
   const res = await client.messages.create({
     model: MODEL,
@@ -171,7 +218,7 @@ exports.handler = async function (event) {
   try { body = JSON.parse(event.body || '{}'); } catch (e) { return; }
   const classe = String(body.classe || ''), id = String(body.id || ''), task = String(body.task || '');
   if (!CLASS_RE.test(classe) || !ID_RE.test(id) || !TASK_RE.test(task)) return;
-  const p = GD.projects.find(x => x.id === task);
+  const p = GD.gradableById(task);
   if (!p) return;
 
   connectLambda(event);
@@ -180,6 +227,7 @@ exports.handler = async function (event) {
   const key = `${classe}/${id}`;
   const summary = await store.get(key, { type: 'json' }).catch(() => null);
   const sub = summary && summary.projectes && summary.projectes[task];
+  const isWeb = !!p.web;
   if (!sub || !sub.url) return;
   const v = Number(sub.v) || 1;
 
@@ -199,9 +247,9 @@ exports.handler = async function (event) {
   const lang = ['ca', 'es', 'en'].includes(summary.idioma) ? summary.idioma : 'ca';
   const docs = [], problems = [];
   for (const u of [sub.url, sub.url2].filter(Boolean)) {
-    const d = await readLink(u);
+    const d = isWeb ? await readWeb(u) : await readLink(u);
     if (d.error) problems.push(d.error);
-    else if (d.kind !== 'text' || d.text.trim().length >= 200) docs.push(d);
+    else if (d.kind !== 'text' || d.text.trim().length >= (isWeb ? 120 : 200)) docs.push(d);
     else problems.push('empty');
   }
   if (!docs.length) {
@@ -211,7 +259,7 @@ exports.handler = async function (event) {
 
   let out;
   try {
-    out = await grade(p, sub, docs, lang);
+    out = await grade(p, sub, docs, lang, isWeb);
   } catch (e) {
     console.error('Correcció automàtica fallida:', e && e.message);
     await save({ autoError: { v, reason: 'ai', at: new Date().toISOString() }, at: new Date().toISOString() }, true);

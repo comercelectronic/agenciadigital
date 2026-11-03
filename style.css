@@ -592,3 +592,9 @@ button { font-family: inherit; font-size: inherit; color: inherit; cursor: point
 .swatches .sw-custom.on { box-shadow: 0 0 0 3px var(--ink); transform: scale(1.1); }
 .sw-custom input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .acc-grid button { font-size: .82em; padding: 5px 10px; }
+
+/* Pagament segons la nota */
+.pay-box { background: #fff8dc; border: 2px solid #f0d27a; border-radius: 14px; padding: 10px 12px; margin: 10px 0; display: grid; gap: 4px; }
+.pay-box b { color: #8a5a00; font-size: 1.05em; }
+.pay-box .paid { color: #1d7a52; font-weight: 800; }
+.pstat.legacy { background: #efeaf8; color: var(--muted); }

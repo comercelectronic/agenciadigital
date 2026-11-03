@@ -49,7 +49,7 @@
         <div class="how">${G.how.map(h => `<div><b>${esc(h.h)}</b>${esc(h.d)}</div>`).join('')}</div>
         <h3>${T('🤖 Ús de la IA')}</h3><p>${esc(G.ai)}</p>
         <h3>${T('📣 Anuncis reals')}</h3><p>${esc(G.ads)}</p>
-        <h3>${T('✅ Avaluació')}</h3><p>${esc(G.grading)}</p>
+        <h3>${T('✅ Avaluació')}</h3><p>${esc(G.grading)}</p><p>💶 ${esc(G.pay)}</p>
         <div class="table-wrap"><table class="tbl rubric"><thead><tr>${GD.rubricLevels.map((l, i) => `<th>${i} · ${esc(l.n)}</th>`).join('')}</tr></thead><tbody><tr>${GD.rubricLevels.map(l => `<td>${esc(l.d)}</td>`).join('')}</tr></tbody></table></div>
         <div class="row-btns noprint"><a class="btn" href="./">${T('🎮 Tornar al joc')}</a><button class="btn" id="print">${T('🖨️ Imprimir o desar en PDF')}</button></div></section>
       <nav class="card toc"><h3>${T('Índex de projectes')}</h3><ol>${GD.projects.map(p => `<li><a href="#${p.id}">${esc(p.title)}</a> <small class="muted">(${T('cap. {0}', [p.after])})</small></li>`).join('')}</ol></nav>

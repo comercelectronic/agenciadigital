@@ -19,6 +19,8 @@ GD.projGuide = {
   grading: T("Cada projecte s'avalua amb la rúbrica de la seva guia: cada criteri té 4 nivells (de 0 a 3 punts) i la nota és la proporció de punts obtinguts sobre 10. S'aprova amb un 5. La correcció automàtica només pot llegir documents públics de Google (Docs, Slides, Sheets), PDF, imatges i pàgines web: si fas servir Canva o vídeo, entrega també un PDF. La nota final la decideix sempre el professor.")
 };
 
+GD.projGuide.pay = T("Cada projecte i cada web del Taller web es paga segons la nota: cobres l'import màxim indicat × nota ÷ 10 (arrodonit a 10 €). Amb un 5 cobres la meitat; amb un 10, tot. Si millores la nota (tornant a entregar o perquè el professor la puja), cobres la diferència. Aquests imports són molt superiors a la resta d'ingressos del joc: val la pena fer-ho bé.");
+
 GD.projects = [
   /* ===================== ETAPA 1 ===================== */
   {
@@ -686,6 +688,22 @@ GD.projects = [
 ];
 
 GD.projectById = (id) => GD.projects.find(p => p.id === id);
+
+/* Pagament segons la nota: cada entrega cobra «import màxim × nota ÷ 10» (arrodonit a 10 €), i s'aprova amb un 5.
+   L'import màxim és molt superior a la resta d'ingressos del joc. Si la nota puja (per una nova entrega o perquè
+   el professor la modifica), l'alumne cobra la diferència; mai se li treu res. */
+GD.PAY_PROJECT = 6; GD.PAY_WEB = 4;
+GD.projMax = (p) => Math.round(((p.reward && p.reward.money) || 0) * GD.PAY_PROJECT);
+GD.webMax = (L) => Math.round(((L.reward && L.reward.money) || 0) * GD.PAY_WEB);
+GD.payFor = (max, grade) => Math.round(max * Math.min(10, Math.max(0, +grade || 0)) / 100) * 10;
+
+// Les webs del Taller web es corregeixen igual que els projectes (tasca «web-N», amb els requisits del client com a rúbrica)
+GD.webTasks = (GD.webLevels || []).map(L => ({
+  id: 'web-' + L.n, web: L.n, who: L.who, bg: L.bg, kind: T("Taller web"), title: L.title, after: 'web ' + L.n,
+  brief: L.brief, goal: L.sub, format: T("Web publicada (enllaç públic)"), sections: [], rubric: L.reqs, reward: L.reward
+}));
+GD.gradable = GD.projects.concat(GD.webTasks);
+GD.gradableById = (id) => GD.gradable.find(p => p.id === id);
 GD.projectAfter = (chId) => GD.projects.find(p => p.after === chId);
 // Plantilla per copiar a Google Docs: títol, client i seccions amb el que han de contenir
 GD.projectTemplate = (p, name) => [

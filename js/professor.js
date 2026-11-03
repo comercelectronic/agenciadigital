@@ -69,14 +69,14 @@
   function pendingTable(items, withGrade) {
     return `<div class="table-wrap"><table class="tbl"><thead><tr><th>${T('Alumne')}</th><th>${T('Projecte')}</th><th>${T('Versió')}</th><th>${T('Entregat')}</th>${withGrade ? `<th>${T('Nota')}</th>` : ''}<th></th></tr></thead><tbody>
       ${items.map(({ r, k, p, sub }) => { const rv = (r.revisions || {})[p.id] || {}; return `<tr><td><span class="ava-s">${avatar(r)}</span><b>${esc(fullName(r))}</b> <small class="muted">${esc(r.classe || '')}</small></td>
-        <td>${esc(p.title)}<br><small class="muted">${esc(p.kind)} · ${T('cap. {0}', [p.after])}${!withGrade && rv.autoError && rv.autoError.v >= sub.v ? ` · 🤖 ${esc((AUTO_ERR()[rv.autoError.reason] || rv.autoError.reason))}` : ''}</small></td><td>${sub.v}</td><td><small>${dateTxt(sub.at)}</small></td>
+        <td>${esc(p.title)}<br><small class="muted">${esc(p.kind)} · ${p.web ? T('nivell {0}', [p.web]) : T('cap. {0}', [p.after])}${!withGrade && rv.autoError && rv.autoError.v >= sub.v ? ` · 🤖 ${esc((AUTO_ERR()[rv.autoError.reason] || rv.autoError.reason))}` : ''}</small></td><td>${sub.v}</td><td><small>${dateTxt(sub.at)}</small></td>
         ${withGrade ? `<td><b>${rv.grade != null ? rv.grade : '—'}</b> ${rv.status === 'approved' ? '✅' : '✏️'}</td>` : ''}
         <td>${r._font === 'servidor' ? `<button class="btn small ${withGrade ? '' : 'primary'}" data-review="${esc(k)}|${p.id}">${withGrade ? T('Validar') : T('Revisar')}</button>` : T('<small class="muted">només del servidor</small>')}</td></tr>`; }).join('')}
       </tbody></table></div>`;
   }
   function renderPending() {
     const pend = [], auto = [];
-    rows.forEach((r, k) => GD.projects.forEach(p => {
+    rows.forEach((r, k) => GD.gradable.forEach(p => {
       const st = projState(r, p), sub = (r.projectes || {})[p.id];
       if (st === 'pending') pend.push({ r, k, p, sub });
       if (st === 'auto' && sub) auto.push({ r, k, p, sub });
@@ -89,7 +89,7 @@
   }
 
   function reviewModal(k, pid) {
-    const r = rows.get(k), p = GD.projectById(pid); if (!r || !p) return;
+    const r = rows.get(k), p = GD.gradableById(pid); if (!r || !p) return;
     const sub = (r.projectes || {})[pid] || {}, rv = (r.revisions || {})[pid];
     const auto = rv && rv.by === 'auto';
     const lv = (rv && rv.scores) || p.rubric.map(() => null);
@@ -213,8 +213,8 @@
       </tbody></table>
       <h4>${T('🛠️ Taller web')}</h4>
       ${(r.webPlataformes || []).length ? `<p class="small">${T('Plataformes triades:')} ${r.webPlataformes.map(k => esc(GD.webPlatforms[k] ? GD.webPlatforms[k].n : k)).join(', ')}</p>` : ''}
-      <table class="tbl"><thead><tr><th>${T('Nivell')}</th><th>${T('Encàrrec')}</th><th>${T('Plataforma')}</th><th>${T('Enllaç')}</th></tr></thead><tbody>
-        ${GD.webLevels.map(L => { const w = (r.webs || {})[L.n]; return `<tr><td>${L.n}</td><td>${esc(L.title)}${w && w.reflection ? `<br><small class="muted">${esc(w.reflection)}</small>` : ''}${w && w.note ? `<br><small>📝 ${esc(w.note)}</small>` : ''}</td><td>${w ? esc(GD.webPlatforms[w.platform] ? GD.webPlatforms[w.platform].n : w.platform) : '—'}</td><td>${w ? `<a href="${/^https?:\/\//i.test(w.url) ? esc(w.url) : '#'}" target="_blank" rel="noopener">${esc(w.url)}</a>${w.reachable === false ? ' ⚠️' : ''}` : '—'}</td></tr>`; }).join('')}
+      <table class="tbl"><thead><tr><th>${T('Nivell')}</th><th>${T('Encàrrec')}</th><th>${T('Plataforma')}</th><th>${T('Enllaç')}</th><th>${T('Nota')}</th></tr></thead><tbody>
+        ${GD.webLevels.map(L => { const w = (r.webs || {})[L.n]; return `<tr><td>${L.n}</td><td>${esc(L.title)}${w && w.reflection ? `<br><small class="muted">${esc(w.reflection)}</small>` : ''}${w && w.note ? `<br><small>📝 ${esc(w.note)}</small>` : ''}</td><td>${w ? esc(GD.webPlatforms[w.platform] ? GD.webPlatforms[w.platform].n : w.platform) : '—'}</td><td>${w ? `<a href="${/^https?:\/\//i.test(w.url) ? esc(w.url) : '#'}" target="_blank" rel="noopener">${esc(w.url)}</a>${w.reachable === false ? ' ⚠️' : ''}` : '—'}</td><td>${(() => { const rv = (r.revisions || {})['web-' + L.n]; return rv && rv.status ? `<b>${rv.grade != null ? rv.grade : '—'}</b> ${rv.status === 'approved' ? '✅' : '✏️'}${rv.by === 'auto' ? ' 🤖' : ''}` : w && w.v ? '⏳' : '—'; })()}</td></tr>`; }).join('')}
       </tbody></table>
       <h4>${T("🛒 Millores de l'agència")}</h4>
       <p class="small">${(r.millores || []).map(id => { const u = GD.upgradeById(id); return u ? `${u.i} ${esc(u.n)}` : esc(id); }).join(' · ') || '—'}</p>
