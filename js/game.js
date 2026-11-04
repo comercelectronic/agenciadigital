@@ -43,7 +43,7 @@
       know: Object.fromEntries(Object.keys(GD.areas).map(k => [k, 0])),
       rent: 350, tools: 50, team: [], clients: [],
       f: {}, history: [], lessons: {}, done: {}, cur: null,
-      gigs: [], stats: { income: 0, expenses: 0, gigs: 0, campaigns: 0, good: 0 },
+      gigs: [], completedGigs: [], stats: { income: 0, expenses: 0, gigs: 0, campaigns: 0, good: 0 },
       ending: null, started: Date.now()
     };
   }
@@ -538,15 +538,9 @@
   function curStage() { const st = GD.stages.find(s => s.chapters.some(c => !S.done[c])); return st ? st.id : 8; }
   function genGigs() {
     const st = curStage();
-    const pool = GD.gigs.filter(g => (g.minStage || 1) <= st);
-    const picks = [];
-    const used = new Set();
-    while (picks.length < 3 && used.size < pool.length) {
-      const i = Math.floor(Math.random() * pool.length); if (used.has(i)) continue; used.add(i);
-      const g = pool[i];
-      picks.push({ id: g.id, pay: Math.round((g.pay || 180) * (0.8 + 0.25 * st) / 10) * 10, xp: 50 + 22 * st });
-    }
-    S.gigs = picks;
+    if (!Array.isArray(S.completedGigs)) S.completedGigs = [];
+    S.gigs = GD.createGigOffers(GD.gigs, st, Math.random, S.completedGigs);
+    S.gigsStage = st;
   }
   /* ================= Taller web (curs opcional) ================= */
   const WP = () => GD.webPlatforms;
@@ -1105,13 +1099,18 @@
   }
 
   function tabGigs(el) {
-    if (!S.gigs || !S.gigs.length) genGigs();
+    if (!S.gigs || !S.gigs.length || S.gigsStage !== curStage()) genGigs();
+    const allCompleted = GD.gigs.every(gig => (S.completedGigs || []).includes(gig.id));
+    const emptyMessage = allCompleted
+      ? T('Has completat totes les missions secundàries.')
+      : T('Has completat totes les missions disponibles. Avança la campanya per desbloquejar-ne més.');
     el.innerHTML = `<p class="muted">${T("Petits encàrrecs que arriben per recomanacions. Cada encàrrec dura una setmana, et fa guanyar experiència i diners, i posa a prova el que has après.")}</p>
+      ${S.gigs.length ? '' : `<p class="card">${emptyMessage}</p>`}
       <div class="gigs">${S.gigs.map((g, i) => {
         const t = GD.gigs.find(x => x.id === g.id);
         return `<div class="gig card"><span class="gig-ava">${ART.portrait(t.who || 'client', 'n')}</span><div><b>${esc(t.title)}</b><p>${esc(t.intro)}</p><small>💶 ${eur(g.pay)} · ✨ ${g.xp} ${T("EXP · 1 setmana")}</small></div><button class="btn primary" data-gig="${i}">${T("Acceptar")}</button></div>`;
       }).join('')}</div>
-      <button class="btn ghost small" data-act="refreshGigs">${T("↻ Buscar altres encàrrecs (−1 setmana)")}</button>`;
+      ${S.gigs.length ? `<button class="btn ghost small" data-act="refreshGigs">${T("↻ Buscar altres encàrrecs (−1 setmana)")}</button>` : ''}`;
   }
 
   function playGig(i) {
@@ -1134,6 +1133,8 @@
           applyFx({ money, fee: money > 0, xp, rep: ok ? 1 : (o.q < 0.4 ? -2 : 0), know: { [t.area]: ok ? 1 : 0 }, log: money < 0 ? T('Encàrrec mal resolt: «{0}». Va haver de retornar {1}.', [t.title, eur(-money)]) : null }, true);
           const w = advanceWeeks(1);
           S.stats.gigs++; queueSync();
+          if (!Array.isArray(S.completedGigs)) S.completedGigs = [];
+          if (!S.completedGigs.includes(t.id)) S.completedGigs.push(t.id);
           S.gigs.splice(i, 1);
           save();
           panel(`<div class="pn-h"><b>${ok ? T('✨ Bona feina!') : o.q >= 0.4 ? T('🙂 Correcte, però millorable') : T('😓 No ha funcionat')}</b></div>
@@ -1845,7 +1846,7 @@
       case 'webPlatforms': webPicker($('#hubBody')); break;
       case 'title': titleScreen(); break;
       case 'showEnding': endingScreen(S.ending, false); break;
-      case 'refreshGigs': advanceWeeks(1); genGigs(); save(); if (bankrupt()) break; hubScreen('encarrecs'); toast(T('Ha passat una setmana. Nous encàrrecs disponibles.')); break;
+      case 'refreshGigs': if (!S.gigs || !S.gigs.length) break; advanceWeeks(1); genGigs(); save(); if (bankrupt()) break; hubScreen('encarrecs'); toast(T('Ha passat una setmana. Nous encàrrecs disponibles.')); break;
       case 'useReserve': S.money += S.reserve; S.reserve = 0; save(); hubScreen('empresa'); break;
       case 'export': textBox(T('Codi de la teva partida (copia\'l i enganxa\'l a l\'altre dispositiu):'), btoa(unescape(encodeURIComponent(JSON.stringify(S))))); break;
       case 'import': textBox(T('Enganxa el codi de la partida:'), '', (v) => {

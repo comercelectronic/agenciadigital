@@ -1,5 +1,7 @@
 /* Agència Digital — traducció (en). Generat automàticament: clau = hash del text català. */
 Object.assign(I18N, {
+"1wb33lh": "You have completed all side missions.",
+"15w8j9c": "You have completed all available missions. Advance the campaign to unlock more.",
 "1bhou5u": "Country bread",
 "5499jy": "Crystal flatbread",
 "1ftigki": "Set lunch menu",

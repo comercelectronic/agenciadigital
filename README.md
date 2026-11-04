@@ -94,7 +94,7 @@ Pestanya 🛠️ **Taller**: un curs a part on l'alumne aprèn a crear webs prof
 | Millora del personatge: nivells 1–30, EXP, punts d'habilitat (5 habilitats × 5 nivells), rangs i vestuari que evoluciona | `js/game.js` (SKILLS, RANKS) i `js/art.js` (PAU_OUTFITS) |
 | Variables persistents: reputació, confiança per personatge, coneixement per àrea, liquiditat, reserva, clients recurrents, equip, historial de decisions | estat `S` a `js/game.js` |
 | Economia setmanal: quotes recurrents, lloguer, eines i sous; els pressupostos dels clients no compten com a ingressos | `advanceWeeks()` a `js/game.js` |
-| Encàrrecs lliures repetibles (EXP i diners extra, amb preguntes de repàs) | `GD.gigs` a `js/data-story3.js` |
+| Encàrrecs lliures (catàleg limitat a 20 missions úniques, fins a 3 ofertes aleatòries de dificultat progressiva, EXP i diners extra) | `GD.gigs` a `js/data-story3.js`, selecció a `js/side-missions.js` |
 | 5 finals segons la decisió final i l'estat de l'empresa | `GD.computeEnding` i `GD.endings` a `js/data-story3.js` |
 | Retrats anime i escenaris generats en SVG (sense imatges externes) | `js/art.js` |
 

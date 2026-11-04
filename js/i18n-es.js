@@ -1,5 +1,7 @@
 /* Agència Digital — traducció (es). Generat automàticament: clau = hash del text català. */
 Object.assign(I18N, {
+"1wb33lh": "Has completado todas las misiones secundarias.",
+"15w8j9c": "Has completado todas las misiones disponibles. Avanza en la campaña para desbloquear más.",
 "1bqb0is": "Cliente",
 "1bhou5u": "Pan de payés",
 "5499jy": "Coca de cristal",
