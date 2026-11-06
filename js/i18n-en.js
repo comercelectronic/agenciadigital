@@ -5886,4 +5886,7 @@ Object.assign(I18N, {
 "jnml3": "level {0}",
 "123kz0w": "Published website (public link)",
 "tw6y57": "Every project and every Web workshop site is paid according to your mark: you earn the maximum amount shown × mark ÷ 10 (rounded to €10). A 5 earns half; a 10 earns everything. If you improve your mark (by handing in again or because your teacher raises it) you get the difference. These amounts are far higher than the rest of the game's income: it pays to do it well.",
+"fewjn1": "There are no more jobs available right now. New ones will arrive as you progress through the campaign.",
+"giiu5x": "You have done all the freelance jobs. Well done!",
+"167guoz": "No more jobs for now.",
 });

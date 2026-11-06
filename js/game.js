@@ -43,7 +43,7 @@
       know: Object.fromEntries(Object.keys(GD.areas).map(k => [k, 0])),
       rent: 350, tools: 50, team: [], clients: [],
       f: {}, history: [], lessons: {}, done: {}, cur: null,
-      gigs: [], stats: { income: 0, expenses: 0, gigs: 0, campaigns: 0, good: 0 },
+      gigs: [], gigsDone: {}, stats: { income: 0, expenses: 0, gigs: 0, campaigns: 0, good: 0 },
       ending: null, started: Date.now()
     };
   }
@@ -536,9 +536,11 @@
   // Ordre aleatori de les opcions d'una pregunta (retorna els índexs originals)
   function shuffledIdx(n) { const a = [...Array(n).keys()]; for (let i = n - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
   function curStage() { const st = GD.stages.find(s => s.chapters.some(c => !S.done[c])); return st ? st.id : 8; }
+  // Els encàrrecs lliures no es repeteixen: un cop fets s'esborren i ja no tornen a aparèixer
+  function gigPool() { const st = curStage(), done = S.gigsDone || {}; return GD.gigs.filter(g => (g.minStage || 1) <= st && !done[g.id]); }
   function genGigs() {
     const st = curStage();
-    const pool = GD.gigs.filter(g => (g.minStage || 1) <= st);
+    const pool = gigPool();
     const picks = [];
     const used = new Set();
     while (picks.length < 3 && used.size < pool.length) {
@@ -1106,12 +1108,17 @@
 
   function tabGigs(el) {
     if (!S.gigs || !S.gigs.length) genGigs();
+    if (!S.gigs.length) {
+      const left = GD.gigs.some(g => !(S.gigsDone || {})[g.id]);
+      el.innerHTML = `<div class="card"><p>${left ? T("Ara no hi ha més encàrrecs disponibles. N'arribaran de nous quan avancis a la campanya.") : T("Has fet tots els encàrrecs lliures. Bona feina!")}</p></div>`;
+      return;
+    }
     el.innerHTML = `<p class="muted">${T("Petits encàrrecs que arriben per recomanacions. Cada encàrrec dura una setmana, et fa guanyar experiència i diners, i posa a prova el que has après.")}</p>
       <div class="gigs">${S.gigs.map((g, i) => {
         const t = GD.gigs.find(x => x.id === g.id);
         return `<div class="gig card"><span class="gig-ava">${ART.portrait(t.who || 'client', 'n')}</span><div><b>${esc(t.title)}</b><p>${esc(t.intro)}</p><small>💶 ${eur(g.pay)} · ✨ ${g.xp} ${T("EXP · 1 setmana")}</small></div><button class="btn primary" data-gig="${i}">${T("Acceptar")}</button></div>`;
       }).join('')}</div>
-      <button class="btn ghost small" data-act="refreshGigs">${T("↻ Buscar altres encàrrecs (−1 setmana)")}</button>`;
+      ${gigPool().length > S.gigs.length ? `<button class="btn ghost small" data-act="refreshGigs">${T("↻ Buscar altres encàrrecs (−1 setmana)")}</button>` : ''}`;
   }
 
   function playGig(i) {
@@ -1134,6 +1141,7 @@
           applyFx({ money, fee: money > 0, xp, rep: ok ? 1 : (o.q < 0.4 ? -2 : 0), know: { [t.area]: ok ? 1 : 0 }, log: money < 0 ? T('Encàrrec mal resolt: «{0}». Va haver de retornar {1}.', [t.title, eur(-money)]) : null }, true);
           const w = advanceWeeks(1);
           S.stats.gigs++; queueSync();
+          (S.gigsDone = S.gigsDone || {})[g.id] = 1;
           S.gigs.splice(i, 1);
           save();
           panel(`<div class="pn-h"><b>${ok ? T('✨ Bona feina!') : o.q >= 0.4 ? T('🙂 Correcte, però millorable') : T('😓 No ha funcionat')}</b></div>
@@ -1845,7 +1853,7 @@
       case 'webPlatforms': webPicker($('#hubBody')); break;
       case 'title': titleScreen(); break;
       case 'showEnding': endingScreen(S.ending, false); break;
-      case 'refreshGigs': advanceWeeks(1); genGigs(); save(); if (bankrupt()) break; hubScreen('encarrecs'); toast(T('Ha passat una setmana. Nous encàrrecs disponibles.')); break;
+      case 'refreshGigs': if (gigPool().length <= (S.gigs || []).length) { toast(T('No hi ha més encàrrecs per ara.')); break; } advanceWeeks(1); genGigs(); save(); if (bankrupt()) break; hubScreen('encarrecs'); toast(T('Ha passat una setmana. Nous encàrrecs disponibles.')); break;
       case 'useReserve': S.money += S.reserve; S.reserve = 0; save(); hubScreen('empresa'); break;
       case 'export': textBox(T('Codi de la teva partida (copia\'l i enganxa\'l a l\'altre dispositiu):'), btoa(unescape(encodeURIComponent(JSON.stringify(S))))); break;
       case 'import': textBox(T('Enganxa el codi de la partida:'), '', (v) => {

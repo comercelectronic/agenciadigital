@@ -5798,4 +5798,7 @@ Object.assign(I18N, {
 "1irhtvr": "Taller web",
 "123kz0w": "Web publicada (enlace público)",
 "tw6y57": "Cada proyecto y cada web del Taller web se paga según la nota: cobras el importe máximo indicado × nota ÷ 10 (redondeado a 10 €). Con un 5 cobras la mitad; con un 10, todo. Si mejoras la nota (volviendo a entregar o porque el profesor la sube), cobras la diferencia. Estos importes son muy superiores al resto de ingresos del juego: vale la pena hacerlo bien.",
+"fewjn1": "Ahora no hay más encargos disponibles. Llegarán nuevos cuando avances en la campaña.",
+"giiu5x": "Has hecho todos los encargos libres. ¡Buen trabajo!",
+"167guoz": "No hay más encargos por ahora.",
 });
