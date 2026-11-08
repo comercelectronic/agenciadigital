@@ -56,6 +56,13 @@ A Empresa → 🛒 **Millores**: eines (Canva Pro, analítica, CRM, gestor de pr
 
 Els errors econòmics costen diners: treballar gratis, acceptar feines sense capacitat, comprar bases de dades, campanyes fallides (compensació al client), encàrrecs mal resolts (devolució), préstecs amb interessos... Si la liquiditat (diners + reserva) queda en negatiu, **l'agència fa fallida** i cal començar de zero (es conserven el personatge, el codi de classe, els projectes reals i les webs del Taller). El professorat veu el nombre de fallides de cada alumne.
 
+## Progressió: 100 nivells
+
+- El personatge puja fins al **nivell 100**. Cada etapa de la campanya es desbloqueja a partir d'un nivell (1, 10, 19, 31, 43, 55, 67 i 79).
+- Cada nivell dona **3 punts d'habilitat**. Cada habilitat té **50 nivells**; la història les llegeix en una escala de 0 a 5 (cada 10 nivells, 1 punt), i les bonificacions (honoraris, despeses, qualitat) creixen nivell a nivell.
+- Els Comerçmons pugen fins al nivell 50.
+- Les partides antigues (30 nivells) es converteixen soles en continuar-les: nivell ×3 i habilitats ×10.
+
 ## Economia validada al servidor, impostos i guardiola de la classe
 
 Tots els diners del joc (una sola moneda: els euros de l'agència) es validen al servidor amb **Netlify Database** (Postgres):

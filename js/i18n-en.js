@@ -6120,4 +6120,9 @@ Object.assign(I18N, {
 "eru3er": "🏦 Class economy",
 "9vb17o": "↻ Refresh",
 "188zwi2": "In-game money is validated on the server: every payment and expense is recorded in a ledger that cannot be modified. New students cannot get paid until you validate them. Taxes go to the class's shared fund.",
+"1cz0ss7": "You negotiate better. +5% fees for every 10 levels and more client trust.",
+"ociolw": "You organise team and money. −4% fixed costs for every 10 levels and more room in crises.",
+"zuxbl2": "· +{0} skill points",
+"18wo20f": "Level {0} / {1}",
+"pwexih": "Level {0} of {1}",
 });

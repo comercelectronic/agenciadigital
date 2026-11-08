@@ -13,10 +13,11 @@
     estrategia:  { n: T('Estratègia'),  i: '🧭', d: T('Diagnòstics més encertats i plans més sòlids. +qualitat a totes les campanyes.') },
     creativitat: { n: T('Creativitat'), i: '🎨', d: T('Missatges i continguts que connecten. +resultats en marca, xarxes i anuncis.') },
     analitica:   { n: T('Analítica'),   i: '📊', d: T('Llegeixes les dades amb rigor. +precisió i opcions de diàleg basades en dades.') },
-    comercial:   { n: T('Comercial'),   i: '🤝', d: T('Negocies millor. +5% als honoraris per nivell i més confiança dels clients.') },
-    gestio:      { n: T('Direcció'),    i: '🏢', d: T('Organitzes equip i diners. −4% de despeses fixes per nivell i més marge en crisis.') }
+    comercial:   { n: T('Comercial'),   i: '🤝', d: T('Negocies millor. +5% als honoraris per cada 10 nivells i més confiança dels clients.') },
+    gestio:      { n: T('Direcció'),    i: '🏢', d: T('Organitzes equip i diners. −4% de despeses fixes per cada 10 nivells i més marge en crisis.') }
   };
-  const SKILL_MAX = 5;
+  // Habilitats: 50 nivells (S.skills) que la història llegeix en una escala de 0 a 5 (cada 10 nivells, 1 punt)
+  const SKILL_MAX = 50, SKILL_TIER = 10, SKILL_TIERS = SKILL_MAX / SKILL_TIER;
   const CHARS_TRUST = ['carme', 'miquel', 'julia', 'berta', 'quim', 'laia'];
   const RANKS = {
     m: [T('Emprenedor novell'), T('Consultor local'), T('Estrateg digital'), T('Director d\'equip'), T('Gestor de crisis'), T('Director d\'agència'), T('Director estratègic'), T('Referent del sector'), T('Llegenda d\'Osona')],
@@ -24,8 +25,10 @@
     n: [T('Primeres passes'), T('Consultoria local'), T('Estratègia digital'), T('Direcció d\'equip'), T('Gestió de crisis'), T('Direcció d\'agència'), T('Direcció estratègica'), T('Referent del sector'), T('Llegenda d\'Osona')]
   };
   const API = '/.netlify/functions/joc-resultats';
-  const xpNeed = (lvl) => 180 + 75 * Math.ceil(lvl / 4);
-  const MAX_LEVEL = 30;
+  // Progressió a 100 nivells: cada nivell antic equival a 3 nivells nous (mateixa experiència total)
+  const xpNeed = (lvl) => 60 + 25 * Math.ceil(lvl / 12);
+  const MAX_LEVEL = 100;
+  const SP_PER_LEVEL = 3;
 
   /* ================= Estat ================= */
   let S = null;
@@ -36,7 +39,7 @@
       v: 1, agency: T('Píxel d\'Osona'), profile: null,
       player: { id: uid(), name: 'Pau', surname: 'Riera', g: 'm', look: Object.assign({}, ART.PLAYER_DEFAULT) },
       classe: '', quizLog: {}, syncPending: false, lastSync: 0, web: { platforms: [], levels: {} }, proj: {}, upgrades: {},
-      level: 1, xp: 0, sp: 0,
+      level: 1, xp: 0, sp: 0, prog: 2,
       skills: { estrategia: 0, creativitat: 0, analitica: 0, comercial: 0, gestio: 0 },
       money: 3000, reserve: 0, week: 1, rep: 5,
       trust: { carme: 0, miquel: 0, julia: 0, berta: 0, quim: 0, laia: 0 },
@@ -91,7 +94,8 @@
   function rank() { return Math.min(4, Math.floor(stagesDone() / 2)); }
   function title() { const L = RANKS[(S && S.player && S.player.g) || 'm']; return L[Math.min(L.length - 1, stagesDone())]; }
   // Habilitat efectiva: punts del personatge + bonificacions de les millores comprades
-  function sk(k) { return Math.min(SKILL_MAX, (S.skills[k] || 0) + upSkill(k)); }
+  function sk(k) { return Math.min(SKILL_TIERS, ((S.skills[k] || 0) + SKILL_TIER * upSkill(k)) / SKILL_TIER); }
+  const skLvl = (k) => Math.min(SKILL_MAX, (S.skills[k] || 0) + SKILL_TIER * upSkill(k));
   GD.sk = (k) => (S ? sk(k) : 0);
   const owned = () => Object.keys(S.upgrades || {}).map(GD.upgradeById).filter(Boolean);
   function upSkill(k) { return owned().reduce((a, u) => a + ((u.bonus.skill || {})[k] || 0), 0); }
@@ -155,7 +159,7 @@
       if (!silent && GD.names[k]) notes.push(`${GD.names[k]} ${fx.trust[k] > 0 ? '♥+' : '💔'}${fx.trust[k] > 0 ? fx.trust[k] : fx.trust[k]}`);
     }
     if (fx.know) for (const k in fx.know) { S.know[k] = (S.know[k] || 0) + fx.know[k]; if (RUN) RUN.know[k] = (RUN.know[k] || 0) + fx.know[k]; }
-    if (fx.skill) for (const k in fx.skill) S.skills[k] = clamp(S.skills[k] + fx.skill[k], 0, SKILL_MAX);
+    if (fx.skill) for (const k in fx.skill) S.skills[k] = clamp(S.skills[k] + fx.skill[k] * SKILL_TIER, 0, SKILL_MAX);
     if (fx.flags) Object.assign(S.f, fx.flags);
     if (fx.client) { S.clients = S.clients.filter(c => c.id !== fx.client.id); S.clients.push(fx.client); notes.push(T("Nou client recurrent: {0}", [fx.client.name])); }
     if (fx.dropClient) { const c = S.clients.find(x => x.id === fx.dropClient); if (c) { S.clients = S.clients.filter(x => x.id !== fx.dropClient); notes.push(T("Deixes de treballar amb {0}", [c.name])); } }
@@ -175,7 +179,7 @@
     cmShareXp(n);
     S.xp += n; if (RUN) RUN.xp += n;
     let up = 0;
-    while (S.level < MAX_LEVEL && S.xp >= xpNeed(S.level)) { S.xp -= xpNeed(S.level); S.level++; S.sp++; up++; }
+    while (S.level < MAX_LEVEL && S.xp >= xpNeed(S.level)) { S.xp -= xpNeed(S.level); S.level++; S.sp += SP_PER_LEVEL; up++; }
     if (up) levelUpFx();
     hud();
   }
@@ -246,7 +250,7 @@
   function levelUpFx() {
     const d = document.createElement('div');
     d.className = 'levelup';
-    d.innerHTML = `<div class="lu-lines"></div><div class="lu-box"><div class="lu-t">${T("LEVEL UP!")}</div><div class="lu-s">${T("Nivell")} ${S.level} ${T("· +1 punt d'habilitat")}</div></div>`;
+    d.innerHTML = `<div class="lu-lines"></div><div class="lu-box"><div class="lu-t">${T("LEVEL UP!")}</div><div class="lu-s">${T("Nivell")} ${S.level} ${T("· +{0} punts d'habilitat", [SP_PER_LEVEL])}</div></div>`;
     document.body.appendChild(d);
     petals(d, 24);
     setTimeout(() => d.classList.add('out'), 1900);
@@ -400,9 +404,10 @@
       <div class="skills">
         ${Object.entries(SKILLS).map(([k, s]) => `
           <div class="skill">
-            <div class="sk-h"><span class="sk-i">${s.i}</span><b>${s.n}</b><span class="pips">${Array.from({ length: SKILL_MAX }, (_, i) => `<i class="${i < S.skills[k] ? 'on' : i < sk(k) ? 'up' : ''}"></i>`).join('')}</span>${upSkill(k) ? `<em class="up-b" title="${T('Bonificació de les millores')}">+${upSkill(k)} 🛒</em>` : ''}</div>
+            <div class="sk-h"><span class="sk-i">${s.i}</span><b>${s.n}</b><span class="pips" title="${T('Nivell {0} de {1}', [skLvl(k), SKILL_MAX])}">${Array.from({ length: SKILL_TIERS }, (_, i) => { const own = Math.max(0, Math.min(1, S.skills[k] / SKILL_TIER - i)), tot = Math.max(0, Math.min(1, skLvl(k) / SKILL_TIER - i)); return `<i class="${own >= 1 ? 'on' : tot >= 1 ? 'up' : ''}"${own > 0 && own < 1 ? ` style="background:linear-gradient(90deg,var(--accent,#ff7aa2) ${Math.round(own * 100)}%,transparent 0)"` : ''}></i>`; }).join('')}</span>${upSkill(k) ? `<em class="up-b" title="${T('Bonificació de les millores')}">+${upSkill(k) * SKILL_TIER} 🛒</em>` : ''}</div>
+            <p class="sk-lv"><b>${T('Nivell {0} / {1}', [skLvl(k), SKILL_MAX])}</b></p>
             <p>${s.d}</p>
-            <button class="btn small" data-skill="${k}" ${S.sp && S.skills[k] < SKILL_MAX ? '' : 'disabled'}>${S.skills[k] >= SKILL_MAX ? T('Màxim') : T('+ Millorar')}</button>
+            <div class="row-btns" style="margin:0"><button class="btn small" data-skill="${k}" ${S.sp && S.skills[k] < SKILL_MAX ? '' : 'disabled'}>${S.skills[k] >= SKILL_MAX ? T('Màxim') : T('+ Millorar')}</button>${S.sp > 1 && S.skills[k] < SKILL_MAX ? `<button class="btn small" data-skill="${k}" data-n="${Math.min(S.sp, SKILL_MAX - S.skills[k], SKILL_TIER - (S.skills[k] % SKILL_TIER))}">+${Math.min(S.sp, SKILL_MAX - S.skills[k], SKILL_TIER - (S.skills[k] % SKILL_TIER))}</button>` : ''}</div>
           </div>`).join('')}
       </div>
       <h3 class="sec">${T("Coneixement per àrees")}</h3>
@@ -1513,7 +1518,7 @@
       const s = GD.serviceById(d.querySelector('#dk').value), sk2 = SKILLS[s.skill];
       d.querySelector('#dq').innerHTML = role === 'buy'
         ? T('Especialitat de l\'agència en aquest servei: {0} {1} nivell {2}. Com més alta, més reputació guanyaràs.', [sk2.i, sk2.n, lvl(s.skill)])
-        : T('La teva habilitat en aquest servei: {0} {1} nivell {2}. Si et contracten, cobraràs el preu acordat.', [sk2.i, sk2.n, sk(s.skill)]);
+        : T('La teva habilitat en aquest servei: {0} {1} nivell {2}. Si et contracten, cobraràs el preu acordat.', [sk2.i, sk2.n, skLvl(s.skill)]);
       if (!d.querySelector('#dp').dataset.touched) d.querySelector('#dp').value = s.sug;
     };
     d.querySelectorAll('[data-role]').forEach(b => b.onclick = () => { role = b.dataset.role; d.querySelectorAll('[data-role]').forEach(x => x.classList.toggle('on', x === b)); upd(); });
@@ -2237,10 +2242,20 @@
     const go = () => setupScreen(false);
     if (loadSave()) confirmBox(T('Començar una partida nova esborrarà la partida desada. Vols continuar?'), go); else go();
   }
+  // Partides antigues (30 nivells, habilitats 0–5) → 100 nivells i habilitats 0–50
+  function migrateProgress() {
+    S.level = Math.min(MAX_LEVEL, (S.level - 1) * 3 + 1);
+    S.xp = Math.floor((S.xp || 0) / 3);
+    S.sp = (S.sp || 0) * SKILL_TIER;
+    for (const k in S.skills) S.skills[k] = Math.min(SKILL_MAX, (S.skills[k] || 0) * SKILL_TIER);
+    S.prog = 2;
+  }
   function continueGame() {
     S = loadSave();
     if (!S) return titleScreen();
+    const old = !S.prog;
     S = Object.assign(newState(), S);
+    if (old) migrateProgress();
     if (!S.econ) { econ().inici = true; econPush('inici', 'inici', 3000); }
     applyPlayer();
     if (S.syncPending) queueSync();
@@ -2258,7 +2273,8 @@
     if (b.dataset.tab) { hubScreen(b.dataset.tab); return; }
     if (b.dataset.skill) {
       const k = b.dataset.skill;
-      if (S.sp > 0 && S.skills[k] < SKILL_MAX) { S.sp--; S.skills[k]++; save(); toast(T("{0} {1} puja a {2}", [SKILLS[k].i, SKILLS[k].n, S.skills[k]]), 'good'); hubScreen('pau'); }
+      const n = Math.max(1, Math.min(+(b.dataset.n || 1), S.sp, SKILL_MAX - S.skills[k]));
+      if (S.sp > 0 && S.skills[k] < SKILL_MAX) { S.sp -= n; S.skills[k] += n; save(); toast(T("{0} {1} puja a {2}", [SKILLS[k].i, SKILLS[k].n, S.skills[k]]), 'good'); hubScreen('pau'); }
       return;
     }
     if (b.dataset.lesson) { sceneShell('despatx'); showActors('pau', 't'); lessonFlow(b.dataset.lesson, false, () => hubScreen('biblioteca')); return; }

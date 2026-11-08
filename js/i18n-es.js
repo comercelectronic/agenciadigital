@@ -6034,4 +6034,9 @@ Object.assign(I18N, {
 "eru3er": "🏦 Economía de la clase",
 "9vb17o": "↻ Actualizar",
 "188zwi2": "El dinero del juego se valida en el servidor: cada cobro y cada gasto quedan anotados en un libro contable que no se puede modificar. Los alumnos nuevos no pueden cobrar hasta que los valides. Los impuestos van a la hucha común de la clase.",
+"1cz0ss7": "Negocias mejor. +5 % en los honorarios por cada 10 niveles y más confianza de los clientes.",
+"ociolw": "Organizas equipo y dinero. −4 % de gastos fijos por cada 10 niveles y más margen en crisis.",
+"zuxbl2": "· +{0} puntos de habilidad",
+"18wo20f": "Nivel {0} / {1}",
+"pwexih": "Nivel {0} de {1}",
 });
