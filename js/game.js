@@ -43,7 +43,7 @@
       know: Object.fromEntries(Object.keys(GD.areas).map(k => [k, 0])),
       rent: 350, tools: 50, team: [], clients: [],
       f: {}, history: [], lessons: {}, done: {}, cur: null,
-      gigs: [], gigsDone: {}, stats: { income: 0, expenses: 0, gigs: 0, campaigns: 0, good: 0 },
+      gigs: [], gigsDone: {}, cm: {}, days: {}, stats: { income: 0, expenses: 0, gigs: 0, campaigns: 0, good: 0 },
       ending: null, started: Date.now()
     };
   }
@@ -53,7 +53,7 @@
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); });
   }
   function applyPlayer() { if (!S) return; ART.setPlayer(S.player.look); ART.CHARS.pau.name = S.player.name; }
-  function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* sense emmagatzematge */ } }
+  function save() { if (S) { if (!S.days) S.days = {}; S.days[today()] = 1; } try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* sense emmagatzematge */ } }
   function loadSave() { try { const r = localStorage.getItem(SAVE_KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
   function loadSettings() { try { Object.assign(settings, JSON.parse(localStorage.getItem(SAVE_KEY + '-cfg') || '{}')); } catch (e) { } }
   function saveSettings() { try { localStorage.setItem(SAVE_KEY + '-cfg', JSON.stringify(settings)); } catch (e) { } }
@@ -100,7 +100,7 @@
   function weeklyIncome() { return S.clients.reduce((a, c) => a + c.fee, 0) / 4; }
   function weeklyCost() {
     const base = S.rent + S.tools + upMonthly() + S.team.reduce((a, t) => a + t.salary, 0);
-    return base * (1 - 0.04 * sk('gestio')) / 4;
+    return base * (1 - 0.04 * sk('gestio')) * (1 - cmBonus('costs') / 100) / 4;
   }
   function knowTotal() { return Object.values(S.know).reduce((a, b) => a + b, 0); }
 
@@ -136,11 +136,13 @@
     if (fx.money) {
       let m = fx.money;
       if (m > 0 && fx.fee) m = Math.round(m * (1 + 0.05 * sk('comercial') + upBonus('fee') / 100));
+      if (m > 0 && fx.src) m = Math.round(m * (1 + cmBonus(fx.src) / 100)); // habilitats passives dels Comerçmons
       S.money += m; if (m > 0) S.stats.income += m; else S.stats.expenses -= m;
       if (RUN) RUN.money += m;
       notes.push((m > 0 ? '+' : '') + eur(m));
     }
     if (fx.reserve) { S.money -= fx.reserve; S.reserve += fx.reserve; }
+    if (fx.rep > 0 && S.cm) { const b = cmBonus('rep'); if (b) { S.cm.repFrac = (S.cm.repFrac || 0) + fx.rep * b / 100; if (S.cm.repFrac >= 1) { fx.rep += Math.floor(S.cm.repFrac); S.cm.repFrac -= Math.floor(S.cm.repFrac); } } }
     if (fx.rep) { S.rep = clamp(S.rep + fx.rep, 0, 100); if (RUN) RUN.rep += fx.rep; notes.push((fx.rep > 0 ? '+' : '') + fx.rep + T(' reputació')); }
     if (fx.trust) for (const k in fx.trust) {
       S.trust[k] = clamp((S.trust[k] || 0) + fx.trust[k], -5, 10);
@@ -163,8 +165,9 @@
   }
 
   function addXP(n) {
-    if (S.level >= MAX_LEVEL) return;
-    n = Math.round(n * (1 + upBonus('xp') / 100));
+    if (S.level >= MAX_LEVEL) { cmShareXp(n); return; }
+    n = Math.round(n * (1 + upBonus('xp') / 100 + cmBonus('xp') / 100));
+    cmShareXp(n);
     S.xp += n; if (RUN) RUN.xp += n;
     let up = 0;
     while (S.level < MAX_LEVEL && S.xp >= xpNeed(S.level)) { S.xp -= xpNeed(S.level); S.level++; S.sp++; up++; }
@@ -211,7 +214,7 @@
       </div></section>`;
     $('#restart').onclick = () => {
       const keep = {
-        player: S.player, classe: S.classe, proj: S.proj, web: S.web, quizLog: S.quizLog,
+        player: S.player, classe: S.classe, proj: S.proj, web: S.web, quizLog: S.quizLog, cm: S.cm, days: S.days,
         fallides: (S.fallides || 0) + 1,
         fallidesLog: (S.fallidesLog || []).concat([{ at: new Date().toISOString(), setmana: S.week, nivell: S.level, capitols: Object.keys(S.done).length }])
       };
@@ -307,12 +310,12 @@
         <div class="hub-body" id="hubBody"></div>
       </main>
       <nav class="tabs">
-        ${[['campanya', '🗺️', T('Campanya')], ['pau', '🧑', esc(S.player.name)], ['encarrecs', '📨', T('Encàrrecs')], ['projectes', '📋', T('Projectes')], ['classe', '🏆', T('Classe')], ['taller', '🛠️', T('Taller')], ['biblioteca', '📚', T('Biblioteca')], ['empresa', '🏢', T('Empresa')]]
-          .map(([k, i, n]) => `<button class="tab ${hubTab === k ? 'on' : ''}" data-tab="${k}"><span>${i}</span>${n}${k === 'pau' && S.sp ? `<em class="dot">${S.sp}</em>` : ''}${k === 'projectes' && projTodo() ? `<em class="dot">${projTodo()}</em>` : ''}${k === 'classe' && S.market && S.market.myTurn ? `<em class="dot">${S.market.myTurn}</em>` : ''}</button>`).join('')}
+        ${[['campanya', '🗺️', T('Campanya')], ['pau', '🧑', esc(S.player.name)], ['encarrecs', '📨', T('Encàrrecs')], ['projectes', '📋', T('Projectes')], ['comercdex', '🐾', T('Comerçdex')], ['classe', '🏆', T('Classe')], ['taller', '🛠️', T('Taller')], ['biblioteca', '📚', T('Biblioteca')], ['empresa', '🏢', T('Empresa')]]
+          .map(([k, i, n]) => `<button class="tab ${hubTab === k ? 'on' : ''}" data-tab="${k}"><span>${i}</span>${n}${k === 'pau' && S.sp ? `<em class="dot">${S.sp}</em>` : ''}${k === 'projectes' && projTodo() ? `<em class="dot">${projTodo()}</em>` : ''}${k === 'comercdex' && (!cmState().starter || cmAvailable().length) ? `<em class="dot">${cmState().starter ? cmAvailable().length : '!'}</em>` : ''}${k === 'classe' && S.market && S.market.myTurn ? `<em class="dot">${S.market.myTurn}</em>` : ''}</button>`).join('')}
       </nav>`;
     hud();
     const body = $('#hubBody');
-    ({ campanya: tabCampanya, pau: tabPau, encarrecs: tabGigs, projectes: tabProjectes, classe: tabClasse, taller: tabTaller, biblioteca: tabLibrary, empresa: tabEmpresa })[hubTab](body);
+    ({ campanya: tabCampanya, pau: tabPau, encarrecs: tabGigs, projectes: tabProjectes, classe: tabClasse, taller: tabTaller, comercdex: tabComercdex, biblioteca: tabLibrary, empresa: tabEmpresa })[hubTab](body);
   }
 
   function chapterState(chId) {
@@ -525,9 +528,319 @@
   }
   function trustHearts(v) { if (v < 0) return '💔'.repeat(Math.min(3, -v)); return '♥'.repeat(Math.min(10, v)) + '<span class="empty">' + '♡'.repeat(Math.max(0, 5 - v)) + '</span>'; }
 
+  /* ================= COMERÇMONS: col·lecció, equip, captures, evolucions i Comerçdex ================= */
+  // Estat: S.cm = { owned: { id: { lvl, xp, form, at, trained } }, team: [id…], seen: { id: 1 }, escape: { id: hora }, starter, evoQueue: [] }
+  // S.days = { 'AAAA-MM-DD': 1 }: dies diferents de joc (moltes captures els demanen, perquè no es puguin fer totes en un dia)
+  const CMC = () => GD.CM;
+  function today() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+  function cmState() {
+    if (!S.cm) S.cm = {};
+    S.cm.owned = S.cm.owned || {}; S.cm.team = (S.cm.team || []).filter(id => S.cm.owned[id]); S.cm.seen = S.cm.seen || {};
+    S.cm.escape = S.cm.escape || {}; S.cm.evoQueue = S.cm.evoQueue || [];
+    if (!S.days) S.days = {};
+    return S.cm;
+  }
+  function markDay() { cmState(); S.days[today()] = 1; }
+  const cmOwned = (id) => cmState().owned[id];
+  const cmOwnedCount = () => Object.keys(cmState().owned).length;
+  const lessonPassed = (id) => { const r = S.lessons[id], l = GD.lessons[id]; return !!(r && l && r.best >= Math.ceil(l.quiz.length / 2)); };
+  const passedLessons = () => Object.keys(S.lessons || {}).filter(lessonPassed);
+  const stageDone = (n) => { const st = GD.stages.find(s => s.id === n); return !!st && st.chapters.every(c => S.done[c]); };
+
+  // Condicions de captura i d'evolució: totes depenen del progrés real (no de la sort)
+  function cmCond(cond) {
+    const c = cond || {}, parts = [];
+    const add = (ok, label, cur, need) => parts.push({ ok: !!ok, label, cur, need });
+    if (c.starter) add(false, T('Comerçmon inicial'));
+    if (c.ch) add(S.done[c.ch], T('Capítol {0}: {1}', [c.ch, txt(GD.chapters[c.ch].title)]));
+    if (c.stage) add(stageDone(c.stage), T('Superar l\'etapa {0}', [c.stage]));
+    if (c.lessons) { const n = passedLessons().length; add(n >= c.lessons, T('Lliçons superades'), n, c.lessons); }
+    if (c.area) { const n = passedLessons().filter(id => GD.lessons[id].area === c.area[0]).length; add(n >= c.area[1], T('Lliçons de {0}', [GD.areas[c.area[0]]]), n, c.area[1]); }
+    if (c.level) add(S.level >= c.level, T('Nivell del personatge'), S.level, c.level);
+    if (c.proj) { const n = GD.projects.filter(p => projStatus(p) === 'approved').length; add(n >= c.proj, T('Projectes aprovats'), n, c.proj); }
+    if (c.web) { const n = Object.keys(webState().levels).length; add(n >= c.web, T('Webs entregades al Taller'), n, c.web); }
+    if (c.world) { const n = Object.keys((S.world && S.world.problems) || {}).length; add(n >= c.world, T('Botiguers de Vic ajudats'), n, c.world); }
+    if (c.gigs) add(S.stats.gigs >= c.gigs, T('Encàrrecs completats'), S.stats.gigs, c.gigs);
+    if (c.week) add(S.week >= c.week, T('Setmana de joc'), S.week, c.week);
+    if (c.days) { const n = Object.keys(S.days || {}).length; add(n >= c.days, T('Dies diferents de joc'), n, c.days); }
+    if (c.dex) add(cmOwnedCount() >= c.dex, T('Comerçmons capturats'), cmOwnedCount(), c.dex);
+    return { ok: parts.length > 0 && parts.every(p => p.ok), parts };
+  }
+  // Comerçmons que han aparegut (condició complerta) i encara no tens
+  function cmAvailable() {
+    cmState();
+    return GD.cmSpecies.filter(sp => !sp.capture.cond.starter && !cmOwned(sp.id) && cmCond(sp.capture.cond).ok);
+  }
+  function cmRefreshSeen() {
+    let n = 0;
+    cmAvailable().forEach(sp => { if (!S.cm.seen[sp.id]) { S.cm.seen[sp.id] = 1; n++; } });
+    return n;
+  }
+
+  /* ---------- Bonificacions (passives de l'equip, sinergies i bonificacions d'equip) ---------- */
+  function cmTeamSpecies() { return cmState().team.map(id => ({ sp: GD.cmById(id), m: S.cm.owned[id] })).filter(x => x.sp && x.m); }
+  function cmSynergiesActive() {
+    const ids = cmState().team, team = cmTeamSpecies(), out = [];
+    GD.cmSynergies.forEach(y => { if (y.ids.every(id => ids.includes(id))) out.push(y); });
+    if (team.length === CMC().TEAM_SIZE) {
+      const fam = team[0].sp.family;
+      if (team.every(x => x.sp.family === fam)) out.push(Object.assign({}, GD.cmTeamBonus[0], { kind: GD.cmFamilyKind[fam] }));
+      if (new Set(team.map(x => x.sp.type)).size === team.length) out.push(GD.cmTeamBonus[1]);
+    }
+    return out;
+  }
+  // Monopolion no es pot combinar amb un altre llegendari: si n'hi ha dos, el seu bonus no compta
+  function cmBonus(kind) {
+    if (!S || !S.cm) return 0;
+    const team = cmTeamSpecies(), legs = team.filter(x => x.sp.rarity === 'lleg').length;
+    let b = 0;
+    team.forEach(x => { if (x.sp.passive.kind === kind && !(x.sp.id === 'monopolion' && legs > 1)) b += GD.cmPassive(x.sp, x.m.form); });
+    cmSynergiesActive().forEach(y => { if (y.kind === kind) b += y.v; });
+    return Math.min(CMC().BONUS_CAP, Math.round(b * 10) / 10);
+  }
+
+  /* ---------- Experiència i evolució ---------- */
+  function cmGainXp(id, n) {
+    const m = cmOwned(id), sp = GD.cmById(id);
+    if (!m || !sp || n <= 0) return;
+    if (m.lvl >= CMC().MAX_LEVEL) return;
+    m.xp += Math.round(n);
+    while (m.lvl < CMC().MAX_LEVEL && m.xp >= GD.cmXpNeed(m.lvl)) { m.xp -= GD.cmXpNeed(m.lvl); m.lvl++; }
+    if (m.lvl >= CMC().MAX_LEVEL) m.xp = 0;
+    cmCheckEvo(id);
+  }
+  // Una evolució necessita el nivell i, en algunes espècies, una condició especial (projectes, dies de joc…)
+  function cmEvoReady(id) {
+    const m = cmOwned(id), sp = GD.cmById(id), next = sp && m && sp.forms[m.form + 1];
+    if (!next) return null;
+    const lvlOk = m.lvl >= next.lvl, cond = next.cond ? cmCond(next.cond) : { ok: true, parts: [] };
+    return { next, lvlOk, cond, ok: lvlOk && cond.ok };
+  }
+  function cmCheckEvo(id) {
+    const r = cmEvoReady(id);
+    if (r && r.ok) {
+      const m = cmOwned(id), from = m.form;
+      m.form++;
+      S.cm.evoQueue.push({ id, from, to: m.form });
+      toast(T('✨ {0} evoluciona a {1}!', [GD.cmById(id).forms[from].name, r.next.name]), 'good');
+      cmCheckEvo(id);
+    }
+  }
+  function cmShareXp(n) {
+    if (!S || !S.cm || !S.cm.team.length || n <= 0) return;
+    const share = n * CMC().XP_SHARE * (1 + cmBonus('monxp') / 100);
+    S.cm.team.forEach(id => cmGainXp(id, share));
+  }
+
+  /* ---------- Repte de coneixement (captura i entrenament) ---------- */
+  function cmQuestion(sp) {
+    // Preferència: preguntes de les lliçons que ja has superat, millor si són de l'especialitat del Comerçmon
+    const famAreas = { mkt: ['mercat', 'marca', 'seo', 'analitica', 'fonaments'], vend: ['creixement', 'email', 'fonaments'], com: ['xarxes', 'ads', 'marca'], emp: ['direccio', 'web', 'analitica'], crea: ['marca', 'avancat', 'web'], lleg: ['direccio', 'avancat', 'creixement'] }[sp.family] || [];
+    let ids = passedLessons();
+    const fav = ids.filter(id => famAreas.includes(GD.lessons[id].area));
+    if (fav.length) ids = fav;
+    if (!ids.length) ids = Object.keys(GD.lessons).slice(0, 6);
+    const id = ids[Math.floor(Math.random() * ids.length)], l = GD.lessons[id];
+    return Object.assign({ lesson: id }, l.quiz[Math.floor(Math.random() * l.quiz.length)]);
+  }
+  function cmQuizModal(sp, form, title, intro, onResult) {
+    const q = cmQuestion(sp), order = shuffledIdx(q.o.length);
+    const d = document.createElement('div'); d.className = 'modal cm-modal';
+    d.innerHTML = `<div class="modal-box cm-quiz"><div class="cm-quiz-art ${'r-' + sp.rarity}">${CMART.render(sp, form, { size: 120, cls: 'cm-bob' })}</div>
+      <h3>${title}</h3><p class="muted small">${intro}</p><p><b>${esc(txt(q.q))}</b></p>
+      <div class="opts">${order.map(k => `<button class="opt" data-k="${k}">${esc(txt(q.o[k]))}</button>`).join('')}</div></div>`;
+    document.body.appendChild(d);
+    d.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+      const ok = +b.dataset.k === q.c;
+      d.querySelectorAll('.opt').forEach(x => { x.disabled = true; if (+x.dataset.k === q.c) x.classList.add('good'); else if (x === b) x.classList.add('bad'); });
+      d.querySelector('.modal-box').insertAdjacentHTML('beforeend', `<p class="small ${ok ? 'good' : 'bad'}">${ok ? T('✔ Correcte!') : T('✘ No és correcte.')} ${esc(txt(q.why || ''))}</p><div class="row-btns"><button class="btn primary" id="cmq">${T('Continuar')}</button></div>`);
+      d.querySelector('#cmq').onclick = () => { d.remove(); onResult(ok); };
+    });
+  }
+  function cmCaptureAnim(sp, onEnd) {
+    const d = document.createElement('div'); d.className = 'modal cm-modal';
+    d.innerHTML = `<div class="cm-catch r-${sp.rarity}"><div class="cm-catch-card">${CMART.render(sp, 0, { size: 170 })}</div><div class="cm-catch-burst"></div>
+      <h2>${T('{0} capturat!', [esc(sp.forms[0].name)])}</h2><p>${esc(GD.cmRarities[sp.rarity].n)} · ${GD.cmTypes[sp.type].i} ${esc(GD.cmTypes[sp.type].n)} · ${esc(sp.specialty)}</p>
+      <button class="btn primary" id="cmok">${T('Veure la fitxa')}</button></div>`;
+    document.body.appendChild(d);
+    d.querySelector('#cmok').onclick = () => { d.remove(); onEnd && onEnd(); };
+  }
+  function cmEvoAnim(ev, onEnd) {
+    const sp = GD.cmById(ev.id);
+    const d = document.createElement('div'); d.className = 'modal cm-modal';
+    d.innerHTML = `<div class="cm-evo r-${sp.rarity}"><p class="kicker">${T('Evolució!')}</p><div class="cm-evo-stage"><div class="cm-evo-a">${CMART.render(sp, ev.from, { size: 190 })}</div><div class="cm-evo-b">${CMART.render(sp, ev.to, { size: 190 })}</div></div>
+      <h2>${T('{0} ha evolucionat a {1}', [esc(sp.forms[ev.from].name), esc(sp.forms[ev.to].name)])}</h2><p>${esc(txt(sp.forms[ev.to].desc))}</p>
+      ${(sp.forms[ev.to].attacks || []).map(a => `<p class="small">🆕 ${T('Atac nou:')} <b>${esc(a.n)}</b> — ${esc(a.fx)}</p>`).join('')}
+      <button class="btn primary" id="cmok">${T('Genial!')}</button></div>`;
+    document.body.appendChild(d);
+    d.querySelector('#cmok').onclick = () => { d.remove(); onEnd && onEnd(); };
+  }
+  function cmFlushEvos(then) {
+    const ev = cmState().evoQueue.shift();
+    if (!ev) { then && then(); return; }
+    save();
+    cmEvoAnim(ev, () => cmFlushEvos(then));
+  }
+
+  function cmCapture(id) {
+    const sp = GD.cmById(id); if (!sp || cmOwned(id)) return;
+    if (!cmCond(sp.capture.cond).ok) { toast(T('Encara no compleixes les condicions de captura.'), 'bad'); return; }
+    const esc0 = S.cm.escape[id] || 0;
+    if (Date.now() < esc0) { toast(T('S\'ha amagat. Torna-ho a provar d\'aquí a {0} min.', [Math.ceil((esc0 - Date.now()) / 60000)]), 'bad'); return; }
+    cmQuizModal(sp, 0, T('Repte de captura: {0}', [sp.forms[0].name]), T('Respon bé aquesta pregunta per convèncer-lo que s\'uneixi a la teva agència.'), (ok) => {
+      if (!ok) { S.cm.escape[id] = Date.now() + CMC().ESCAPE_MS; save(); toast(T('{0} s\'ha escapat. Repassa i torna-ho a provar d\'aquí a una hora.', [sp.forms[0].name]), 'bad'); cmDetail(id); return; }
+      cmGet(id); save(); queueSync();
+      cmCaptureAnim(sp, () => cmDetail(id));
+    });
+  }
+  function cmGet(id) {
+    const st = cmState();
+    st.owned[id] = { lvl: 1, xp: 0, form: 0, at: new Date().toISOString() };
+    st.seen[id] = 1; delete st.escape[id];
+    if (st.team.length < CMC().TEAM_SIZE) st.team.push(id);
+    S.history.push({ ch: '-', week: S.week, t: T('Va capturar {0}.', [GD.cmById(id).forms[0].name]), key: true });
+  }
+  function cmTrain(id) {
+    const m = cmOwned(id), sp = GD.cmById(id); if (!m) return;
+    if (m.trained === today()) { toast(T('Ja ha entrenat avui. Torna demà!')); return; }
+    cmQuizModal(sp, m.form, T('Entrenament diari: {0}', [sp.forms[m.form].name]), T('Una pregunta al dia per Comerçmon. Si l\'encertes, guanya experiència.'), (ok) => {
+      m.trained = today();
+      if (ok) { const xp = Math.round(CMC().TRAIN_XP * (1 + cmBonus('monxp') / 100)); cmGainXp(id, xp); toast(T('+{0} EXP per a {1}', [xp, sp.forms[m.form].name]), 'good'); }
+      save(); queueSync(); cmFlushEvos(() => cmDetail(id));
+    });
+  }
+  function cmToggleTeam(id) {
+    const st = cmState();
+    if (st.team.includes(id)) st.team = st.team.filter(x => x !== id);
+    else if (st.team.length >= CMC().TEAM_SIZE) { toast(T('L\'equip ja té {0} Comerçmons. Treu-ne un primer.', [CMC().TEAM_SIZE]), 'bad'); return; }
+    else st.team.push(id);
+    save(); queueSync();
+  }
+
+  /* ---------- Comerçdex ---------- */
+  let cmFilter = { fam: '', view: 'tots' };
+  const typeChip = (t) => `<span class="cm-type" style="--tc:${GD.cmTypes[t].c}">${GD.cmTypes[t].i} ${esc(GD.cmTypes[t].n)}</span>`;
+  const rarChip = (r) => `<span class="cm-rar" style="--rc:${GD.cmRarities[r].c}">${esc(GD.cmRarities[r].n)}</span>`;
+  const kindTxt = (k, v) => `${k === 'quizcost' || k === 'costs' ? '−' : '+'}${v} % ${esc(GD.cmKinds[k])}`;
+
+  function tabComercdex(el) {
+    const st = cmState(); markDay();
+    if (!st.starter) return cmStarterPick(el);
+    Object.keys(st.owned).forEach(cmCheckEvo);
+    const newly = cmRefreshSeen(); if (newly || st.evoQueue.length) save();
+    const all = GD.cmSpecies, own = cmOwnedCount(), seen = all.filter(s => st.seen[s.id] || st.owned[s.id]).length;
+    const avail = cmAvailable(), syn = cmSynergiesActive();
+    const list = all.filter(s => (!cmFilter.fam || s.family === cmFilter.fam) && (cmFilter.view === 'tots' || (cmFilter.view === 'meus' ? st.owned[s.id] : !st.owned[s.id])));
+    const kinds = Object.keys(GD.cmKinds).map(k => [k, cmBonus(k)]).filter(([, v]) => v > 0);
+    el.innerHTML = `
+      <div class="card cm-head">
+        <div class="cm-head-t"><h3>🐾 ${T('Comerçdex')}</h3><b class="cm-count">${own} / ${all.length}</b></div>
+        <div class="cm-bar"><i style="width:${Math.round(own / all.length * 100)}%"></i></div>
+        <p class="muted small">${T('Capturats: {0} · Vistos: {1} · Per descobrir: {2}', [own, seen, all.length - seen])} · ${T('Dies de joc: {0}', [Object.keys(S.days).length])}</p>
+        ${avail.length ? `<div class="cm-alert">🔔 ${T('Hi ha {0} Comerçmon(s) esperant que els capturis!', [avail.length])} ${avail.map(s => `<button class="btn small primary" data-cm="${s.id}">${esc(s.forms[0].name)}</button>`).join(' ')}</div>` : ''}
+      </div>
+      <div class="card cm-team">
+        <h4>${T('Equip actiu ({0}/{1})', [st.team.length, CMC().TEAM_SIZE])}</h4>
+        <div class="cm-slots">${Array.from({ length: CMC().TEAM_SIZE }, (_, i) => { const id = st.team[i]; const sp = id && GD.cmById(id), m = id && st.owned[id];
+          return sp ? `<button class="cm-slot r-${sp.rarity}" data-cm="${id}">${CMART.render(sp, m.form, { size: 78 })}<b>${esc(sp.forms[m.form].name)}</b><small>${T('Nv')} ${m.lvl}</small></button>` : `<div class="cm-slot empty">${T('Buit')}</div>`; }).join('')}</div>
+        <p class="small">${kinds.length ? kinds.map(([k, v]) => `<span class="cm-bonus">${kindTxt(k, v)}</span>`).join(' ') : `<span class="muted">${T('Afegeix Comerçmons a l\'equip per activar les seves habilitats passives.')}</span>`}</p>
+        ${syn.length ? `<p class="small">${syn.map(y => `<span class="cm-syn">🔗 <b>${esc(y.n)}</b> · ${esc(y.d)}</span>`).join(' ')}</p>` : ''}
+        <details class="small"><summary>${T('Sinergies i bonificacions d\'equip')}</summary><ul>${GD.cmSynergies.map(y => `<li><b>${esc(y.n)}</b>: ${y.ids.map(id => esc(GD.cmById(id).forms[0].name)).join(' + ')} → ${kindTxt(y.kind, y.v)}</li>`).join('')}${GD.cmTeamBonus.map(y => `<li><b>${esc(y.n)}</b>: ${esc(y.d)}</li>`).join('')}</ul>
+          <p class="muted">${T('Les bonificacions de cada tipus tenen un límit del {0} %.', [CMC().BONUS_CAP])}</p></details>
+      </div>
+      <div class="cm-filters">
+        <div class="seg">${[['tots', T('Tots')], ['meus', T('Capturats')], ['pendents', T('Per capturar')]].map(([k, n]) => `<button data-cmview="${k}" class="${cmFilter.view === k ? 'on' : ''}">${n}</button>`).join('')}</div>
+        <div class="cm-fams"><button data-cmfam="" class="${!cmFilter.fam ? 'on' : ''}">${T('Totes')}</button>${Object.entries(GD.cmFamilies).map(([k, f]) => `<button data-cmfam="${k}" class="${cmFilter.fam === k ? 'on' : ''}" title="${esc(f.n)}">${f.i} ${esc(f.n)}</button>`).join('')}</div>
+      </div>
+      <div class="cm-grid">${list.map(sp => {
+        const m = st.owned[sp.id], vis = m || st.seen[sp.id], av = !m && avail.includes(sp);
+        return `<button class="cm-card r-${sp.rarity} ${m ? 'own' : vis ? 'seen' : 'unk'}" data-cm="${sp.id}">
+          <small>#${String(sp.num).padStart(3, '0')}</small>${av ? '<em class="cm-new">!</em>' : ''}
+          ${CMART.render(sp, m ? m.form : 0, { size: 96, silhouette: !vis })}
+          <b>${vis ? esc(sp.forms[m ? m.form : 0].name) : '???'}</b>
+          ${vis ? typeChip(sp.type) : `<span class="muted small">${esc(GD.cmFamilies[sp.family].i)}</span>`}
+          ${m ? `<span class="cm-lv">${T('Nv')} ${m.lvl}</span>` : ''}</button>`;
+      }).join('')}</div>`;
+    el.querySelectorAll('[data-cm]').forEach(b => b.onclick = () => cmDetail(b.dataset.cm));
+    el.querySelectorAll('[data-cmview]').forEach(b => b.onclick = () => { cmFilter.view = b.dataset.cmview; tabComercdex(el); });
+    el.querySelectorAll('[data-cmfam]').forEach(b => b.onclick = () => { cmFilter.fam = b.dataset.cmfam; tabComercdex(el); });
+    if (st.evoQueue.length) cmFlushEvos(() => hubScreen('comercdex'));
+  }
+
+  function cmStarterPick(el) {
+    const starters = GD.cmSpecies.filter(s => s.starter);
+    el.innerHTML = `<div class="card cm-head"><h3>🐾 ${T('Benvingut a la Comerçdex!')}</h3>
+      <p>${T('Els Comerçmons són criatures del món del comerç i el màrqueting. T\'ajuden a la teva agència, evolucionen i es fan més forts amb tu. Tria el teu primer company:')}</p></div>
+      <div class="cm-starters">${starters.map(sp => `<div class="card cm-starter r-${sp.rarity}">${CMART.render(sp, 0, { size: 150, cls: 'cm-bob' })}
+        <h3>${esc(sp.forms[0].name)}</h3><p>${typeChip(sp.type)} · ${esc(sp.specialty)}</p><p class="small">${esc(sp.desc)}</p>
+        <p class="small"><b>${esc(sp.passive.name)}:</b> ${esc(sp.utility)}</p>
+        <button class="btn primary" data-start="${sp.id}">${T('Triar {0}', [esc(sp.forms[0].name)])}</button></div>`).join('')}</div>`;
+    el.querySelectorAll('[data-start]').forEach(b => b.onclick = () => {
+      const st = cmState(); if (st.starter) return;
+      st.starter = b.dataset.start; starters.forEach(s => { st.seen[s.id] = 1; });
+      cmGet(b.dataset.start); save(); queueSync();
+      cmCaptureAnim(GD.cmById(b.dataset.start), () => hubScreen('comercdex'));
+    });
+  }
+
+  function statBars(stats, max) {
+    return `<div class="cm-stats">${Object.entries(stats).map(([k, v]) => `<div><span>${esc(GD.cmStatNames[k])}</span><i><b style="width:${Math.min(100, Math.round(v / max * 100))}%"></b></i><em>${v}</em></div>`).join('')}</div>`;
+  }
+  function cmDetail(id, showForm) {
+    const sp = GD.cmById(id); if (!sp) return;
+    const st = cmState(), m = st.owned[id], vis = m || st.seen[id];
+    const curForm = m ? m.form : 0, f = showForm != null ? showForm : curForm;
+    const capture = cmCond(sp.capture.cond), evo = m ? cmEvoReady(id) : null, avail = !m && cmAvailable().includes(sp);
+    const lvl = m ? m.lvl : 1, stats = GD.cmStats(sp, f, f === curForm ? lvl : sp.forms[f].lvl), maxStat = Math.ceil(GD.CM.STAT_TOTAL / 5 * 1.54 * 1.8 * 2 / 6);
+    const ty = GD.cmTypes[sp.type];
+    const d = document.querySelector('.cm-modal.cm-sheet-w') || document.createElement('div');
+    d.className = 'modal cm-modal cm-sheet-w';
+    const formTabs = sp.forms.map((fo, i) => `<button class="${i === f ? 'on' : ''}" data-form="${i}" ${!vis ? 'disabled' : ''}>${vis && (m ? true : i === 0) ? esc(fo.name) : '???'}${i ? ` · ${T('Nv')} ${fo.lvl}` : ''}</button>`).join('');
+    const showFull = m || (vis && f === 0);
+    d.innerHTML = `<div class="modal-box cm-sheet r-${sp.rarity}">
+      <button class="cm-x" aria-label="${T('Tancar')}">✕</button>
+      <div class="cm-sheet-top" style="--tc:${ty.c};--tc2:${ty.c2}">
+        <div class="cm-sheet-art">${CMART.render(sp, f, { size: 200, silhouette: !showFull, cls: 'cm-bob' })}</div>
+        <div><small>#${String(sp.num).padStart(3, '0')} · ${T('Generació {0}', [sp.gen])}</small>
+          <h2>${vis ? esc(sp.forms[f].name) : '???'}</h2>
+          <p>${typeChip(sp.type)} ${rarChip(sp.rarity)} <span class="cm-fam">${GD.cmFamilies[sp.family].i} ${esc(GD.cmFamilies[sp.family].n)}</span></p>
+          ${vis ? `<p class="small"><b>${T('Especialitat:')}</b> ${esc(sp.specialty)} · <b>${T('Perfil:')}</b> ${esc(GD.cmArch[sp.arch].n)}</p>` : ''}
+          ${m ? `<p class="small"><b>${T('Nivell {0}', [m.lvl])}</b> ${m.lvl < CMC().MAX_LEVEL ? `<i class="cm-xp"><b style="width:${Math.round(m.xp / GD.cmXpNeed(m.lvl) * 100)}%"></b></i> <span class="muted">${m.xp}/${GD.cmXpNeed(m.lvl)} EXP</span>` : T('(màxim)')}</p>` : ''}
+        </div></div>
+      ${sp.forms.length > 1 ? `<div class="seg cm-forms">${formTabs}</div>` : ''}
+      ${showFull ? `<p>${esc(txt(sp.forms[f].desc))}</p><p class="small muted">${esc(sp.desc)}</p><p class="small"><b>${T('Personalitat:')}</b> ${esc(sp.personality)}</p>` : `<p class="muted">${T('Encara no l\'has descobert. Compleix les condicions de captura per veure\'l.')}</p>`}
+      ${vis ? `
+      <h4>${T('Estadístiques')} <small class="muted">(${f === curForm && m ? T('nivell actual') : T('al nivell {0}', [sp.forms[f].lvl])})</small></h4>${statBars(stats, maxStat)}
+      <h4>${T('Habilitat passiva')}: ${esc(sp.passive.name)}</h4>
+      <p class="small">⚔️ ${esc(sp.passive.combat)}</p><p class="small">🏢 ${esc(sp.utility)} <b>${kindTxt(sp.passive.kind, GD.cmPassive(sp, f))}</b> ${T('quan és a l\'equip actiu.')}</p>
+      <h4>${T('Atacs')}</h4>
+      <div class="cm-attacks">${sp.forms.flatMap((fo, i) => fo.attacks.map(a => ({ a, i }))).map(({ a, i }) => { const lock = !m || i > curForm; return `<div class="cm-atk ${lock && !(i === 0 && vis) ? 'lock' : ''}"><b>${esc(a.n)}</b> <span class="cm-cat ${a.cat}">${esc(GD.cmAttackCats[a.cat])}</span>${i ? ` <small class="muted">(${esc(sp.forms[i].name)})</small>` : ''}<br><small>⚡${a.cost} · 💥${a.pow || '—'} · 🎯${a.acc} % · ⏳${a.cd}</small><br><small>${esc(a.fx)}</small></div>`; }).join('')}</div>
+      <h4>${T('Element')}: ${ty.i} ${esc(ty.n)}</h4>
+      <p class="small">${T('Fort contra:')} ${GD.cmStrong[sp.type].map(t => typeChip(t)).join(' ')} · ${T('Feble contra:')} ${Object.keys(GD.cmStrong).filter(t => GD.cmStrong[t].includes(sp.type)).map(t => typeChip(t)).join(' ')}</p>
+      <h4>${T('Evolucions')}</h4>
+      <div class="cm-evos">${sp.forms.map((fo, i) => `${i ? `<span class="cm-arrow">→<small>${T('Nv')} ${fo.lvl}${fo.cond ? ' + ' + cmCond(fo.cond).parts.map(p => p.label + (p.need ? ` ${p.need}` : '')).join(', ') : ''}</small></span>` : ''}<span class="cm-evo-f ${m && i <= curForm ? 'got' : ''}">${CMART.render(sp, i, { size: 64, silhouette: !(m && i <= curForm) && !(vis && i === 0) })}<small>${m && i <= curForm || i === 0 ? esc(fo.name) : '???'}</small></span>`).join('')}</div>
+      ${evo && !evo.ok ? `<p class="small muted">${T('Pròxima evolució:')} ${T('nivell {0}', [evo.next.lvl])}${evo.cond.parts.length ? ' · ' + evo.cond.parts.map(p => `${p.ok ? '✅' : '⬜'} ${esc(p.label)}${p.need ? ` (${p.cur}/${p.need})` : ''}`).join(' · ') : ''}</p>` : ''}` : ''}
+      <h4>${T('Com es captura')}</h4><p class="small">${esc(sp.capture.text)}</p>
+      ${!m && !sp.capture.cond.starter ? `<ul class="cm-cond">${capture.parts.map(p => `<li class="${p.ok ? 'ok' : ''}">${p.ok ? '✅' : '⬜'} ${esc(p.label)}${p.need ? ` <b>${p.cur}/${p.need}</b>` : ''}</li>`).join('')}</ul>` : ''}
+      <div class="row-btns">
+        ${avail ? `<button class="btn primary" data-cmact="capture">🎯 ${T('Capturar')}</button>` : ''}
+        ${m ? `<button class="btn ${st.team.includes(id) ? '' : 'primary'}" data-cmact="team">${st.team.includes(id) ? T('Treure de l\'equip') : T('Afegir a l\'equip')}</button>
+          <button class="btn" data-cmact="train" ${m.trained === today() ? 'disabled' : ''}>🏋️ ${m.trained === today() ? T('Ja ha entrenat avui') : T('Entrenament diari')}</button>` : ''}
+      </div></div>`;
+    if (!d.parentNode) document.body.appendChild(d);
+    d.onclick = (e) => { if (e.target === d) close(); };
+    const close = () => { d.remove(); if ($('#hubBody') && hubTab === 'comercdex') hubScreen('comercdex'); };
+    d.querySelector('.cm-x').onclick = close;
+    d.querySelectorAll('[data-form]').forEach(b => b.onclick = () => cmDetail(id, +b.dataset.form));
+    const act = (k) => { const b = d.querySelector(`[data-cmact="${k}"]`); return b; };
+    if (act('capture')) act('capture').onclick = () => { d.remove(); cmCapture(id); };
+    if (act('team')) act('team').onclick = () => { cmToggleTeam(id); cmDetail(id, f); };
+    if (act('train')) act('train').onclick = () => { d.remove(); cmTrain(id); };
+  }
+
   /* ================= Encàrrecs lliures ================= */
   // Estudiar té un cost: cada resposta incorrecta d'un test es paga (material i hores de repàs), més car a cada etapa
-  function studyCost() { return 30 + 20 * (curStage() - 1); }
+  function studyCost() { return Math.round((30 + 20 * (curStage() - 1)) * (1 - cmBonus('quizcost') / 100)); }
   function payStudy(title) {
     const c = studyCost();
     applyFx({ money: -c, log: T('Resposta incorrecta a «{0}»: −{1} en hores de repàs.', [title, eur(c)]) }, true);
@@ -731,7 +1044,7 @@
     const g = rv.grade != null ? rv.grade : GD.PASS_GRADE, target = GD.payFor(max, g), delta = target - (rec.paid || 0);
     if (delta <= 0) return 0;
     const keep = RUN; RUN = null;
-    applyFx({ money: delta, fee: false, log: T('Cobrament pel projecte «{0}» (nota {1}): {2}.', [title, g, eur(delta)]), key: true }, true);
+    applyFx({ money: delta, fee: false, src: 'proj', log: T('Cobrament pel projecte «{0}» (nota {1}): {2}.', [title, g, eur(delta)]), key: true }, true);
     RUN = keep; rec.paid = target;
     return delta;
   }
@@ -1138,7 +1451,7 @@
         const finish = (bonus) => {
           const money = o.q < 0.4 ? -Math.round(g.pay * 0.4) : Math.round(g.pay * mult * (1 + upBonus('gig') / 100));
           const xp = Math.round(g.xp * mult * bonus);
-          applyFx({ money, fee: money > 0, xp, rep: ok ? 1 : (o.q < 0.4 ? -2 : 0), know: { [t.area]: ok ? 1 : 0 }, log: money < 0 ? T('Encàrrec mal resolt: «{0}». Va haver de retornar {1}.', [t.title, eur(-money)]) : null }, true);
+          applyFx({ money, fee: money > 0, src: 'gig', xp, rep: ok ? 1 : (o.q < 0.4 ? -2 : 0), know: { [t.area]: ok ? 1 : 0 }, log: money < 0 ? T('Encàrrec mal resolt: «{0}». Va haver de retornar {1}.', [t.title, eur(-money)]) : null }, true);
           const w = advanceWeeks(1);
           S.stats.gigs++; queueSync();
           (S.gigsDone = S.gigsDone || {})[g.id] = 1;
@@ -1528,7 +1841,7 @@
     if (!replay) {
       const val = (v) => typeof v === 'function' ? v(S, H) : v;
       const xp = st.xp != null ? val(st.xp) : (ch.xp != null ? ch.xp : 110 + 60 * ch.stage);
-      applyFx({ xp, money: val(st.money), fee: true, rep: val(st.rep), flags: st.flags }, true);
+      applyFx({ xp, money: val(st.money), fee: true, src: 'chapter', rep: val(st.rep), flags: st.flags }, true);
       if (st.fx) applyFx(st.fx, true);
     }
     const w = replay ? { inc: 0, cost: 0, n: 0 } : advanceWeeks(ch.weeks != null ? ch.weeks : 2);
@@ -1755,6 +2068,7 @@
       mon: { accions: (S.world && S.world.actions) || {}, problemes: (S.world && S.world.problems) || {}, pistes: Object.keys((S.world && S.world.clues) || {}) },
       fallides: S.fallides || 0, fallidesDetall: S.fallidesLog || [],
       millores: Object.keys(S.upgrades || {}),
+      comercdex: (() => { const st = cmState(); return { capturats: Object.keys(st.owned).length, total: GD.cmSpecies.length, equip: st.team, inicial: st.starter || '', diesJoc: Object.keys(S.days || {}).length, col: Object.fromEntries(Object.entries(st.owned).map(([k, m]) => [k, { nivell: m.lvl, forma: m.form }])) }; })(),
       tractesTancats: (S.market && S.market.closed) || 0,
       decisions: S.history.filter(h => h.key).map(h => T("Cap. {0}: {1}", [h.ch, h.t]))
     };

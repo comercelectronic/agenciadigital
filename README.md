@@ -119,3 +119,17 @@ python3 -m http.server 8000
 ```
 
 Si canvies fitxers del joc, puja la versió de `CACHE` a `sw.js` perquè les apps instal·lades descarreguin la versió nova.
+
+## Comerçmons i Comerçdex
+
+Criatures col·leccionables del món del comerç i el màrqueting (pestanya 🐾 **Comerçdex**).
+
+- **Catàleg** (`js/data-comercmons.js`): 37 espècies de la generació 1 (12 inicials del document de disseny, 21 més i 4 llegendaris empresarials: Monopolion, Disruptor, Globàlia i Líderax), amb 94 formes. Cada espècie té família, especialitat, element, raresa, perfil d'estadístiques, habilitat passiva, atacs (cost, potència, precisió i recuperació), evolucions amb nivell i condicions, condició de captura, descripció, personalitat i utilitat.
+- **Equilibri**: totes les espècies sumen les mateixes estadístiques a la forma final, repartides segons el perfil (atacant, resistent, ràpid, estratega, suport, equilibrat). La raresa dona passives i atacs més potents, no força bruta. Cada element és fort contra dos i feble contra dos. `node tests/comercmons.test.js` comprova que cap espècie no superi una altra en totes les estadístiques.
+- **Captura**: depèn del progrés real (capítols, lliçons, projectes, webs, botiguers, nivell, setmanes i **dies diferents de joc**) i d'un repte de coneixement. Si falles, el Comerçmon torna d'aquí a una hora. Els rars, èpics i llegendaris demanen diversos dies de joc.
+- **Equip** de 3: les passives donen bonificacions a l'experiència, els encàrrecs, els projectes, les missions, els botiguers, el cost dels tests, les despeses o la reputació (límit del 25 % per tipus). Hi ha 12 sinergies de parella i bonificacions per família o per elements diferents.
+- **Nivells i evolució**: fins al nivell 50; els de l'equip reben el 40 % de l'experiència del jugador i poden fer un entrenament diari. Algunes evolucions demanen condicions especials.
+- **Il·lustracions** (`js/art-comercmons.js`): SVG generat amb una mateixa línia artística a partir de la descripció `look` de cada forma.
+- **Noves generacions**: crea un fitxer que cridi `GD.cmRegister([...])` amb el mateix format i afegeix-lo a `index.html` i `sw.js`.
+- **Pendent**: validació al servidor (captures, evolucions i recompenses), combats entre jugadors, tornejos, missions diàries, impostos, guardiola i concursos. Necessiten una base de dades transaccional (veure la proposta d'arquitectura).
+

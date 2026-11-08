@@ -786,7 +786,7 @@
     say(p.intro, () => menu(T_('Què li recomanes?'), p.opts.map(o => ({
       t: o.t, fn: () => {
         st().problems[id] = o.money > 0 && o.rep > 0 ? 'ok' : o.money > 0 ? 'mig' : 'ko';
-        API.applyFx({ money: o.money, fee: o.money > 0, rep: o.rep, xp: o.money > 100 ? 40 : 15, log: T_('Va aconsellar {0} ({1}): {2}', [p.name, p.place, o.t]) }, true);
+        API.applyFx({ money: o.money, fee: o.money > 0, src: 'world', rep: o.rep, xp: o.money > 100 ? 40 : 15, log: T_('Va aconsellar {0} ({1}): {2}', [p.name, p.place, o.t]) }, true);
         API.save();
         say([[p.who + (o.money > 100 ? '.h' : o.money < 0 ? '.a' : '.n'), o.r]], () => { API.toast((o.money >= 0 ? '+' : '') + API.eur(o.money) + (o.rep ? ` · ${o.rep > 0 ? '+' : ''}${o.rep} ⭐` : ''), o.money >= 0 ? 'good' : 'bad'); API.hudRefresh(); if (API.bankrupt()) close(); });
       }
