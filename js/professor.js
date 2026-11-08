@@ -252,6 +252,7 @@
       loadMarket(pw, classe);
     } catch (e) { $('#msg').innerHTML = `<span class="err">${esc(e.message)}</span>`; }
     loadEcon();
+    loadAccounts();
   }
 
   // Mercat entre agències (només amb una classe concreta)
@@ -373,6 +374,68 @@
     return false;
   }
 
+
+  /* ===== Comptes dels alumnes (joc-compte) ===== */
+  let accData = [];
+  async function accApi(body) {
+    const r = await fetch(FN + 'joc-compte', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ password: $('#pw').value }, body)) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || 'Error ' + r.status);
+    return j;
+  }
+  async function loadAccounts() {
+    $('#accSec').hidden = false;
+    $('#acc').innerHTML = `<p class="muted">${T('Carregant…')}</p>`;
+    try { accData = (await accApi({ action: 'admin-comptes' })).comptes; renderAccounts(); }
+    catch (e) { $('#acc').innerHTML = `<p class="err">${esc(e.message)}</p>`; }
+  }
+  function renderAccounts() {
+    const filtre = normClass($('#cls').value);
+    const list = accData.filter(a => !filtre || a.classe === filtre);
+    const groups = [...new Set(accData.map(a => a.classe))].sort();
+    $('#acc').innerHTML = `<p class="small">${T('Grups amb alumnes:')} ${groups.map(g => `<b>${esc(g)}</b> (${accData.filter(a => a.classe === g).length})`).join(' · ') || '—'}</p>
+      ${filtre ? `<p class="muted small">${T('Es mostren només els alumnes del grup {0}. Deixa el codi de classe buit per veure\'ls tots.', [esc(filtre)])}</p>` : ''}
+      ${list.length ? `<div class="table-wrap"><table class="tbl"><thead><tr><th>${T('Alumne')}</th><th>${T('Usuari')}</th><th>${T('Grup')}</th><th>${T('Darrera connexió')}</th><th></th></tr></thead><tbody>
+        ${list.map(a => `<tr><td>${esc(a.nom)}</td><td><code>${esc(a.usuari)}</code></td><td><b>${esc(a.classe)}</b></td><td><small>${dateTxt(a.darrer)}</small></td>
+          <td style="white-space:nowrap"><button class="btn small" data-acc-grup="${esc(a.usuari)}">🏷️ ${T('Canviar grup')}</button> <button class="btn small" data-acc-pw="${esc(a.usuari)}">🔑 ${T('Nova contrasenya')}</button></td></tr>`).join('')}
+        </tbody></table></div>` : `<p class="muted">${T('Encara no hi ha cap compte.')}</p>`}
+      <datalist id="accGroups">${groups.map(g => `<option value="${esc(g)}">`).join('')}</datalist>`;
+  }
+  function accModal(title, label, value, okLabel, onOk, type) {
+    const d = document.createElement('div'); d.className = 'modal';
+    d.innerHTML = `<form class="modal-box"><h3>${title}</h3><label class="small"><b>${label}</b><input class="inp" id="am" ${type === 'pw' ? 'type="text" autocomplete="off"' : 'list="accGroups"'} value="${esc(value || '')}" required></label>
+      <p class="err small" id="amErr"></p><div class="row-btns"><button class="btn primary" type="submit">${okLabel}</button><button class="btn" type="button" id="amN">${T('Cancel·lar')}</button></div></form>`;
+    document.body.appendChild(d);
+    const inp = d.querySelector('#am'); inp.focus(); inp.select();
+    d.querySelector('#amN').onclick = () => d.remove();
+    d.querySelector('form').onsubmit = async (e) => { e.preventDefault(); try { await onOk(inp.value.trim()); d.remove(); } catch (ex) { d.querySelector('#amErr').textContent = ex.message; } };
+  }
+  async function accClick(e) {
+    const g = e.target.closest('[data-acc-grup]');
+    if (g) {
+      const a = accData.find(x => x.usuari === g.dataset.accGrup);
+      accModal(T('Canviar el grup de {0}', [esc(a.nom)]), T('Grup nou (codi de classe)'), a.classe, T('Canviar'), async (v) => {
+        const c = normClass(v); if (!c) throw new Error(T('Escriu un codi de grup.'));
+        const j = await accApi({ action: 'admin-grup', usuari: a.usuari, classe: c });
+        toast(T('{0} ara és al grup {1}.', [esc(a.nom), esc(j.compte.classe)]));
+        load();
+      });
+      return true;
+    }
+    const p = e.target.closest('[data-acc-pw]');
+    if (p) {
+      const a = accData.find(x => x.usuari === p.dataset.accPw);
+      const sug = Math.random().toString(36).slice(2, 8);
+      accModal(T('Nova contrasenya per a {0}', [esc(a.nom)]), T('Contrasenya nova (com a mínim 6 caràcters). Apunta-la i dona-la a l\'alumne:'), sug, T('Desar'), async (v) => {
+        await accApi({ action: 'admin-contrasenya', usuari: a.usuari, nova: v });
+        toast(T('Contrasenya canviada. L\'alumne ja pot entrar amb la nova.'));
+      }, 'pw');
+      return true;
+    }
+    if (e.target.closest('#accReload')) { loadAccounts(); return true; }
+    return false;
+  }
+
   // CSV per a Excel: separador «;», BOM UTF-8 i una columna per lliçó
   /* ===== Temari: a quin punt pertany cada contingut ===== */
   const tag = (codes) => (codes && codes.length ? `[${codes.join(', ')}] ` : '');
@@ -457,6 +520,7 @@
   };
   document.addEventListener('click', async (e) => {
     if (await ecoClick(e)) return;
+    if (await accClick(e)) return;
     const th = e.target.closest('th[data-sort]');
     if (th) { if (sortKey === th.dataset.sort) sortDir *= -1; else { sortKey = th.dataset.sort; sortDir = 1; } render(); return; }
     const det = e.target.closest('[data-detail]'); if (det) { detail(det.dataset.detail); return; }

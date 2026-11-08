@@ -63,6 +63,14 @@ Els errors econòmics costen diners: treballar gratis, acceptar feines sense cap
 - Els Comerçmons pugen fins al nivell 50.
 - Les partides antigues (30 nivells) es converteixen soles en continuar-les: nivell ×3 i habilitats ×10.
 
+## Comptes dels alumnes (usuari i contrasenya)
+
+- Cada alumne **crea un compte** la primera vegada (nom, usuari, contrasenya i codi de grup) i després **entra amb usuari i contrasenya** des de qualsevol dispositiu.
+- La partida es **desa al núvol** automàticament (i també al dispositiu). Si juga en un altre ordinador o mòbil, continua on ho havia deixat.
+- El **grup** el tria l'alumne en crear el compte, però a partir d'aquí només el pot canviar el professor: panell del professor → **👥 Comptes dels alumnes** → «Canviar grup». Els resultats i les revisions dels projectes passen al grup nou, i el joc de l'alumne s'actualitza sol.
+- Si un alumne oblida la contrasenya, el professor li'n posa una de nova des del mateix panell (les sessions obertes es tanquen).
+- Contrasenyes desades amb scrypt; sessions signades amb HMAC (variable `SESSION_SECRET` opcional; si no hi és, es deriva de `TEACHER_PASSWORD`). Funció: `netlify/functions/joc-compte.js`, magatzems Blobs `joc-comptes` i `joc-partides`.
+
 ## Món ampliat, combats i agències rivals
 
 - **Món més gran:** a més de Vic, Tona, Gurb i el recinte firal, hi ha el **Parc de la Devesa** (caminant pel passeig del riu cap a l'oest), el **Montseny** (bus, etapa 2), **Barcelona · districte digital** (tren des de l'estació de Vic, etapa 4) i el **Port de Barcelona** (caminant des de Barcelona, etapa 6).

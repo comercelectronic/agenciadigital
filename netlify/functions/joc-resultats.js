@@ -42,15 +42,25 @@ exports.handler = async function (event) {
   const revStore = getStore('joc-revisions');
   const validStudent = () => CLASS_RE.test(String(body.classe || '')) && ID_RE.test(String(body.id || ''));
 
+  // Si l'alumne té compte, el grup és el del compte (el professor el pot haver canviat)
+  async function accountClass(id) {
+    try {
+      const accs = getStore('joc-comptes');
+      const ix = await accs.get('id/' + id, { type: 'json' });
+      const acc = ix && await accs.get('u/' + ix.usuari, { type: 'json' });
+      return acc ? acc.classe : null;
+    } catch (e) { return null; }
+  }
+
   if (body.action === 'submit') {
-    const classe = String(body.classe || '');
     const id = String(body.id || '');
+    const classe = (ID_RE.test(id) && await accountClass(id)) || String(body.classe || '');
     if (!CLASS_RE.test(classe)) return json(400, { error: 'Codi de classe no vàlid.' });
     if (!ID_RE.test(id)) return json(400, { error: 'Identificador d\'alumne no vàlid.' });
     if (!body.data || typeof body.data !== 'object') return json(400, { error: 'Falten les dades.' });
     const data = Object.assign({}, body.data, { id, classe, rebut: new Date().toISOString() });
     await store.setJSON(`${classe}/${id}`, data);
-    return json(200, { ok: true });
+    return json(200, { ok: true, classe });
   }
 
   if (body.action === 'reviews') {

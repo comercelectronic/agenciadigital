@@ -58,7 +58,11 @@
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); });
   }
   function applyPlayer() { if (!S) return; ART.setPlayer(S.player.look); ART.CHARS.pau.name = S.player.name; }
-  function save() { if (S) { if (!S.days) S.days = {}; S.days[today()] = 1; } try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* sense emmagatzematge */ } }
+  function save() {
+    if (S) { if (!S.days) S.days = {}; S.days[today()] = 1; S.savedAt = Date.now(); if (acc && S.player.id === acc.id) { S.owner = acc.usuari; S.classe = acc.classe || S.classe; } }
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* sense emmagatzematge */ }
+    cloudSoon();
+  }
   function loadSave() { try { const r = localStorage.getItem(SAVE_KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
   function loadSettings() { try { Object.assign(settings, JSON.parse(localStorage.getItem(SAVE_KEY + '-cfg') || '{}')); } catch (e) { } }
   function saveSettings() { try { localStorage.setItem(SAVE_KEY + '-cfg', JSON.stringify(settings)); } catch (e) { } }
@@ -288,8 +292,135 @@
   }
 
   /* ================= Pantalla de títol ================= */
+  /* ================= Compte de l'alumne (usuari i contrasenya, partida al núvol) ================= */
+  const ACC_KEY = 'agencia-digital-compte';
+  const AAPI = FN + 'joc-compte';
+  let acc = (() => { try { return JSON.parse(localStorage.getItem(ACC_KEY) || 'null'); } catch (e) { return null; } })();
+  function setAcc(a) { acc = a; try { if (a) localStorage.setItem(ACC_KEY, JSON.stringify(a)); else localStorage.removeItem(ACC_KEY); } catch (e) { } }
+  async function accApi(body) {
+    let r;
+    try { r = await fetch(AAPI, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); }
+    catch (e) { throw new Error(T('No hi ha connexió amb el servidor. Comprova la connexió a internet.')); }
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) { const e = new Error(j.error || T('No s\'ha pogut connectar amb el servidor.')); e.status = r.status; throw e; }
+    return j;
+  }
+  const mineSave = (p) => !!(p && p.player && acc && p.player.id === acc.id);
+  let cloudT = null, cloudBusy = false, cloudDirty = false;
+  function cloudSoon() { if (!acc || !S) return; cloudDirty = true; clearTimeout(cloudT); cloudT = setTimeout(cloudSave, 6000); }
+  async function cloudSave(keepalive) {
+    if (!acc || !S || cloudBusy || !cloudDirty || S.player.id !== acc.id) return !cloudDirty;
+    cloudBusy = true; cloudDirty = false; clearTimeout(cloudT);
+    try {
+      const payload = JSON.stringify({ action: 'desar', token: acc.token, partida: S });
+      const r = await fetch(AAPI, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: !!keepalive && payload.length < 60000 });
+      const j = await r.json().catch(() => ({}));
+      if (r.status === 401) { cloudDirty = true; acc.expired = true; setAcc(acc); toast(T('La sessió ha caducat. Torna a entrar perquè la partida es desi al núvol.'), 'bad'); return false; }
+      if (!r.ok) { cloudDirty = true; return false; }
+      acc.at = j.at; if (j.compte) applyAccount(j.compte); setAcc(acc);
+      return true;
+    } catch (e) { cloudDirty = true; return false; } finally { cloudBusy = false; }
+  }
+  // El grup el decideix el compte (el professor el pot canviar)
+  function applyAccount(c) {
+    if (!acc) return;
+    acc.nom = c.nom; acc.classe = c.classe;
+    if (S && c.classe && S.classe !== c.classe) {
+      const old = S.classe; S.classe = c.classe; S.lastSync = 0;
+      try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { }
+      if (old) toast(T('El professor t\'ha canviat al grup {0}.', [c.classe]), 'good');
+      queueSync();
+    }
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') cloudSave(true); });
+  window.addEventListener('pagehide', () => cloudSave(true));
+
+  // Després d'entrar o de crear el compte: tria la partida (núvol o aquest dispositiu) o en comença una de nova
+  function afterAuth(j) {
+    setAcc({ token: j.token, usuari: j.compte.usuari, nom: j.compte.nom, classe: j.compte.classe, id: j.compte.id, at: j.at || 0 });
+    const local = loadSave();
+    if (j.partida && !(mineSave(local) && (local.savedAt || 0) > (j.partida.savedAt || 0))) {
+      try { localStorage.setItem(SAVE_KEY, JSON.stringify(j.partida)); } catch (e) { }
+      return continueGame();
+    }
+    if (mineSave(local)) { continueGame(); cloudDirty = true; cloudSoon(); return; }
+    if (local && local.player && !local.owner) {
+      return confirmBox(T('En aquest dispositiu hi ha una partida sense compte ({0}, nivell {1}). Vols que passi a ser la teva?', [esc(local.player.name || ''), local.level || 1]), () => {
+        local.player.id = acc.id; local.classe = acc.classe; local.owner = acc.usuari; local.lastSync = 0;
+        try { localStorage.setItem(SAVE_KEY, JSON.stringify(local)); } catch (e) { }
+        continueGame(); cloudDirty = true; cloudSoon();
+      }, () => setupScreen(false), T('Sí, és meva'), T('No, començar de nou'));
+    }
+    setupScreen(false);
+  }
+  function authScreen(mode, user) {
+    const reg = mode === 'registre';
+    app().innerHTML = `
+      <section class="title-screen">
+        <div class="title-bg">${ART.background('vic')}</div>
+        <div class="title-content">
+          <h1 class="logo small"><span>${T("Agència")}</span><span>${T("Digital")}</span></h1>
+          <form class="card auth-card" id="authF" autocomplete="on">
+            <h2>${reg ? T('Crear el teu compte') : T('Entrar al joc')}</h2>
+            ${reg ? `<label>${T('Nom i cognom')}<input class="inp" id="aNom" maxlength="60" autocomplete="name" required></label>` : ''}
+            <label>${T('Nom d\'usuari')}<input class="inp" id="aUser" maxlength="24" value="${esc(user || '')}" autocomplete="username" autocapitalize="none" spellcheck="false" required placeholder="${reg ? T('Per exemple: marta.puig') : ''}"></label>
+            <label>${T('Contrasenya')}<input class="inp" id="aPw" type="password" maxlength="100" autocomplete="${reg ? 'new-password' : 'current-password'}" required></label>
+            ${reg ? `<label>${T('Repeteix la contrasenya')}<input class="inp" id="aPw2" type="password" maxlength="100" autocomplete="new-password" required></label>
+              <label>${T('Codi de grup')} <small>${T('(te\'l dona el professor)')}</small><input class="inp" id="aClass" maxlength="32" required placeholder="${T('Per exemple: 4ESO-B')}"></label>
+              <p class="muted small">${T('Usuari: de 3 a 24 caràcters, sense espais ni accents. Contrasenya: com a mínim 6 caràcters. Si t\'equivoques de grup, el professor te\'l pot canviar.')}</p>` : ''}
+            <p class="auth-err" id="aErr"></p>
+            <button class="btn primary big" type="submit">${reg ? T('Crear el compte ▶') : T('Entrar ▶')}</button>
+            <button class="btn ghost-dark" type="button" id="aSwap">${reg ? T('Ja tinc compte: entrar') : T('No tinc compte: crear-ne un')}</button>
+            ${reg ? '' : `<p class="muted small">${T('Si has oblidat la contrasenya, demana al professor que te la canviï.')}</p>`}
+          </form>
+          <div class="langs">${LANGS.map(([k, n]) => `<button class="${k === LANG ? 'on' : ''}" data-lang="${k}">${n}</button>`).join('')}</div>
+        </div>
+      </section>`;
+    $('#aSwap').onclick = () => authScreen(reg ? 'entrar' : 'registre');
+    $('#authF').onsubmit = async (e) => {
+      e.preventDefault();
+      const err = (m) => { $('#aErr').textContent = m; };
+      const usuari = $('#aUser').value.trim().toLowerCase(), pw = $('#aPw').value;
+      if (reg) {
+        if (pw !== $('#aPw2').value) return err(T('Les dues contrasenyes no coincideixen.'));
+        if (!normClass($('#aClass').value)) return err(T('Escriu el codi de grup que t\'ha donat el professor.'));
+      }
+      const btn = e.target.querySelector('[type=submit]'); btn.disabled = true; err('');
+      try {
+        const j = await accApi(reg ? { action: 'registre', usuari, contrasenya: pw, nom: $('#aNom').value, classe: normClass($('#aClass').value) } : { action: 'entrar', usuari, contrasenya: pw });
+        afterAuth(j);
+      } catch (ex) { err(ex.message); btn.disabled = false; }
+    };
+  }
+  function passwordModal() {
+    const d = document.createElement('div'); d.className = 'modal';
+    d.innerHTML = `<form class="modal-box auth-card"><h3>${T('Canviar la contrasenya')}</h3>
+      <label>${T('Contrasenya actual')}<input class="inp" id="p0" type="password" autocomplete="current-password" required></label>
+      <label>${T('Contrasenya nova')}<input class="inp" id="p1" type="password" autocomplete="new-password" required></label>
+      <label>${T('Repeteix la contrasenya nova')}<input class="inp" id="p2" type="password" autocomplete="new-password" required></label>
+      <p class="auth-err" id="pErr"></p>
+      <div class="row-btns"><button class="btn primary" type="submit">${T('Desar')}</button><button class="btn" type="button" id="pN">${T('Cancel·lar')}</button></div></form>`;
+    document.body.appendChild(d);
+    d.querySelector('#pN').onclick = () => d.remove();
+    d.querySelector('form').onsubmit = async (e) => {
+      e.preventDefault();
+      const p1 = d.querySelector('#p1').value;
+      if (p1 !== d.querySelector('#p2').value) { d.querySelector('#pErr').textContent = T('Les dues contrasenyes no coincideixen.'); return; }
+      try { const j = await accApi({ action: 'contrasenya', token: acc.token, actual: d.querySelector('#p0').value, nova: p1 }); acc.token = j.token; setAcc(acc); d.remove(); toast(T('Contrasenya canviada'), 'good'); }
+      catch (ex) { d.querySelector('#pErr').textContent = ex.message; }
+    };
+  }
+  async function logout() {
+    cloudDirty = true;
+    const ok = await cloudSave();
+    const done = () => { try { localStorage.removeItem(SAVE_KEY); } catch (e) { } setAcc(null); S = null; titleScreen(); };
+    if (ok) return done();
+    confirmBox(T('No s\'ha pogut desar la partida al núvol (no hi ha connexió o la sessió ha caducat). Si tanques la sessió, es perdran els últims canvis. Vols tancar-la igualment?'), done);
+  }
+
   function titleScreen() {
-    const has = loadSave();
+    if (!acc || acc.expired) return authScreen('entrar', acc && acc.usuari);
+    let has = loadSave(); if (!mineSave(has)) has = null;
     ART.setPlayer(has && has.player ? has.player.look : null);
     app().innerHTML = `
       <section class="title-screen">
@@ -302,7 +433,8 @@
           <div class="title-btns">
             ${has ? `<button class="btn big primary" data-act="continue">${T("▶ Continuar partida")} <small>${has.player ? esc(has.player.name) + ' · ' : ''}${esc(has.agency)} ${T("· Nivell")} ${has.level}</small></button>` : ''}
             <button class="btn big ${has ? '' : 'primary'}" data-act="new">${T("✦ Nova partida")}</button>
-            <button class="btn" data-act="import">${T("⇪ Importar partida")}</button>
+            <p class="acc-line">👤 <b>${esc(acc.nom)}</b> · ${esc(acc.usuari)} · ${T('Grup')} <b>${esc(acc.classe)}</b></p>
+            <button class="btn ghost" data-act="logout">${T("🚪 Tancar sessió")}</button>
             <div class="langs">${LANGS.map(([k, n]) => `<button class="${k === LANG ? 'on' : ''}" data-lang="${k}">${n}</button>`).join('')}</div>
             <button class="btn ghost install-btn" data-act="install" hidden>${T("📲 Instal·lar com a app")}</button>
           </div>
@@ -525,12 +657,14 @@
         <p class="small">${T("Codi de classe:")} <b>${S.classe ? esc(S.classe) : T('— cap —')}</b>${S.classe ? ` · ${S.syncPending ? T('<span class="neg">pendent d\'enviar</span>') : S.lastSync ? T('enviat el ') + new Date(S.lastSync).toLocaleString(LOCALE) : T('encara no enviat')}` : ''}</p>
         <p class="muted small">${T("Si poses el codi de classe que t'ha donat el professor, el teu nom i els resultats del joc s'envien automàticament cada vegada que acabes un capítol. Si no tens connexió, pots descarregar un fitxer i enviar-l'hi.")}</p>
         <div class="row-btns">
-          <button class="btn small" data-act="setClass">🏷️ ${S.classe ? T('Canviar') : T('Posar')} ${T("codi de classe")}</button>
+          ${acc ? '' : `<button class="btn small" data-act="setClass">🏷️ ${S.classe ? T('Canviar') : T('Posar')} ${T("codi de classe")}</button>`}
           ${S.classe ? T('<button class="btn small primary" data-act="syncNow">📤 Enviar resultats ara</button>') : ''}
           <button class="btn small" data-act="downloadResults">${T("⇩ Descarregar fitxer de resultats")}</button>
         </div>
       </div>
       <div class="card"><h3>${T("⚙️ Partida")}</h3>
+        ${acc ? `<p class="small">👤 <b>${esc(acc.nom)}</b> · ${T('usuari')} <b>${esc(acc.usuari)}</b> · ${T('Grup')} <b>${esc(acc.classe)}</b>${acc.expired ? ` · <span class="neg">${T('sessió caducada')}</span>` : ''}</p>
+        <div class="row-btns"><button class="btn small" data-act="password">🔑 ${T('Canviar la contrasenya')}</button><button class="btn small" data-act="logout">🚪 ${T('Tancar sessió')}</button></div>` : ''}
         <div class="row-btns">
           <button class="btn small" data-act="export">${T("⇩ Exportar partida")}</button>
           <button class="btn small" data-act="import">${T("⇪ Importar partida")}</button>
@@ -540,7 +674,7 @@
           <button class="btn small danger" data-act="reset">${T("Esborrar partida")}</button>
           <button class="btn small ghost" data-act="title">${T("Pantalla inicial")}</button>
         </div>
-        <p class="muted small">${T("La partida es desa automàticament en aquest dispositiu. Per continuar-la en un altre (web ↔ app), exporta-la i importa-la allà.")}</p>
+        <p class="muted small">${acc ? T('La partida es desa automàticament al núvol: entra amb el teu usuari des de qualsevol dispositiu per continuar-la.') : T("La partida es desa automàticament en aquest dispositiu. Per continuar-la en un altre (web ↔ app), exporta-la i importa-la allà.")}</p>
       </div>`;
     updateInstallBtn();
   }
@@ -2302,13 +2436,13 @@
   }
 
   /* ================= Accions globals ================= */
-  function confirmBox(msg, yes) {
+  function confirmBox(msg, yes, no, yesLabel, noLabel) {
     const d = document.createElement('div');
     d.className = 'modal';
-    d.innerHTML = `<div class="modal-box"><p>${msg}</p><div class="row-btns"><button class="btn danger" id="y">${T("Sí")}</button><button class="btn" id="n">${T("Cancel·lar")}</button></div></div>`;
+    d.innerHTML = `<div class="modal-box"><p>${msg}</p><div class="row-btns"><button class="btn ${yesLabel ? 'primary' : 'danger'}" id="y">${yesLabel || T("Sí")}</button><button class="btn" id="n">${noLabel || T("Cancel·lar")}</button></div></div>`;
     document.body.appendChild(d);
     d.querySelector('#y').onclick = () => { d.remove(); yes(); };
-    d.querySelector('#n').onclick = () => d.remove();
+    d.querySelector('#n').onclick = () => { d.remove(); if (no) no(); };
   }
   function textBox(title, value, onOk, okLabel) {
     const d = document.createElement('div');
@@ -2326,7 +2460,8 @@
 
   function setupScreen(editing) {
     const base = editing ? S : newState();
-    const d = { name: editing ? S.player.name : '', surname: editing ? S.player.surname : '', g: base.player.g, classe: base.classe, look: Object.assign({}, ART.PLAYER_DEFAULT, JSON.parse(JSON.stringify(base.player.look))) };
+    const an = acc && !editing ? String(acc.nom || '').trim().split(/\s+/) : [];
+    const d = { name: editing ? S.player.name : (an[0] || ''), surname: editing ? S.player.surname : an.slice(1).join(' '), g: base.player.g, classe: acc ? acc.classe : base.classe, look: Object.assign({}, ART.PLAYER_DEFAULT, JSON.parse(JSON.stringify(base.player.look))) };
     const O = ART.LOOK_OPTIONS;
     // Mostres de color i un selector lliure per triar qualsevol altre color
     const swatches = (k, list, label) => `<div class="swatches" id="s_${k}">${list.map(c => c ? `<button data-${k}="${c}" style="background:${c}" aria-label="${label} ${c}"></button>` : `<button data-${k}="" class="sw-auto" title="${T('Segons el rang')}">${T('Auto')}</button>`).join('')}<label class="sw-custom" title="${T('Color personalitzat')}">🎨<input type="color" data-custom="${k}" aria-label="${T('Color personalitzat')}"></label></div>`;
@@ -2352,9 +2487,9 @@
         ${swatches('cloth', O.cloth, T('Color'))}
         <p class="lbl">${T("Complements")} <small>${T("(en pots combinar diversos)")}</small></p>
         <div class="seg acc-grid" id="sAcc"><button data-acc="">${T('Sense complements')}</button>${O.acc.map(([k, n]) => `<button data-acc="${k}">${n}</button>`).join('')}</div>
-        <p class="lbl">${T("Codi de classe")} <small>${T("(opcional, te'l dona el professor)")}</small></p>
+        ${acc ? `<p class="lbl">${T('Grup')}: <b>${esc(acc.classe)}</b></p><p class="muted small">${T('El teu nom i els resultats del joc s\'envien al professor del grup. Si el grup no és el correcte, digues-ho al professor: te\'l pot canviar.')}</p>` : `<p class="lbl">${T("Codi de classe")} <small>${T("(opcional, te'l dona el professor)")}</small></p>
         <input class="inp" id="sClass" maxlength="32" value="${esc(d.classe)}" placeholder="Per exemple: 4ESO-B">
-        <p class="muted small">${T("Si poses un codi de classe, el teu nom i els resultats del joc s'enviaran al teu professor.")}</p>
+        <p class="muted small">${T("Si poses un codi de classe, el teu nom i els resultats del joc s'enviaran al teu professor.")}</p>`}
         <div class="row-btns">
           <button class="btn primary big" id="sGo">${editing ? T('Desar canvis') : T('Començar l\'aventura ▶')}</button>
           <button class="btn ghost" id="sBack">${editing ? T('Cancel·lar') : T('Tornar')}</button>
@@ -2378,7 +2513,7 @@
     };
     $('#sName').oninput = (e) => { d.name = e.target.value.trim(); draw(); };
     $('#sSur').oninput = (e) => { d.surname = e.target.value.trim(); draw(); };
-    $('#sClass').oninput = (e) => { d.classe = e.target.value; };
+    if ($('#sClass')) $('#sClass').oninput = (e) => { d.classe = e.target.value; };
     document.querySelector('.setup').addEventListener('click', (e) => {
       const b = e.target.closest('button'); if (!b) return;
       if (b.dataset.g) d.g = b.dataset.g;
@@ -2402,7 +2537,8 @@
       if (!d.name) { $('#sName').focus(); toast(T('Escriu el teu nom'), 'bad'); return; }
       if (!editing) { S = base; S.econ = { seq: 0, queue: [], srv: null, inici: true }; econPush('inici', 'inici', S.money); }
       Object.assign(S.player, { name: d.name, surname: d.surname, g: d.g, look: d.look });
-      const c = normClass(d.classe);
+      if (acc && !editing) { S.player.id = acc.id; S.owner = acc.usuari; }
+      const c = acc ? acc.classe : normClass(d.classe);
       if (c !== S.classe) { S.classe = c; S.lastSync = 0; }
       applyPlayer(); save(); queueSync();
       if (editing) { toast(T('Personatge actualitzat'), 'good'); hubScreen('pau'); } else startChapter('1.1');
@@ -2506,7 +2642,7 @@
 
   function newGame() {
     const go = () => setupScreen(false);
-    if (loadSave()) confirmBox(T('Començar una partida nova esborrarà la partida desada. Vols continuar?'), go); else go();
+    if (acc ? mineSave(loadSave()) : loadSave()) confirmBox(T('Començar una partida nova esborrarà la partida desada. Vols continuar?'), go); else go();
   }
   // Partides antigues (30 nivells, habilitats 0–5) → 100 nivells i habilitats 0–50
   function migrateProgress() {
@@ -2516,9 +2652,23 @@
     for (const k in S.skills) S.skills[k] = Math.min(SKILL_MAX, (S.skills[k] || 0) * SKILL_TIER);
     S.prog = 2;
   }
-  function continueGame() {
+  // Comprova al núvol si hi ha una partida més nova (jugada en un altre dispositiu) i el grup actual
+  async function refreshFromCloud() {
+    if (!acc || !S) return;
+    try {
+      const j = await accApi({ action: 'carregar', token: acc.token });
+      applyAccount(j.compte); setAcc(acc);
+      if (j.partida && (j.partida.savedAt || 0) > (S.savedAt || 0) + 1000 && mineSave(j.partida)) {
+        try { localStorage.setItem(SAVE_KEY, JSON.stringify(j.partida)); } catch (e) { }
+        toast(T('S\'ha carregat la partida més recent, desada des d\'un altre dispositiu.'), 'good');
+        continueGame(true);
+      }
+    } catch (e) { if (e.status === 401) { acc.expired = true; setAcc(acc); toast(T('La sessió ha caducat. Torna a entrar perquè la partida es desi al núvol.'), 'bad'); } }
+  }
+  function continueGame(fromCloud) {
     S = loadSave();
     if (!S) return titleScreen();
+    if (acc && !mineSave(S)) { S = null; return titleScreen(); }
     const old = !S.prog;
     S = Object.assign(newState(), S);
     if (old) migrateProgress();
@@ -2526,6 +2676,7 @@
     applyPlayer();
     if (S.syncPending) queueSync();
     if (S.cur && GD.chapters[S.cur.id]) startChapter(S.cur.id, true); else goWorld();
+    if (acc && !fromCloud) refreshFromCloud();
   }
 
   document.addEventListener('click', (ev) => {
@@ -2565,10 +2716,12 @@
       case 'useReserve': S.money += S.reserve; S.reserve = 0; save(); hubScreen('empresa'); break;
       case 'export': textBox(T('Codi de la teva partida (copia\'l i enganxa\'l a l\'altre dispositiu):'), btoa(unescape(encodeURIComponent(JSON.stringify(S))))); break;
       case 'import': textBox(T('Enganxa el codi de la partida:'), '', (v) => {
-        try { const d = JSON.parse(decodeURIComponent(escape(atob(v)))); if (!d || !d.v) throw 0; S = Object.assign(newState(), d); applyPlayer(); save(); toast(T('Partida importada'), 'good'); goWorld(); }
+        try { const d = JSON.parse(decodeURIComponent(escape(atob(v)))); if (!d || !d.v) throw 0; if (acc) { d.player.id = acc.id; d.classe = acc.classe; d.owner = acc.usuari; } S = Object.assign(newState(), d); applyPlayer(); save(); toast(T('Partida importada'), 'good'); goWorld(); }
         catch (e) { toast(T('El codi no és vàlid'), 'bad'); }
       }); break;
       case 'speed': settings.speed = settings.speed <= 8 ? 18 : settings.speed <= 18 ? 32 : 6; saveSettings(); hubScreen('empresa'); break;
+      case 'logout': confirmBox(T('Vols tancar la sessió? La partida queda desada al núvol i la podràs continuar entrant de nou.'), logout); break;
+      case 'password': passwordModal(); break;
       case 'reset': confirmBox(T('Segur que vols esborrar la partida? No es pot desfer.'), () => { try { localStorage.removeItem(SAVE_KEY); } catch (e) { } S = null; titleScreen(); }); break;
       case 'install': doInstall(); break;
       case 'editAvatar': setupScreen(true); break;

@@ -723,3 +723,14 @@ button { font-family: inherit; font-size: inherit; color: inherit; cursor: point
 .cm-badge.got { border: 2px solid #f2a516; background: #fff3d1; opacity: 1; }
 .cm-badge.big { width: 120px; height: 120px; font-size: 4em; justify-content: center; border-radius: 50%; border: 4px solid #f2a516; background: #fff3d1; opacity: 1; margin: 0 auto; }
 @media (max-width: 520px) { .cmb-art svg { width: 92px; height: 92px; } .cmb-moves { grid-template-columns: 1fr 1fr; } }
+
+/* ===== Comptes: entrar i crear compte ===== */
+.logo.small { font-size: 2.1em; margin-bottom: .3em; }
+.auth-card { color: var(--ink); text-align: left; display: flex; flex-direction: column; gap: 10px; padding: 18px; }
+.auth-card h2, .auth-card h3 { margin: 0 0 4px; text-align: center; }
+.auth-card label { display: flex; flex-direction: column; gap: 4px; font-weight: 800; font-size: .9em; }
+.auth-card .inp { margin: 0; }
+.auth-err { color: #a2321f; font-weight: 700; min-height: 1em; margin: 0; font-size: .9em; }
+.btn.ghost-dark { background: transparent; border-color: transparent; box-shadow: none; color: var(--ink); text-decoration: underline; }
+.title-content .langs { margin-top: 12px; justify-content: center; }
+.acc-line { margin: 0; font-size: .9em; background: rgba(43,29,34,.55); border-radius: 12px; padding: 6px 10px; }
