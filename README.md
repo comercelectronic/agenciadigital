@@ -73,7 +73,9 @@ Els errors econòmics costen diners: treballar gratis, acceptar feines sense cap
 - **Agències rivals (reptes finals):** 8 agències de màrqueting professionals (Arrel Branding, Ona Social, Vidal & Co., Engranatge B2B, Cim Creatiu, Clic & Data, Port Global i Zenit Group). Cada una s'obre en superar una etapa, té dos combats seguits i **demana un equip amb habilitats concretes** (elements amb avantatge, famílies, habilitats passives, rareses o nivell). Guanyar-les dona un segell i un premi en diners validat pel servidor (una sola vegada per agència).
 - **Equilibri:** cada espècie i forma té un petit ajust de dany calculat amb simulacions perquè cap domini (`tests/combat.test.js` ho comprova).
 
-## Economia validada al servidor, impostos i guardiola de la classe
+## Economia validada al servidor, impostos i guardiola de la classe (pendent d'activar)
+
+> **Estat:** el codi és a `economia-servidor/` i **no es desplega**, perquè Netlify Database requereix un pla amb crèdits i feia fallar el desplegament. Mentrestant el joc funciona igual, amb els diners calculats al navegador i sense impostos. Per activar-la, vegeu `economia-servidor/README.md`.
 
 Tots els diners del joc (una sola moneda: els euros de l'agència) es validen al servidor amb **Netlify Database** (Postgres):
 
@@ -141,7 +143,7 @@ Totes les empreses, els personatges i els resultats de les campanyes són fictic
 
 Netlify Blobs (on es desen els resultats) s'activa sol, no cal configurar res més.
 
-**Base de dades de l'economia:** en desplegar, Netlify crea sola la base de dades (perquè `@netlify/database` és a `package.json`) i aplica les migracions de `netlify/database/migrations/`. Cal un pla de Netlify basat en crèdits; les migracions no s'han de modificar un cop aplicades (per canviar l'esquema, se n'afegeix una de nova).
+**Base de dades de l'economia:** de moment no s'utilitza (vegeu `economia-servidor/README.md`).
 
 ## Desenvolupament
 
@@ -157,8 +159,7 @@ Tests (necessiten `npm install`):
 ```sh
 node tests/comercmons.test.js         # catàleg i equilibri dels Comerçmons
 node tests/combat.test.js             # motor de combat, hàbitats, entrenadors i agències rivals
-node tests/economia.test.mjs          # lògica de l'economia amb una base de dades Postgres local
-node tests/economia-funcio.test.mjs   # la funció joc-economia per HTTP
+(cd economia-servidor && npm install && npm test)   # economia validada al servidor (Postgres local)
 ```
 
 Si canvies fitxers del joc, puja la versió de `CACHE` a `sw.js` perquè les apps instal·lades descarreguin la versió nova.

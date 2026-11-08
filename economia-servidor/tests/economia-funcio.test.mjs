@@ -2,9 +2,9 @@
 import assert from 'node:assert/strict';
 import { NetlifyDB } from '@netlify/database-dev';
 const db = new NetlifyDB(); const cs = await db.start();
-await db.applyMigrations('./netlify/database/migrations');
+await db.applyMigrations('./database/migrations');
 process.env.NETLIFY_DB_URL = cs; process.env.TEACHER_PASSWORD = 'prof';
-const { default: fn } = await import('../netlify/functions/joc-economia.mjs');
+const { default: fn } = await import('../functions/joc-economia.mjs');
 const call = async (body) => { const r = await fn(new Request('http://x/', { method: 'POST', body: JSON.stringify(body) })); return [r.status, await r.json()]; };
 let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; };
 const st = { classe: 'TEST1', id: 'alumne-123456' };

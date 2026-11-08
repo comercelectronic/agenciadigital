@@ -6327,4 +6327,7 @@ Object.assign(I18N, {
 "1yifg1j": "Devesa Park is full of tall grass: it's the best place to find Comerçmons early on. Those with ✨ already trust you and can be caught.",
 "19p1y53": "Comerçmons live out in the world. The easiest place to start is 🌳 Devesa Park: leave Vic to the west along the river walk (cross the bridge south of the square). Those with ✨ already trust you.",
 "axbkpv": "Now go exploring: lots of Comerçmons live in 🌳 Devesa Park (west of Vic, along the river walk).",
+"1upavye": "Server-validated economy is not enabled yet.",
+"9ep9wm": "Server-validated economy is not enabled yet: for now money is counted only in your browser and there are no taxes.",
+"clcor9": "Server-validated economy is not enabled yet (see economia-servidor/README.md).",
 });

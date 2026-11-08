@@ -555,8 +555,8 @@
     return S.econ;
   }
   function econTax(brut, tipus) {
-    const e = econ(); if (!S.classe || !(brut > 0)) return 0;
-    const imp = (e.srv && e.srv.impost) || { trams: [{ des: 0, pct: 5 }], tipus: TAXED };
+    const e = econ(); if (!S.classe || !(brut > 0) || !e.srv || e.off) return 0; // sense servidor d'economia no hi ha impost
+    const imp = e.srv.impost || { trams: [{ des: 0, pct: 5 }], tipus: TAXED };
     if (!(imp.tipus || TAXED).includes(tipus)) return 0;
     const t = imp.trams.slice().sort((a, b) => a.des - b.des); let x = 0;
     t.forEach((tr, i) => { const hi = i + 1 < t.length ? t[i + 1].des : Infinity; x += Math.max(0, Math.min(brut, hi) - tr.des) * tr.pct / 100; });
@@ -593,6 +593,7 @@
       do {
         const batch = e.queue.slice(0, 50);
         const res = await fetch(EAPI, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: batch.length ? 'moviments' : 'estat', classe: S.classe, id: S.player.id, nom: `${S.player.name} ${S.player.surname || ''}`.trim(), agencia: S.agency, events: batch }) });
+        if (res.status === 404) { e.off = true; e.queue = e.queue.slice(-200); save(); if (manual) toast(T('L\'economia validada pel servidor encara no està activada.')); return null; }
         if (!res.ok) throw new Error('Error ' + res.status);
         const j = await res.json();
         lastEstat = j.estat || j;
@@ -602,6 +603,7 @@
         e.queue = e.queue.filter(q => !done.has(q.idem));
         if (pending || !done.size) break;
       } while (e.queue.length);
+      e.off = false;
       e.srv = Object.assign({}, lastEstat, { at: Date.now() });
       // El saldo del servidor és el bo: si no hi ha res pendent, la liquiditat del joc s'hi iguala
       if (!e.queue.length && lastEstat && lastEstat.aprovat) {
@@ -626,7 +628,7 @@
     const e = econ(), s = e.srv;
     if (!S.classe) return `<div class="card"><h3>${T('🏦 Economia i guardiola')}</h3><p class="muted small">${T('Posa el codi de classe perquè el servidor validi la teva economia i participis en la guardiola comuna.')}</p><button class="btn small" data-act="setClass">${T('🏷️ Posar codi de classe')}</button></div>`;
     return `<div class="card econ-card"><h3>${T('🏦 Economia i guardiola')}</h3>
-      ${!s ? `<p class="muted small">${T('Connectant amb el servidor…')}</p>` : !s.aprovat ? `<div class="warn small">${T('⏳ El professor encara ha de validar el teu compte. Mentrestant pots jugar: les operacions s\'enviaran quan et validi.')}</div>` : ''}
+      ${e.off ? `<p class="muted small">${T('L\'economia validada pel servidor encara no està activada: de moment els diners es compten només al teu navegador i no hi ha impostos.')}</p>` : !s ? `<p class="muted small">${T('Connectant amb el servidor…')}</p>` : !s.aprovat ? `<div class="warn small">${T('⏳ El professor encara ha de validar el teu compte. Mentrestant pots jugar: les operacions s\'enviaran quan et validi.')}</div>` : ''}
       ${s ? `<dl class="kv"><dt>${T('Saldo validat')}</dt><dd>${eur(s.saldo)}</dd><dt>${T('Impost sobre els ingressos')}</dt><dd>${(s.impost.trams || []).map(t => `${t.pct} %${t.des ? ' ' + T('des de {0}', [eur(t.des)]) : ''}`).join(' · ')}</dd><dt>${T('🐷 Guardiola de la classe')}</dt><dd>${eur(s.guardiola)}</dd>${e.queue.length ? `<dt>${T('Pendents d\'enviar')}</dt><dd>${e.queue.length}</dd>` : ''}</dl>
         ${s.darrers && s.darrers.length ? `<details class="small"><summary>${T('Darrers moviments')}</summary><table class="tbl small"><tbody>${s.darrers.slice(0, 12).map(m => `<tr><td>${esc(MOVT()[m.tipus] || m.tipus)}${m.ref ? ` <span class="muted">${esc(m.ref)}</span>` : ''}</td><td class="${m.net < 0 ? 'neg' : ''}">${m.net > 0 ? '+' : ''}${eur(m.net)}</td><td class="muted">${m.impost ? '🐷 ' + eur(m.impost) : ''}</td></tr>`).join('')}</tbody></table></details>` : ''}` : ''}
       <div class="row-btns"><button class="btn small" data-act="econSync">🔄 ${T('Sincronitzar')}</button><button class="btn small" data-act="guardiola">🐷 ${T('Veure la guardiola')}</button></div></div>`;

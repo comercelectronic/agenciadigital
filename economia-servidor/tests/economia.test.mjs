@@ -3,11 +3,11 @@
 import assert from 'node:assert/strict';
 import { NetlifyDB } from '@netlify/database-dev';
 import pg from 'pg';
-import { alta, registrar, estat, guardiolaInfo, auditoria, calcImpost } from '../netlify/lib/economia.mjs';
+import { alta, registrar, estat, guardiolaInfo, auditoria, calcImpost } from '../lib/economia.mjs';
 
 const db = new NetlifyDB();
 const cs = await db.start();
-await db.applyMigrations('./netlify/database/migrations');
+await db.applyMigrations('./database/migrations');
 const pool = new pg.Pool({ connectionString: cs, max: 8 });
 let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; }; const eq = (a, b, m) => { assert.deepEqual(a, b, m); n++; };
 const C = 'CLASSE1', A = 'aaaaaaaaaaaa', B = 'bbbbbbbbbbbb';

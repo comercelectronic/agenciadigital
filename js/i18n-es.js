@@ -6241,4 +6241,7 @@ Object.assign(I18N, {
 "1yifg1j": "El Parque de la Devesa está lleno de hierba alta: es el mejor lugar para encontrar Comerçmons al principio. Los que tienen ✨ ya confían en ti y puedes capturarlos.",
 "19p1y53": "Los Comerçmons viven en el mundo. El lugar más fácil para empezar es el 🌳 Parque de la Devesa: sal de Vic por el oeste, por el paseo del río (cruza el puente de la plaza hacia el sur). Los que tienen ✨ ya confían en ti.",
 "axbkpv": "Ahora sal a explorar: en el 🌳 Parque de la Devesa (oeste de Vic, por el paseo del río) viven muchos Comerçmons.",
+"1upavye": "La economía validada por el servidor todavía no está activada.",
+"9ep9wm": "La economía validada por el servidor todavía no está activada: de momento el dinero se cuenta solo en tu navegador y no hay impuestos.",
+"clcor9": "La economía validada por el servidor todavía no está activada (véase economia-servidor/README.md).",
 });

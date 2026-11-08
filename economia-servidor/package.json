@@ -1,0 +1,17 @@
+{
+  "name": "agenciadigital-economia-servidor",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Economia validada al servidor (Netlify Database). Fora del desplegament fins que s'activi: vegeu README.md d'aquesta carpeta.",
+  "type": "module",
+  "dependencies": {
+    "@netlify/blobs": "^11.1.6",
+    "@netlify/database": "^2.0.3"
+  },
+  "devDependencies": {
+    "@netlify/database-dev": "^1.0.2"
+  },
+  "scripts": {
+    "test": "node tests/economia.test.mjs && node tests/economia-funcio.test.mjs"
+  }
+}

@@ -276,6 +276,7 @@
   async function eapi(body) {
     const r = await fetch(EAPI, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ password: $('#pw').value, classe: normClass($('#cls').value) }, body)) });
     const j = await r.json().catch(() => ({}));
+    if (r.status === 404) throw new Error(T('L\'economia validada pel servidor encara no està activada (vegeu economia-servidor/README.md).'));
     if (!r.ok) throw new Error(j.error || 'Error ' + r.status);
     return j;
   }
