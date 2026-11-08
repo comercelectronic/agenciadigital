@@ -549,7 +549,7 @@
   // El servidor el valida, hi aplica l'impost i actualitza la guardiola de la classe. El saldo del servidor mana:
   // quan la cua està buida, la liquiditat del joc (diners + reserva) s'iguala amb el saldo del servidor.
   const EAPI = '/.netlify/functions/joc-economia';
-  const TAXED = ['capitol', 'clients', 'encarrec', 'projecte', 'web', 'botiguer', 'mercat', 'altre'];
+  const TAXED = ['capitol', 'clients', 'encarrec', 'projecte', 'web', 'botiguer', 'mercat', 'gimnas', 'altre'];
   function econ() {
     if (!S.econ) S.econ = { seq: 0, queue: [], srv: null, inici: false };
     return S.econ;
@@ -575,6 +575,7 @@
     if (m < 0) return fx.src === 'mercat' ? ['mercat', fx.ref] : ['despesa', fx.ref || fx.src || (S.cur ? S.cur.id : '')];
     switch (fx.src) {
       case 'gig': return ['encarrec', fx.ref];
+      case 'gimnas': return ['gimnas', fx.ref];
       case 'chapter': return ['capitol', fx.ref || (S.cur && S.cur.id) || (curCh && curCh.id)];
       case 'proj': return [String(fx.ref || '').startsWith('web-') ? 'web' : 'projecte', fx.ref];
       case 'world': return ['botiguer', fx.ref];
@@ -620,7 +621,7 @@
     if (!S.classe) return null;
     try { const r = await fetch(EAPI, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'guardiola', classe: S.classe, id: S.player.id, nom: `${S.player.name} ${S.player.surname || ''}`.trim(), agencia: S.agency }) }); return r.ok ? r.json() : null; } catch (e) { return null; }
   }
-  const MOVT = () => ({ inici: T('Capital inicial'), reinici: T('Reinici després de la fallida'), capitol: T('Missió'), clients: T('Clients recurrents'), encarrec: T('Encàrrec'), projecte: T('Projecte'), web: T('Web del Taller'), botiguer: T('Botiguer de Vic'), mercat: T('Tracte entre agències'), despesa: T('Despesa'), altre: T('Altres') });
+  const MOVT = () => ({ inici: T('Capital inicial'), reinici: T('Reinici després de la fallida'), capitol: T('Missió'), clients: T('Clients recurrents'), encarrec: T('Encàrrec'), projecte: T('Projecte'), web: T('Web del Taller'), botiguer: T('Botiguer de Vic'), mercat: T('Tracte entre agències'), despesa: T('Despesa'), gimnas: T('Repte d\'agència rival'), altre: T('Altres') });
   function econCard() {
     const e = econ(), s = e.srv;
     if (!S.classe) return `<div class="card"><h3>${T('🏦 Economia i guardiola')}</h3><p class="muted small">${T('Posa el codi de classe perquè el servidor validi la teva economia i participis en la guardiola comuna.')}</p><button class="btn small" data-act="setClass">${T('🏷️ Posar codi de classe')}</button></div>`;
@@ -683,7 +684,7 @@
   // Comerçmons que han aparegut (condició complerta) i encara no tens
   function cmAvailable() {
     cmState();
-    return GD.cmSpecies.filter(sp => !sp.capture.cond.starter && !cmOwned(sp.id) && cmCond(sp.capture.cond).ok);
+    return GD.cmSpecies.filter(sp => cmCatchable(sp.id));
   }
   function cmRefreshSeen() {
     let n = 0;
@@ -796,17 +797,6 @@
     cmEvoAnim(ev, () => cmFlushEvos(then));
   }
 
-  function cmCapture(id) {
-    const sp = GD.cmById(id); if (!sp || cmOwned(id)) return;
-    if (!cmCond(sp.capture.cond).ok) { toast(T('Encara no compleixes les condicions de captura.'), 'bad'); return; }
-    const esc0 = S.cm.escape[id] || 0;
-    if (Date.now() < esc0) { toast(T('S\'ha amagat. Torna-ho a provar d\'aquí a {0} min.', [Math.ceil((esc0 - Date.now()) / 60000)]), 'bad'); return; }
-    cmQuizModal(sp, 0, T('Repte de captura: {0}', [sp.forms[0].name]), T('Respon bé aquesta pregunta per convèncer-lo que s\'uneixi a la teva agència.'), (ok) => {
-      if (!ok) { S.cm.escape[id] = Date.now() + CMC().ESCAPE_MS; save(); toast(T('{0} s\'ha escapat. Repassa i torna-ho a provar d\'aquí a una hora.', [sp.forms[0].name]), 'bad'); cmDetail(id); return; }
-      cmGet(id); save(); queueSync();
-      cmCaptureAnim(sp, () => cmDetail(id));
-    });
-  }
   function cmGet(id) {
     const st = cmState();
     st.owned[id] = { lvl: 1, xp: 0, form: 0, at: new Date().toISOString() };
@@ -831,6 +821,275 @@
     save(); queueSync();
   }
 
+  /* ================= Combats de Comerçmons ================= */
+  // Es pot capturar? (condició complerta, no escapat). Els inicials no triats, a partir de l'etapa 2.
+  function cmCatchable(id) {
+    const sp = GD.cmById(id); if (!sp || cmOwned(id)) return false;
+    if (Date.now() < (cmState().escape[id] || 0)) return false;
+    return sp.capture.cond.starter ? stageDone(2) : cmCond(sp.capture.cond).ok;
+  }
+  function cmVisible(id) {
+    const sp = GD.cmById(id); if (!sp) return false;
+    if (sp.rarity === 'lleg') return cmCatchable(id);
+    return !sp.capture.cond.starter || stageDone(2) || !!cmOwned(id);
+  }
+  const cmTeamTop = () => Math.max(1, ...cmState().team.map(id => (cmOwned(id) || {}).lvl || 1));
+  // Nivell d'un Comerçmon salvatge: segueix el teu equip (fixat durant el torn de 15 minuts)
+  function cmWildLevel(id) {
+    const sp = GD.cmById(id), slot = Math.floor(Date.now() / 900000);
+    const jitter = ((slot * 31 + id.length * 7 + sp.num) % 5) - 2;
+    const base = sp.rarity === 'lleg' ? cmTeamTop() + 3 : Math.round(cmTeamTop() * 0.85) + jitter;
+    return Math.max(GD.cmWildMin[sp.rarity] || 2, Math.min(CMC().MAX_LEVEL, base));
+  }
+  const cmWildForm = (id) => GD.cmFormAt(GD.cmById(id), cmWildLevel(id));
+  const cmMyTeam = () => cmState().team.map(id => ({ id, lvl: cmOwned(id).lvl, form: cmOwned(id).form }));
+  const zoneNames = (id) => GD.cmZonesOf(id).map(z => GD.cmZones[z].i + ' ' + GD.cmZones[z].n).join(' · ');
+  // Experiència de combat: com a molt 12 combats al dia en donen (entrenadors i salvatges)
+  function cmBattleXpLeft() { const st = cmState(); if (!st.bxp || st.bxp.d !== today()) st.bxp = { d: today(), n: 0 }; return 12 - st.bxp.n; }
+
+  const STAT_TXT = () => ({ atk: T('l\'atac'), def: T('la defensa'), vel: T('la velocitat'), int: T('la intel·ligència'), all: T('totes les estadístiques'), acc: T('la precisió') });
+  function cmEvTxt(e, foe) {
+    const who = (side, n) => side === 1 ? `<b class="cmb-foe">${esc(n)}</b>` : `<b>${esc(n)}</b>`;
+    const W = who(e.side, e.who), S2 = STAT_TXT();
+    switch (e.k) {
+      case 'atk': {
+        const mv = `<i>${esc(e.mv)}</i>`;
+        if (e.fail) return T('{0} intenta {1}, però la resposta no era correcta i l\'atac no surt.', [W, mv]);
+        if (e.miss) return T('{0} fa servir {1}… però falla.', [W, mv]);
+        if (e.dodged) return T('{0} fa servir {1}, però el rival l\'esquiva.', [W, mv]);
+        if (e.dmg != null) {
+          let t = T('{0} fa servir {1}: {2} de dany.', [W, mv, e.dmg]);
+          if (e.crit) t += ' ' + T('Cop crític!');
+          if (e.eff > 1) t += ' ' + T('És molt eficaç!'); else if (e.eff < 1) t += ' ' + T('No és gaire eficaç…');
+          if (e.heal) t += ' ' + T('Recupera {0} de vida.', [e.heal]);
+          if (e.reflect) t += ' ' + T('La contraoferta li retorna {0} de dany.', [e.reflect]);
+          if (e.stun) t += ' ' + T('El rival queda bloquejat.');
+          return t;
+        }
+        const tg = e.target ? `<b>${esc(e.target)}</b>` : '';
+        const fx = { heal: T('recupera {0} de vida', [e.heal]), hot: T('es regenerarà uns quants torns'), energy: T('recupera {0} d\'energia', [e.en]), shield: T('es protegeix'),
+          dodge: T('es prepara per esquivar'), reflect: T('prepara una contraoferta'), vuln: T('deixa exposat {0}', [tg]), stun: e.miss ? T('intenta bloquejar el rival, però no se\'n surt') : T('bloqueja {0}', [tg]),
+          debuff: T('rebaixa {0} de {1}', [S2[e.s] || '', tg]), buff: T('millora {0}', [S2[e.s] || '']), cleanse: T('es treu els efectes negatius') }[e.fx] || '';
+        return T('{0} fa servir {1}: {2}.', [W, mv, fx]);
+      }
+      case 'faint': return T('{0} queda fora de combat!', [W]);
+      case 'switch': return T('Entra {0}!', [W]);
+      case 'stunned': return T('{0} està bloquejat i perd el torn.', [W]);
+    }
+    return '';
+  }
+  function cmFighterCard(f, foe) {
+    const sp = GD.cmById(f.id), pc = (v, m) => Math.max(0, Math.round(v / m * 100));
+    const eff = [f.shield ? '🛡️' : '', f.dodge ? '💨' : '', f.vuln ? '🎯' : '', f.stun ? '💫' : '', f.hot ? '💚' : '', ...Object.entries(f.buf).map(([k, b]) => (b[0] > 0 ? '⬆️' : '⬇️'))].join('');
+    return `<div class="cmb-card ${foe ? 'foe' : 'me'}">
+      <div class="cmb-art r-${sp.rarity}">${CMART.render(sp, f.form, { size: foe ? 120 : 130, cls: 'cm-bob' })}</div>
+      <div class="cmb-info"><b>${esc(f.name)}</b> <small>${T('Nv')} ${f.lvl}</small> ${typeChip(f.type)} <span class="cmb-eff">${eff}</span>
+        <div class="cmb-bar hp"><i style="width:${pc(f.hp, f.maxHp)}%"></i><span>❤️ ${f.hp}/${f.maxHp}</span></div>
+        <div class="cmb-bar en"><i style="width:${pc(f.en, f.maxEn)}%"></i><span>⚡ ${f.en}/${f.maxEn}</span></div></div></div>`;
+  }
+  const CAT_I = { ofensiu: '💥', defensiu: '🛡️', estrategic: '🧠', especial: '🌟' };
+
+  /* Combat genèric. opts = { title, sub, foe: [{ id, lvl, form? }], kind: 'wild'|'trainer'|'gym', flee: bool, xpMult }
+     onEnd({ win, fled }) */
+  function cmBattle(opts, onEnd) {
+    const mine = cmMyTeam();
+    if (!mine.length) { toast(T('Primer has de tenir Comerçmons a l\'equip actiu (Comerçdex).'), 'bad'); onEnd && onEnd({ win: false, fled: true }); return; }
+    const s = GD.cmBattleNew(mine, opts.foe, (Date.now() % 2147483647) || 7);
+    const log = [`<span class="muted">${esc(opts.sub || '')}</span>`];
+    const d = document.createElement('div'); d.className = 'modal cm-modal cmb-w';
+    document.body.appendChild(d);
+    let locked = false;
+    const render = (shake) => {
+      const A = GD.cmBattleCur(s, 0), B = GD.cmBattleCur(s, 1);
+      const dots = (i) => s.sides[i].team.map((f, k) => `<i class="${f.hp <= 0 ? 'ko' : k === s.sides[i].act ? 'on' : ''}"></i>`).join('');
+      d.innerHTML = `<div class="modal-box cmb">
+        <div class="cmb-top"><b>${esc(opts.title)}</b><span class="cmb-dots">${dots(1)}</span></div>
+        <div class="cmb-field">
+          <div class="${shake === 1 ? 'cmb-hit' : ''}">${cmFighterCard(B, true)}</div>
+          <div class="${shake === 0 ? 'cmb-hit' : ''}">${cmFighterCard(A, false)}</div>
+        </div>
+        <div class="cmb-dots me">${dots(0)} <small class="muted">${T('Torn {0}', [s.turn])}</small></div>
+        <div class="cmb-log">${log.slice(-5).map(l => `<p>${l}</p>`).join('')}</div>
+        ${s.over ? '' : `<div class="cmb-moves">${GD.cmUsable(A).map(({ i, mv, ok }) => `<button class="cmb-mv ${mv.cat}" data-mv="${i}" ${ok && !locked ? '' : 'disabled'} title="${esc(mv.fx || '')}">
+            <b>${CAT_I[mv.cat] || '💥'} ${esc(mv.n)}</b><small>⚡${mv.cost}${mv.e.k === 'dmg' ? ` · 💥${mv.e.pow}` : ''}${A.cd[i] > 0 ? ` · ⏳${A.cd[i]}` : ''}${mv.cat === 'especial' ? ' · ❓' : ''}</small></button>`).join('')}</div>
+          <div class="row-btns cmb-actions">
+            ${s.sides[0].team.some((f, k) => f.hp > 0 && k !== s.sides[0].act) ? `<button class="btn small" data-sw ${locked ? 'disabled' : ''}>🔄 ${T('Canviar')}</button>` : ''}
+            <button class="btn small" data-flee ${locked ? 'disabled' : ''}>${opts.flee === false ? '🏳️ ' + T('Rendir-se') : '🏃 ' + T('Marxar')}</button>
+          </div>`}
+      </div>`;
+      d.querySelectorAll('[data-mv]').forEach(b => b.onclick = () => choose(+b.dataset.mv));
+      const sw = d.querySelector('[data-sw]'); if (sw) sw.onclick = switchMenu;
+      const fl = d.querySelector('[data-flee]'); if (fl) fl.onclick = () => { d.remove(); onEnd && onEnd({ win: false, fled: true }); };
+    };
+    const switchMenu = () => {
+      const box = d.querySelector('.cmb-actions');
+      box.innerHTML = s.sides[0].team.map((f, k) => f.hp > 0 && k !== s.sides[0].act ? `<button class="btn small" data-to="${k}">${esc(f.name)} · ❤️${f.hp}</button>` : '').join('') + `<button class="btn small ghost" data-back>✕</button>`;
+      box.querySelectorAll('[data-to]').forEach(b => b.onclick = () => play({ t: 'switch', to: +b.dataset.to }));
+      box.querySelector('[data-back]').onclick = () => render();
+    };
+    const choose = (i) => {
+      const A = GD.cmBattleCur(s, 0), mv = A.moves[i];
+      if (mv.cat !== 'especial') return play({ t: 'atk', i });
+      // Atac especial: cal encertar una pregunta (si l'encertes, l'atac fa un 20 % més)
+      const q = cmQuestion(GD.cmById(A.id)), order = shuffledIdx(q.o.length);
+      const box = d.querySelector('.cmb-moves');
+      box.innerHTML = `<div class="cmb-q"><p><b>🌟 ${esc(mv.n)}</b> · ${T('Respon bé per llançar l\'atac especial:')}</p><p>${esc(txt(q.q))}</p>
+        <div class="opts">${order.map(k => `<button class="opt" data-k="${k}">${esc(txt(q.o[k]))}</button>`).join('')}</div></div>`;
+      d.querySelector('.cmb-actions').innerHTML = '';
+      box.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+        const ok = +b.dataset.k === q.c;
+        box.querySelectorAll('.opt').forEach(x => { x.disabled = true; if (+x.dataset.k === q.c) x.classList.add('good'); else if (x === b) x.classList.add('bad'); });
+        setTimeout(() => play({ t: 'atk', i, q: ok }), ok ? 500 : 1400);
+      });
+    };
+    const play = (act) => {
+      if (locked || s.over) return;
+      locked = true;
+      const ev = GD.cmBattleTurn(s, [act, GD.cmBattleAI(s, 1, opts.kind === 'gym')]);
+      let k = 0;
+      const step = () => {
+        if (k >= ev.length) { locked = false; render(); if (s.over) finish(); return; }
+        const e = ev[k++], t = cmEvTxt(e);
+        if (t) log.push(t);
+        render(e.k === 'atk' && e.dmg ? 1 - e.side : null);
+        setTimeout(step, e.k === 'atk' ? 650 : 450);
+      };
+      step();
+    };
+    const finish = () => {
+      const win = s.over.win === 0;
+      const xpGain = {};
+      if (win) {
+        const left = opts.kind === 'gym' ? 99 : cmBattleXpLeft();
+        if (left > 0 && opts.xpMult !== 0) {
+          if (opts.kind !== 'gym') cmState().bxp.n++;
+          const tot = opts.foe.reduce((a, f) => a + GD.cmBattleXp(f.lvl), 0) * (opts.xpMult || 1) * (1 + cmBonus('monxp') / 100);
+          s.sides[0].team.forEach(f => { const x = Math.round(tot * (f.dealt > 0 ? 1 : 0.5)); cmGainXp(f.id, x); xpGain[f.id] = x; });
+        }
+      }
+      save(); queueSync();
+      const box = d.querySelector('.modal-box');
+      box.insertAdjacentHTML('beforeend', `<div class="cmb-end ${win ? 'good' : 'bad'}"><h3>${win ? T('🏆 Victòria!') : s.over.timeout ? T('⏱️ Temps esgotat') : T('😵 Derrota')}</h3>
+        ${Object.keys(xpGain).length ? `<p class="small">${Object.entries(xpGain).map(([id, x]) => `${esc(cmOwned(id) ? GD.cmById(id).forms[cmOwned(id).form].name : id)} +${x} EXP`).join(' · ')}</p>` : win && opts.kind !== 'gym' ? `<p class="small muted">${opts.xpMult === 0 ? T('Avui ja havies entrenat amb aquest rival: aquest combat no dona experiència.') : T('Avui ja has fet els 12 combats que donen experiència. Torna demà!')}</p>` : ''}
+        ${!win ? `<p class="small">${T('Cap problema: els Comerçmons es recuperen de seguida. Entrena\'ls, millora l\'equip o tria elements amb avantatge i torna-ho a provar.')}</p>` : ''}
+        <button class="btn primary" id="cmbOk">${T('Continuar')}</button></div>`);
+      box.querySelector('#cmbOk').onclick = () => { d.remove(); cmFlushEvos(() => onEnd && onEnd({ win })); };
+    };
+    render();
+  }
+
+  // Comerçmon salvatge trobat al món
+  function cmWild(id, zone, done) {
+    const sp = GD.cmById(id), st = cmState();
+    const fin = (r) => { save(); done && done(r); };
+    if (!cmState().starter) { toast(T('Primer tria el teu Comerçmon inicial a la 🐾 Comerçdex.'), 'bad'); return fin({}); }
+    const lvl = cmWildLevel(id), form = GD.cmFormAt(sp, lvl), catchable = cmCatchable(id), own = cmOwned(id);
+    const fresh = !st.seen[id]; st.seen[id] = 1;
+    const d = document.createElement('div'); d.className = 'modal cm-modal';
+    const cond = cmCond(sp.capture.cond);
+    d.innerHTML = `<div class="modal-box cm-quiz"><div class="cm-quiz-art r-${sp.rarity}">${CMART.render(sp, form, { size: 140, cls: 'cm-bob' })}</div>
+      <h3>${own ? T('Un {0} salvatge!', [esc(sp.forms[form].name)]) : catchable ? T('Has trobat {0}!', [esc(sp.forms[form].name)]) : T('{0} t\'observa des de lluny…', [esc(sp.forms[form].name)])}</h3>
+      <p>${typeChip(sp.type)} ${rarChip(sp.rarity)} · ${T('Nivell {0}', [lvl])}${fresh ? ` · <b>${T('Nou a la Comerçdex!')}</b>` : ''}</p>
+      ${own ? `<p class="small">${T('Ja el tens. Un combat d\'entrenament donarà experiència al teu equip.')}</p>`
+        : catchable ? `<p class="small">${T('Confia prou en tu per unir-se a l\'agència. Guanya el combat i després supera el repte de coneixement per capturar-lo.')}</p>`
+        : `<p class="small">${T('Encara no confia en tu i fuig. Per capturar-lo:')} <b>${esc(sp.capture.text)}</b></p>${sp.capture.cond.starter ? '' : `<ul class="cm-cond">${cond.parts.map(p => `<li class="${p.ok ? 'ok' : ''}">${p.ok ? '✅' : '⬜'} ${esc(p.label)}${p.need ? ` <b>${p.cur}/${p.need}</b>` : ''}</li>`).join('')}</ul>`}`}
+      <div class="row-btns">${own || catchable ? `<button class="btn primary" data-go>⚔️ ${T('Combatre')}</button><button class="btn" data-no>🏃 ${T('Deixar-lo')}</button>` : `<button class="btn primary" data-no>${T('D\'acord')}</button>`}</div></div>`;
+    document.body.appendChild(d);
+    d.querySelector('[data-no]').onclick = () => { d.remove(); fin({ gone: !own && !catchable }); };
+    const go = d.querySelector('[data-go]');
+    if (go) go.onclick = () => {
+      d.remove();
+      cmBattle({ title: T('{0} salvatge', [sp.forms[form].name]), sub: GD.cmZones[zone] ? GD.cmZones[zone].n : '', foe: [{ id, lvl, form }], kind: 'wild' }, (r) => {
+        if (r.fled) return fin({ gone: false });
+        if (!r.win) { toast(T('{0} ha fugit.', [sp.forms[form].name]), 'bad'); return fin({ gone: true }); }
+        if (!catchable) return fin({ gone: true });
+        cmQuizModal(sp, 0, T('Repte de captura: {0}', [sp.forms[0].name]), T('Respon bé aquesta pregunta per convèncer-lo que s\'uneixi a la teva agència.'), (ok) => {
+          if (!ok) { st.escape[id] = Date.now() + CMC().ESCAPE_MS; toast(T('{0} s\'ha escapat. Repassa i torna-ho a provar d\'aquí a una hora.', [sp.forms[0].name]), 'bad'); return fin({ gone: true }); }
+          cmGet(id); save(); queueSync();
+          cmCaptureAnim(sp, () => fin({ gone: true, caught: true }));
+        });
+      });
+    };
+  }
+
+  // Entrenadors: combats d'entrenament amb personatges del joc
+  const cmTrainerFresh = (id) => (cmState().tr || {})[id] !== today();
+  function cmTrainer(tr, done) {
+    const st = cmState(); st.tr = st.tr || {};
+    if (!st.starter) { toast(T('Primer tria el teu Comerçmon inicial a la 🐾 Comerçdex.'), 'bad'); return done && done(); }
+    const top = cmTeamTop(), lvl = Math.max(3, Math.min(CMC().MAX_LEVEL, top - 2 + tr.d)), name = (GD.names[tr.id] && txt(GD.names[tr.id])) || (ART.CHARS[tr.id] && ART.CHARS[tr.id].name) || tr.id;
+    const foe = tr.team.map((id, k) => ({ id, lvl: Math.max(2, lvl - (tr.team.length - 1 - k)) }));
+    const fresh = cmTrainerFresh(tr.id);
+    const d = document.createElement('div'); d.className = 'modal cm-modal';
+    d.innerHTML = `<div class="modal-box"><div class="cmb-trainer">${ART.portrait(tr.id, 'h')}<div><h3>${esc(name)}</h3><p>«${esc(tr.line)}»</p></div></div>
+      <p class="small">${T('Equip rival:')} ${foe.map(f => { const sp = GD.cmById(f.id); return `${typeChip(sp.type)} ${esc(sp.forms[GD.cmFormAt(sp, f.lvl)].name)} ${T('Nv')} ${f.lvl}`; }).join(' · ')}</p>
+      <p class="small muted">${fresh ? T('La primera victòria del dia contra cada entrenador dona experiència extra.') : T('Avui ja hi has guanyat: podeu tornar a combatre, però sense experiència.')}</p>
+      <div class="row-btns"><button class="btn primary" data-go>⚔️ ${T('Combatre')}</button><button class="btn" data-no>${T('Ara no')}</button></div></div>`;
+    document.body.appendChild(d);
+    d.querySelector('[data-no]').onclick = () => { d.remove(); done && done(); };
+    d.querySelector('[data-go]').onclick = () => {
+      d.remove();
+      cmBattle({ title: T('Combat amb {0}', [name]), sub: tr.line, foe, kind: 'trainer', xpMult: fresh ? 1.5 : 0 }, (r) => {
+        if (r.win) { st.tr[tr.id] = today(); save(); }
+        done && done();
+      });
+    };
+  }
+
+  // Agències rivals: els grans reptes (dos combats seguits)
+  function cmBadges() { const st = cmState(); st.badges = st.badges || {}; return st.badges; }
+  function cmGymOpen(g) {
+    const B = cmBadges(), i = GD.cmGyms.indexOf(g);
+    if (!stageDone(g.stage)) return T('Supera l\'etapa {0} de la campanya.', [g.stage]);
+    if (i > 0 && !B[GD.cmGyms[i - 1].id]) return T('Primer guanya {0}.', [GD.cmGyms[i - 1].n]);
+    return '';
+  }
+  function cmGym(gid, done) {
+    const g = GD.cmGymById(gid); if (!g) return done && done();
+    const B = cmBadges(), team = cmMyTeam(), req = GD.cmGymReq(g, team), lock = cmGymOpen(g), ok = !lock && req.every(r => r.ok) && team.length;
+    const d = document.createElement('div'); d.className = 'modal cm-modal';
+    d.innerHTML = `<div class="modal-box cm-gym"><p class="kicker">${T('Agència rival')} ${g.final ? '· ' + T('repte final') : ''}</p>
+      <h2>${g.i} ${esc(g.n)}</h2><p class="small">${esc(g.spec)} · ${g.types.map(typeChip).join(' ')}</p>
+      ${B[gid] ? `<p class="good">🏅 ${T('Ja tens el {0}. Pots tornar a competir per entrenar.', [esc(g.badge)])}</p>` : `<p class="small">${T('Premi: {0} i el {1}.', [eur(g.prize), esc(g.badge)])}</p>`}
+      ${lock ? `<p class="warn small">🔒 ${esc(lock)}</p>` : ''}
+      <h4>${T('Per entrar, el teu equip actiu necessita:')}</h4>
+      <ul class="cm-cond">${req.map(r => `<li class="${r.ok ? 'ok' : ''}">${r.ok ? '✅' : '⬜'} ${esc(r.label)}</li>`).join('')}</ul>
+      <p class="small muted">💡 ${esc(g.hint)}</p>
+      <p class="small">${T('Rivals:')} ${g.staff.map(st => `<b>${esc(st.n)}</b> (${st.team.length})`).join(' → ')}</p>
+      <div class="row-btns">${ok ? `<button class="btn primary" data-go>⚔️ ${T('Començar el repte')}</button>` : ''}<button class="btn" data-no>${T('Tornar')}</button>
+        ${!ok && !lock ? `<button class="btn small" data-dex>🐾 ${T('Canviar l\'equip')}</button>` : ''}</div></div>`;
+    document.body.appendChild(d);
+    d.querySelector('[data-no]').onclick = () => { d.remove(); done && done(); };
+    const dx = d.querySelector('[data-dex]'); if (dx) dx.onclick = () => { d.remove(); hubScreen('comercdex'); };
+    const go = d.querySelector('[data-go]');
+    if (go) go.onclick = () => {
+      d.remove();
+      const round = (k) => {
+        const stf = g.staff[k];
+        cmBattle({ title: `${g.i} ${g.n} · ${stf.n}`, sub: k ? T('Combat final del repte.') : T('Primer combat del repte.'), foe: stf.team.map(([id, lvl]) => ({ id, lvl })), kind: 'gym', flee: false, xpMult: B[gid] ? 0.5 : 2 }, (r) => {
+          if (!r.win) { toast(T('{0} us ha guanyat. Prepara millor l\'equip i torna-ho a provar.', [g.n]), 'bad'); return done && done(); }
+          if (k + 1 < g.staff.length) return round(k + 1);
+          const first = !B[gid];
+          B[gid] = new Date().toISOString();
+          if (first) {
+            applyFx({ money: g.prize, src: 'gimnas', ref: gid, log: T('Va guanyar el repte de l\'agència {0} i el {1}.', [g.n, g.badge]), key: true }, true);
+            S.history.push({ ch: '-', week: S.week, t: T('Va guanyar el repte de l\'agència {0}.', [g.n]), key: true });
+          }
+          save(); queueSync();
+          const w = document.createElement('div'); w.className = 'modal cm-modal';
+          w.innerHTML = `<div class="cm-catch r-epic"><div class="cm-badge big">${g.i}</div><div class="cm-catch-burst"></div>
+            <h2>${first ? T('Has guanyat el {0}!', [esc(g.badge)]) : T('Has tornat a guanyar {0}!', [esc(g.n)])}</h2>
+            <p>${first ? T('L\'agència {0} reconeix la teva feina. Premi: {1}.', [esc(g.n), eur(g.prize)]) : T('Bon entrenament!')}</p>
+            ${g.final && first ? `<p><b>${T('Has superat totes les agències rivals. Ets la referència del sector!')}</b></p>` : ''}
+            <button class="btn primary" id="cmok">${T('Genial!')}</button></div>`;
+          document.body.appendChild(w);
+          w.querySelector('#cmok').onclick = () => { w.remove(); done && done(); };
+        });
+      };
+      round(0);
+    };
+  }
+
   /* ---------- Comerçdex ---------- */
   let cmFilter = { fam: '', view: 'tots' };
   const typeChip = (t) => `<span class="cm-type" style="--tc:${GD.cmTypes[t].c}">${GD.cmTypes[t].i} ${esc(GD.cmTypes[t].n)}</span>`;
@@ -851,7 +1110,8 @@
         <div class="cm-head-t"><h3>🐾 ${T('Comerçdex')}</h3><b class="cm-count">${own} / ${all.length}</b></div>
         <div class="cm-bar"><i style="width:${Math.round(own / all.length * 100)}%"></i></div>
         <p class="muted small">${T('Capturats: {0} · Vistos: {1} · Per descobrir: {2}', [own, seen, all.length - seen])} · ${T('Dies de joc: {0}', [Object.keys(S.days).length])}</p>
-        ${avail.length ? `<div class="cm-alert">🔔 ${T('Hi ha {0} Comerçmon(s) esperant que els capturis!', [avail.length])} ${avail.map(s => `<button class="btn small primary" data-cm="${s.id}">${esc(s.forms[0].name)}</button>`).join(' ')}</div>` : ''}
+        ${avail.length ? `<div class="cm-alert">🔔 ${T('{0} Comerçmon(s) ja confien en tu. Busca\'ls al món i guanya\'ls un combat:', [avail.length])} ${avail.map(s => `<button class="btn small primary" data-cm="${s.id}">${esc(s.forms[0].name)} · ${GD.cmZonesOf(s.id).map(z => GD.cmZones[z].i).join('')}</button>`).join(' ')} <button class="btn small" data-act="hub">🗺️ ${T('Sortir a explorar')}</button></div>` : ''}
+        <div class="cm-badges"><b>🏅 ${T('Agències rivals')}</b> ${GD.cmGyms.map(g => { const b = cmBadges()[g.id]; return `<span class="cm-badge ${b ? 'got' : ''}" title="${esc(g.n + ' · ' + g.badge + ' · ' + GD.cmZones[g.map].n)}">${b ? g.i : '🔒'}<small>${esc(g.n)}</small></span>`; }).join('')}</div>
       </div>
       <div class="card cm-team">
         <h4>${T('Equip actiu ({0}/{1})', [st.team.length, CMC().TEAM_SIZE])}</h4>
@@ -935,9 +1195,10 @@
       <div class="cm-evos">${sp.forms.map((fo, i) => `${i ? `<span class="cm-arrow">→<small>${T('Nv')} ${fo.lvl}${fo.cond ? ' + ' + cmCond(fo.cond).parts.map(p => p.label + (p.need ? ` ${p.need}` : '')).join(', ') : ''}</small></span>` : ''}<span class="cm-evo-f ${m && i <= curForm ? 'got' : ''}">${CMART.render(sp, i, { size: 64, silhouette: !(m && i <= curForm) && !(vis && i === 0) })}<small>${m && i <= curForm || i === 0 ? esc(fo.name) : '???'}</small></span>`).join('')}</div>
       ${evo && !evo.ok ? `<p class="small muted">${T('Pròxima evolució:')} ${T('nivell {0}', [evo.next.lvl])}${evo.cond.parts.length ? ' · ' + evo.cond.parts.map(p => `${p.ok ? '✅' : '⬜'} ${esc(p.label)}${p.need ? ` (${p.cur}/${p.need})` : ''}`).join(' · ') : ''}</p>` : ''}` : ''}
       <h4>${T('Com es captura')}</h4><p class="small">${esc(sp.capture.text)}</p>
+      <p class="small">📍 <b>${T('On viu:')}</b> ${vis ? esc(zoneNames(id)) : T('encara no ho saps: explora el món.')}</p>
       ${!m && !sp.capture.cond.starter ? `<ul class="cm-cond">${capture.parts.map(p => `<li class="${p.ok ? 'ok' : ''}">${p.ok ? '✅' : '⬜'} ${esc(p.label)}${p.need ? ` <b>${p.cur}/${p.need}</b>` : ''}</li>`).join('')}</ul>` : ''}
       <div class="row-btns">
-        ${avail ? `<button class="btn primary" data-cmact="capture">🎯 ${T('Capturar')}</button>` : ''}
+        ${avail ? `<p class="cm-alert small">🎯 ${T('Ja confia en tu! Busca\'l a {0}, guanya-li un combat i supera el repte per capturar-lo.', [esc(zoneNames(id))])}</p>` : ''}
         ${m ? `<button class="btn ${st.team.includes(id) ? '' : 'primary'}" data-cmact="team">${st.team.includes(id) ? T('Treure de l\'equip') : T('Afegir a l\'equip')}</button>
           <button class="btn" data-cmact="train" ${m.trained === today() ? 'disabled' : ''}>🏋️ ${m.trained === today() ? T('Ja ha entrenat avui') : T('Entrenament diari')}</button>` : ''}
       </div></div>`;
@@ -947,7 +1208,6 @@
     d.querySelector('.cm-x').onclick = close;
     d.querySelectorAll('[data-form]').forEach(b => b.onclick = () => cmDetail(id, +b.dataset.form));
     const act = (k) => { const b = d.querySelector(`[data-cmact="${k}"]`); return b; };
-    if (act('capture')) act('capture').onclick = () => { d.remove(); cmCapture(id); };
     if (act('team')) act('team').onclick = () => { cmToggleTeam(id); cmDetail(id, f); };
     if (act('train')) act('train').onclick = () => { d.remove(); cmTrain(id); };
   }
@@ -2232,7 +2492,8 @@
     WORLD.open({
       S: () => S, save, toast, txt, esc, eur, applyFx, rank, bankrupt, payStudy, startChapter, projectScreen,
       hubScreen: (tab) => hubScreen(tab), chapterState, projGate, projStatus,
-      speed: () => settings.speed, hudRefresh: () => WORLD.refresh()
+      speed: () => settings.speed, hudRefresh: () => WORLD.refresh(),
+      cmReady: () => !!cmState().starter, cmVisible, cmCatchable, cmWildForm, cmWild, cmTrainer, cmTrainerFresh, cmGym
     });
     const F = projFixes();
     if (F.length) toast(T('✏️ Tens projectes per millorar ({0}): {1}. Els trobaràs a 📋 Projectes.', [F.length, F.map(p => txt(p.title)).join(', ')]), 'bad');

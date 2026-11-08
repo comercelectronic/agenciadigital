@@ -63,6 +63,16 @@ Els errors econòmics costen diners: treballar gratis, acceptar feines sense cap
 - Els Comerçmons pugen fins al nivell 50.
 - Les partides antigues (30 nivells) es converteixen soles en continuar-les: nivell ×3 i habilitats ×10.
 
+## Món ampliat, combats i agències rivals
+
+- **Món més gran:** a més de Vic, Tona, Gurb i el recinte firal, hi ha el **Parc de la Devesa** (caminant pel passeig del riu cap a l'oest), el **Montseny** (bus, etapa 2), **Barcelona · districte digital** (tren des de l'estació de Vic, etapa 4) i el **Port de Barcelona** (caminant des de Barcelona, etapa 6).
+- **Hàbitats:** cada espècie viu en una o dues zones (`js/data-mon-world.js`). Els Comerçmons es veuen passejant per l'herba alta i canvien cada 15 minuts: mai surten tots alhora. Els llegendaris només apareixen en llocs especials quan ja compleixes les condicions.
+- **Capturar:** un Comerçmon només s'uneix a l'agència si ja confia en tu (les mateixes condicions de progrés d'abans), li guanyes un combat i encertes el repte de coneixement. Si encara no confia en tu, fuig però queda registrat com a vist a la Comerçdex, amb el lloc on viu.
+- **Combats per torns** (`js/cm-battle.js`): fins a 3 Comerçmons per bàndol (l'equip actiu), atacs del catàleg amb energia i recuperació, avantatges d'element i canvis. Els **atacs especials demanen respondre una pregunta** de les lliçons: si l'encertes, fan un 20 % més; si no, l'atac no surt. El motor és determinista (llavor pròpia) perquè el servidor pugui tornar a jugar els combats en la fase de PvP.
+- **Entrenadors:** personatges del joc (Júlia, Toni, Quim, Jordi, Miquel, Laia, Sergi, Marta, Amélie i Ramon) accepten combats d'entrenament amb equips que s'adapten al teu nivell. La primera victòria del dia contra cada entrenador dona experiència extra; com a màxim 12 combats al dia donen experiència.
+- **Agències rivals (reptes finals):** 8 agències de màrqueting professionals (Arrel Branding, Ona Social, Vidal & Co., Engranatge B2B, Cim Creatiu, Clic & Data, Port Global i Zenit Group). Cada una s'obre en superar una etapa, té dos combats seguits i **demana un equip amb habilitats concretes** (elements amb avantatge, famílies, habilitats passives, rareses o nivell). Guanyar-les dona un segell i un premi en diners validat pel servidor (una sola vegada per agència).
+- **Equilibri:** cada espècie i forma té un petit ajust de dany calculat amb simulacions perquè cap domini (`tests/combat.test.js` ho comprova).
+
 ## Economia validada al servidor, impostos i guardiola de la classe
 
 Tots els diners del joc (una sola moneda: els euros de l'agència) es validen al servidor amb **Netlify Database** (Postgres):
@@ -146,6 +156,7 @@ Tests (necessiten `npm install`):
 
 ```sh
 node tests/comercmons.test.js         # catàleg i equilibri dels Comerçmons
+node tests/combat.test.js             # motor de combat, hàbitats, entrenadors i agències rivals
 node tests/economia.test.mjs          # lògica de l'economia amb una base de dades Postgres local
 node tests/economia-funcio.test.mjs   # la funció joc-economia per HTTP
 ```

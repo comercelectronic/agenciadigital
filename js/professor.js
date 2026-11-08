@@ -287,7 +287,7 @@
   });
   const TIPUS_NOM = () => ({
     inici: T('Capital inicial'), reinici: T('Reinici després de fallida'), capitol: T('Capítol'), clients: T('Clients setmanals'), encarrec: T('Encàrrec'),
-    projecte: T('Projecte'), web: T('Web'), botiguer: T('Botiguer del barri'), mercat: T('Mercat'), despesa: T('Despesa'), estudi: T('Estudi'), altre: T('Altres'),
+    projecte: T('Projecte'), web: T('Web'), botiguer: T('Botiguer del barri'), mercat: T('Mercat'), gimnas: T('Agència rival'), despesa: T('Despesa'), estudi: T('Estudi'), altre: T('Altres'),
     impost: T('Impost'), premi: T('Premi'), missio: T('Missió'), combat: T('Combat')
   });
   async function loadEcon() {

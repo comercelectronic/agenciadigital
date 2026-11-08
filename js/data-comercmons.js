@@ -46,7 +46,7 @@ GD.cmStrong = {
   electric: ['aigua', 'aire'], aire: ['natura', 'ombra'], metall: ['aire', 'magic'], magic: ['llum', 'electric'],
   ombra: ['magic', 'llum'], llum: ['ombra', 'metall']
 };
-GD.cmEff = (atk, def) => GD.cmStrong[atk] && GD.cmStrong[atk].includes(def) ? 1.5 : GD.cmStrong[def] && GD.cmStrong[def].includes(atk) ? 0.67 : 1;
+GD.cmEff = (atk, def) => GD.cmStrong[atk] && GD.cmStrong[atk].includes(def) ? 1.25 : GD.cmStrong[def] && GD.cmStrong[def].includes(atk) ? 0.8 : 1;
 
 GD.cmFamilies = {
   mkt:   { n: T('Màrqueting'), i: '🎯', d: T('Estratègia, investigació de mercat, segmentació, posicionament i branding.') },

@@ -7,7 +7,7 @@ export const DEFAULTS = {
     // Retenció per trams sobre cada ingrés (marginal, com l'IRPF): de 0 a 1.000 € un 5 %, a partir de 1.000 € un 8 %...
     trams: [{ des: 0, pct: 5 }],
     // Operacions subjectes a impost (només els ingressos; mai les despeses, el capital inicial ni el reinici)
-    tipus: ['capitol', 'clients', 'encarrec', 'projecte', 'web', 'botiguer', 'mercat', 'missio', 'combat', 'premi', 'altre']
+    tipus: ['capitol', 'clients', 'encarrec', 'projecte', 'web', 'botiguer', 'mercat', 'gimnas', 'missio', 'combat', 'premi', 'altre']
   },
   limits: {
     capitol: 15000,      // màxim que pot ingressar un mateix capítol de la campanya
@@ -15,6 +15,7 @@ export const DEFAULTS = {
     encarrec: 4000,      // màxim per encàrrec (cada encàrrec només es cobra una vegada)
     botiguer: 800,       // màxim per botiguer de Vic (una vegada)
     mercat: 5000,        // màxim per tracte entre agències
+    gimnas: 6000,        // premi d'una agència rival (una vegada per agència)
     altre: 500,          // altres ingressos sense categoria, per operació
     altreDiari: 3000,    // i per dia
     diari: 60000,        // màxim d'ingressos d'un jugador en un dia
@@ -22,8 +23,8 @@ export const DEFAULTS = {
   },
   autoaprovar: false     // si és fals, el professor ha de validar cada alumne abans que la seva economia compti
 };
-export const TIPUS = ['inici', 'reinici', 'capitol', 'clients', 'encarrec', 'projecte', 'web', 'botiguer', 'mercat', 'despesa', 'estudi', 'altre'];
-const ONE_SHOT = ['encarrec', 'botiguer', 'mercat'];
+export const TIPUS = ['inici', 'reinici', 'capitol', 'clients', 'encarrec', 'projecte', 'web', 'botiguer', 'mercat', 'gimnas', 'despesa', 'estudi', 'altre'];
+const ONE_SHOT = ['encarrec', 'botiguer', 'mercat', 'gimnas'];
 
 const deepMerge = (a, b) => {
   const o = Array.isArray(a) ? a.slice() : Object.assign({}, a);
@@ -103,11 +104,12 @@ export async function registrar(pool, classe, pid, ev, ctx = {}) {
       if (saldo >= 0) motiu = 'reinici-sense-fallida'; else brut = cfg.inicial - saldo;
     } else {
       if (ONE_SHOT.includes(tipus) && await sumRef(true) > 0) motiu = 'ja-cobrat';
-      const lim = tipus === 'capitol' ? L.capitol : tipus === 'clients' ? L.clients : tipus === 'encarrec' ? L.encarrec : tipus === 'botiguer' ? L.botiguer : tipus === 'mercat' ? L.mercat : tipus === 'altre' ? L.altre : (tipus === 'projecte' || tipus === 'web') && ctx.maxPagament ? await ctx.maxPagament(tipus, ref) : null;
+      const lim = tipus === 'capitol' ? L.capitol : tipus === 'clients' ? L.clients : tipus === 'encarrec' ? L.encarrec : tipus === 'botiguer' ? L.botiguer : tipus === 'mercat' ? L.mercat : tipus === 'gimnas' ? L.gimnas : tipus === 'altre' ? L.altre : (tipus === 'projecte' || tipus === 'web') && ctx.maxPagament ? await ctx.maxPagament(tipus, ref) : null;
       if (!motiu && (tipus === 'projecte' || tipus === 'web') && lim == null) motiu = 'sense-nota';
       if (!motiu && lim != null && (await sumRef(true)) + brut > lim) motiu = 'supera-limit';
       if (!motiu && tipus === 'altre' && (await avui("AND tipus = 'altre'")) + brut > L.altreDiari) motiu = 'limit-diari';
       if (!motiu && tipus === 'capitol' && !/^\d{1,2}\.\d{1,2}$/.test(ref)) motiu = 'ref';
+      if (!motiu && tipus === 'gimnas' && !/^g[1-8]$/.test(ref)) motiu = 'ref';
       if (!motiu && (await avui("AND tipus NOT IN ('inici', 'reinici')")) + brut > L.diari) motiu = 'limit-diari';
     }
     if (motiu) {

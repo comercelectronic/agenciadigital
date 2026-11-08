@@ -82,6 +82,13 @@
       if (top) R(g, ox, oy, TS, 2, '#5b3c2c');
     } else if (ch === 'D') { // estora de sortida
       R(g, ox, oy, TS, TS, map && map.floorCol || '#d1a46c'); R(g, ox + 1, oy + 2, 14, 12, '#b0413e'); R(g, ox + 2, oy + 3, 12, 10, '#d0605a'); R(g, ox + 4, oy + 6, 8, 1, '#f3b2a4'); R(g, ox + 4, oy + 9, 8, 1, '#f3b2a4');
+    } else if (ch === 'g') { // herba alta (hi viuen Comerçmons)
+      R(g, ox, oy, TS, TS, '#6fbf5a');
+      for (let i = 0; i < 7; i++) { const px = Math.floor(r(i + 120) * 14), py = 3 + Math.floor(r(i + 130) * 11), c = i % 2 ? '#4f9a44' : '#3f8a3a'; R(g, ox + px, oy + py, 1, 3, c); R(g, ox + px + 1, oy + py - 1, 1, 2, c); }
+      if (r(140) > .6) R(g, ox + Math.floor(r(141) * 14), oy + Math.floor(r(142) * 6), 2, 1, '#a6e08c');
+    } else if (ch === 'k') { // camí de muntanya
+      R(g, ox, oy, TS, TS, '#c9b28e');
+      for (let i = 0; i < 4; i++) R(g, ox + Math.floor(r(i + 150) * 13), oy + Math.floor(r(i + 160) * 13), 3, 2, i % 2 ? '#a8916c' : '#b9a27c');
     } else if (ch === 'X') {
       R(g, ox, oy, TS, TS, '#2a2340');
     }
@@ -346,7 +353,7 @@
         O.push({ t: 'busstop', x: 26, y: 33, solid: true, id: 'bus' });
         O.push({ t: 'sign', x: 42, y: 18, solid: true, say: () => [['', T_('→ Recinte firal')]] });
         O.push({ t: 'car', arg: '#d63c3c', x: 34, y: 33, w: 2, solid: true, deco: true });
-        return { G, O, warps: [{ x: 43, y: 19, to: 'fira', tx: 9, ty: 9 }, { x: 43, y: 20, to: 'fira', tx: 9, ty: 9 }] };
+        return { G, O, warps: [{ x: 43, y: 19, to: 'fira', tx: 9, ty: 9 }, { x: 43, y: 20, to: 'fira', tx: 9, ty: 9 }, { x: 0, y: 33, to: 'devesa', tx: 36, ty: 12, dir: 'left' }, { x: 0, y: 34, to: 'devesa', tx: 36, ty: 13, dir: 'left' }] };
       }
     },
     oficina: {
@@ -466,7 +473,7 @@
       build() {
         const G = room(19, 11, ';', 9);
         const O = [
-          { t: 'booth', arg: '#1d1b2b', x: 2, y: 2, w: 3, h: 2, solid: true, say: () => [['', T_('Estand de Vidal & Co.: pantalles gegants, cafè gratis i cinc persones amb americana.')]] },
+          { t: 'booth', arg: '#1d1b2b', x: 2, y: 2, w: 3, h: 2, solid: true, gym: 'g3', id: 'g3' },
           { t: 'booth', arg: '#2f9a6e', x: 7, y: 2, w: 3, h: 2, solid: true, say: () => [['', T_('Cooperativa agrícola d\'Osona. Busquen agència per a la nova marca de llet.')]] },
           { t: 'booth', arg: '#d6a020', x: 12, y: 2, w: 3, h: 2, solid: true, say: () => [['', T_('Estand d\'una empresa de software de gestió. Regalen bolis.')]] },
           { t: 'booth', arg: '#e2577a', x: 3, y: 6, w: 3, h: 2, solid: true, say: () => [['', T_('Una escola de cuina. Fan tastets i recullen correus amb un sorteig.')]] },
@@ -485,7 +492,8 @@
         const O = [];
         for (let x = 0; x < 26; x++) { O.push({ t: x % 3 ? 'tree' : 'pine', x, y: 0, solid: true }); if (x !== 3) O.push({ t: 'tree', x, y: 15, solid: true }); }
         for (let y = 1; y < 15; y++) if (y < 8 || y > 11) { O.push({ t: 'pine', x: 0, y, solid: true }); O.push({ t: 'tree', x: 25, y, solid: true }); }
-        [[3, 3], [5, 5], [2, 13], [7, 13], [12, 13], [20, 13], [15, 3]].forEach(([x, y]) => O.push({ t: 'tree', x, y, solid: true }));
+        [[2, 13], [7, 13], [12, 13], [20, 13], [15, 3]].forEach(([x, y]) => O.push({ t: 'tree', x, y, solid: true }));
+        O.push(Object.assign({ t: 'building', solid: true }, { id: 'g2', x: 2, y: 1, w: 5, h: 5, wall: '#eef4fb', roof: '#5a3fa0', awning: '#f2c21b', door: 3, doorCol: '#5a3fa0', flag: true, label: () => gymLabel('g2', T_('📱 Ona Social')) }));
         O.push(Object.assign({ t: 'building', solid: true }, { id: 'restaurant', x: 8, y: 2, w: 7, h: 5, wall: '#f6e2c8', roof: '#b0503a', awning: '#d65a5a', door: 3, label: T_('🍽️ Can Jordi') }));
         O.push(Object.assign({ t: 'building', solid: true }, { id: 'nau1', x: 17, y: 1, w: 4, h: 5, wall: '#b8c0c8', roof: '#6a7a8a', label: T_('🏭 Polígon'), say: () => [['', T_('Naus del polígon. Al migdia en surten desenes de treballadors.')]] }));
         O.push(Object.assign({ t: 'building', solid: true }, { id: 'nau2', x: 21, y: 1, w: 4, h: 5, wall: '#c8ccd2', roof: '#5a6a7a', say: () => [['', T_('Transports Osona. Camions anant i venint tot el dia.')]] }));
@@ -520,7 +528,7 @@
         for (let x = 0; x < 24; x++) { O.push({ t: 'pine', x, y: 0, solid: true }); if (x !== 2) O.push({ t: 'tree', x, y: 14, solid: true }); }
         for (let y = 1; y < 14; y++) if (y < 9 || y > 10) { O.push({ t: 'pine', x: 0, y, solid: true }); O.push({ t: 'pine', x: 23, y, solid: true }); }
         O.push(Object.assign({ t: 'building', solid: true }, { id: 'fabrica', x: 5, y: 2, w: 9, h: 6, wall: '#c8d0d8', roof: '#4a5a6a', door: 4, doorCol: '#2f4a6d', label: T_('⚙️ Mecanitzats Bellmunt'), flag: true }));
-        O.push(Object.assign({ t: 'building', solid: true }, { id: 'nau3', x: 16, y: 2, w: 6, h: 6, wall: '#b8c0c8', roof: '#6a7a8a', say: () => [['', T_('Una nau de logística. Un camió descarrega palets.')]] }));
+        O.push(Object.assign({ t: 'building', solid: true }, { id: 'g4', x: 16, y: 2, w: 6, h: 6, wall: '#c8d0d8', roof: '#3a4a5a', awning: '#8a97a8', door: 3, doorCol: '#3a4a5a', flag: true, label: () => gymLabel('g4', T_('⚙️ Engranatge B2B')) }));
         O.push({ t: 'crates', x: 15, y: 8, solid: true }); O.push({ t: 'crates', x: 4, y: 8, solid: true });
         O.push({ t: 'busstop', x: 2, y: 8, solid: true, id: 'bus' });
         return { G, O, warps: [] };
@@ -539,6 +547,89 @@
           { t: 'poster', arg: '#2f4a6d', x: 7, y: 0, solid: false, deco: true, wall: true, say: () => [['', T_('Certificat ISO 9001. Al costat, una foto de l\'avi Bellmunt amb la primera màquina, el 1968.')]] }
         ];
         return { G, O, warps: [{ x: 7, y: 9, to: 'gurb', tx: 9, ty: 8, dir: 'down' }] };
+      }
+    },
+    devesa: {
+      name: () => T_('Parc de la Devesa'), outdoor: true, legend: null,
+      build() {
+        const W = 38, H = 26, G = blank(W, H, '.');
+        fill(G, 20, 12, 18, 2, '=');                      // entrada des del passeig del riu
+        fill(G, 4, 12, 17, 2, '=');                       // passeig del parc
+        fill(G, 10, 12, 2, 12, '='); fill(G, 27, 12, 2, 12, '=');
+        fill(G, 0, 15, W, 2, 'w');                        // riu Mèder
+        fill(G, 10, 15, 2, 2, 'b'); fill(G, 27, 15, 2, 2, 'b');
+        fill(G, 3, 3, 6, 6, 'g'); fill(G, 24, 3, 9, 6, 'g'); fill(G, 2, 18, 7, 6, 'g'); fill(G, 14, 18, 11, 6, 'g'); fill(G, 30, 18, 6, 6, 'g');
+        [[13, 10], [21, 9], [33, 11], [6, 10], [16, 21], [31, 2]].forEach(([x, y]) => { if (G[y][x] === '.') G[y][x] = ','; });
+        const O = [];
+        for (let x = 0; x < W; x++) { O.push({ t: x % 3 ? 'tree' : 'pine', x, y: 0, solid: true }); O.push({ t: 'tree', x, y: H - 1, solid: true }); }
+        for (let y = 1; y < H - 1; y++) { if (y !== 15 && y !== 16) O.push({ t: 'pine', x: 0, y, solid: true }); if (y !== 12 && y !== 13 && y !== 15 && y !== 16) O.push({ t: 'tree', x: W - 1, y, solid: true }); }
+        [[2, 10], [21, 4], [22, 6], [34, 10], [14, 9], [9, 20], [26, 19], [13, 22], [36, 20], [1, 13]].forEach(([x, y]) => O.push({ t: (x + y) % 3 ? 'tree' : 'pine', x, y, solid: true }));
+        [[16, 11], [24, 11]].forEach(([x, y]) => O.push({ t: 'bench', x, y, solid: true }));
+        [[8, 11], [30, 11], [19, 11]].forEach(([x, y]) => O.push({ t: 'lamp', x, y, solid: true }));
+        O.push({ t: 'sign', x: 33, y: 14, solid: true, say: () => [['', T_('Parc de la Devesa. Diuen que entre l\'herba alta hi viuen Comerçmons que fugen del soroll de la ciutat.')]] });
+        O.push(Object.assign({ t: 'building', solid: true }, { id: 'g1', x: 12, y: 3, w: 7, h: 5, wall: '#eef6e4', roof: '#4f8a3f', awning: '#8bc34a', door: 3, doorCol: '#4f8a3f', flag: true, label: () => gymLabel('g1', T_('🌱 Arrel Branding')) }));
+        return { G, O, warps: [{ x: W - 1, y: 12, to: 'vic', tx: 1, ty: 33, dir: 'right' }, { x: W - 1, y: 13, to: 'vic', tx: 1, ty: 34, dir: 'right' }] };
+      }
+    },
+    montseny: {
+      name: () => T_('Montseny'), outdoor: true, legend: [6, 3],
+      build() {
+        const W = 36, H = 28, G = blank(W, H, '.');
+        fill(G, 3, 22, 28, 2, 'k'); fill(G, 29, 5, 2, 18, 'k'); fill(G, 6, 5, 25, 2, 'k'); fill(G, 6, 2, 2, 4, 'k');
+        fill(G, 12, 12, 7, 5, 'w');
+        fill(G, 3, 8, 7, 7, 'g'); fill(G, 20, 9, 8, 6, 'g'); fill(G, 12, 24, 14, 3, 'g'); fill(G, 10, 1, 8, 3, 'g');
+        const O = [];
+        for (let x = 0; x < W; x++) { O.push({ t: 'pine', x, y: 0, solid: true }); O.push({ t: 'pine', x, y: H - 1, solid: true }); }
+        for (let y = 1; y < H - 1; y++) { O.push({ t: 'pine', x: 0, y, solid: true }); O.push({ t: 'pine', x: W - 1, y, solid: true }); }
+        [[2, 3], [3, 5], [11, 8], [19, 8], [24, 17], [26, 19], [33, 9], [33, 14], [32, 20], [2, 18], [6, 18], [9, 20], [20, 19], [14, 19], [33, 3], [27, 2]].forEach(([x, y]) => O.push({ t: (x * y) % 4 ? 'pine' : 'tree', x, y, solid: true }));
+        O.push({ t: 'busstop', x: 2, y: 22, solid: true, id: 'bus' });
+        O.push({ t: 'sign', x: 8, y: 7, solid: true, say: () => [['', T_('Cim del Turó. Hi ha qui diu que, quan una agència ja és prou gran, aquí dalt hi apareixen Comerçmons llegendaris.')]] });
+        O.push({ t: 'bench', x: 20, y: 18, solid: true });
+        O.push(Object.assign({ t: 'building', solid: true }, { id: 'g5', x: 22, y: 1, w: 7, h: 4, wall: '#f3e6d6', roof: '#7a4a6a', awning: '#b06ad9', door: 3, doorCol: '#7a4a6a', flag: true, label: () => gymLabel('g5', T_('🎨 Cim Creatiu')) }));
+        return { G, O, warps: [] };
+      }
+    },
+    barcelona: {
+      name: () => T_('Barcelona · districte digital'), outdoor: true, legend: [6, 21],
+      build() {
+        const W = 40, H = 28, G = blank(W, H, '-');
+        fill(G, 0, 12, W, 2, 'r'); fill(G, 19, 0, 2, H, 'r');
+        fill(G, 1, 16, 16, 11, '.'); fill(G, 2, 18, 7, 7, 'g'); fill(G, 10, 20, 6, 5, 'g'); fill(G, 23, 22, 14, 4, ':');
+        [[3, 17], [16, 17], [9, 18], [12, 26]].forEach(([x, y]) => { if (G[y] && G[y][x] === '.') G[y][x] = ','; });
+        const O = [];
+        for (let x = 0; x < W; x++) { if (x !== 19 && x !== 20) { O.push({ t: 'tree', x, y: H - 1, solid: true }); } }
+        for (let y = 0; y < H - 1; y++) { if (y !== 12 && y !== 13) { O.push({ t: 'tree', x: 0, y, solid: true }); O.push({ t: 'tree', x: W - 1, y, solid: true }); } }
+        [[9, 16], [16, 23], [1, 24], [6, 26]].forEach(([x, y]) => O.push({ t: 'tree', x, y, solid: true }));
+        [[18, 9], [21, 9], [18, 16], [21, 16]].forEach(([x, y]) => O.push({ t: 'lamp', x, y, solid: true }));
+        O.push({ t: 'car', arg: '#f2c21b', x: 4, y: 12, w: 2, solid: true, deco: true });
+        O.push({ t: 'car', arg: '#3d6fb8', x: 30, y: 13, w: 2, solid: true, deco: true });
+        const B = (o) => O.push(Object.assign({ t: 'building', solid: true }, o));
+        B({ id: 'estacioBcn', x: 2, y: 2, w: 7, h: 5, wall: '#e8d8c0', roof: '#6a4a3a', door: 3, label: T_('🚆 Estació') });
+        B({ id: 'cowork', x: 11, y: 3, w: 6, h: 5, wall: '#e4ecf4', roof: '#3a4a5a', awning: '#5ac8e8', door: 2, label: T_('💻 Coworking'), say: () => [['', T_('Un coworking ple de startups. A la porta, un cartell: «Busquem Comerçmons amb experiència».')]] });
+        B({ id: 'g6', x: 23, y: 2, w: 7, h: 6, wall: '#dfe8f5', roof: '#2f4a6d', awning: '#3a8fe0', door: 3, doorCol: '#2f6fc8', flag: true, label: () => gymLabel('g6', T_('📊 Clic & Data')) });
+        B({ id: 'g8', x: 32, y: 1, w: 6, h: 9, wall: '#d8dce8', roof: '#1d1b2b', door: 2, doorCol: '#f5b942', flag: true, label: () => gymLabel('g8', T_('🏙️ Zenit Group')) });
+        B({ id: 'botigaBcn', x: 24, y: 16, w: 6, h: 5, wall: '#f5e0ea', roof: '#b0506a', awning: '#e2577a', door: 2, shutter: false, label: T_('🛍️ Botiga conceptual'), say: () => [['', T_('Una botiga sense estoc: només proves el producte i el compres amb el mòbil.')]] });
+        B({ id: 'mediaBcn', x: 32, y: 16, w: 6, h: 5, wall: '#efe6d8', roof: '#5a4a7a', door: 2, label: T_('🎬 Productora'), say: () => [['', T_('Una productora de vídeo. Graven un anunci amb un Comerçmon de protagonista.')]] });
+        O.push({ t: 'fountain', x: 26, y: 23, w: 2, h: 2, solid: true, anim: true, say: () => [['', T_('Una font moderna. Algú hi ha deixat caure una targeta: «Zenit Group: només per a les millors agències».')]] });
+        O.push({ t: 'sign', x: 21, y: 26, solid: true, say: () => [['', T_('↓ Port de Barcelona')]] });
+        return { G, O, warps: [{ x: 19, y: H - 1, to: 'port', tx: 17, ty: 1, dir: 'down' }, { x: 20, y: H - 1, to: 'port', tx: 18, ty: 1, dir: 'down' }] };
+      }
+    },
+    port: {
+      name: () => T_('Port de Barcelona'), outdoor: true, legend: [31, 4],
+      build() {
+        const W = 36, H = 24, G = blank(W, H, '-');
+        fill(G, 0, 14, W, 10, 'w');
+        [6, 16, 26].forEach(x => fill(G, x, 14, 2, 7, 'b'));
+        fill(G, 2, 2, 8, 5, 'g'); fill(G, 26, 2, 8, 5, 'g'); fill(G, 0, 0, W, 1, '-');
+        const O = [];
+        for (let x = 0; x < W; x++) if (x !== 17 && x !== 18) O.push({ t: 'tree', x, y: 0, solid: true });
+        for (let y = 1; y < 14; y++) { O.push({ t: 'tree', x: 0, y, solid: true }); O.push({ t: 'tree', x: W - 1, y, solid: true }); }
+        [[3, 10], [4, 10], [5, 10], [11, 10], [12, 10], [22, 10], [23, 11], [29, 10], [30, 10], [31, 11]].forEach(([x, y]) => O.push({ t: 'crates', x, y, solid: true }));
+        O.push({ t: 'car', arg: '#d63c3c', x: 9, y: 12, w: 2, solid: true, deco: true });
+        O.push({ t: 'sign', x: 19, y: 1, solid: true, say: () => [['', T_('↑ Barcelona · districte digital')]] });
+        O.push(Object.assign({ t: 'building', solid: true }, { id: 'g7', x: 13, y: 2, w: 8, h: 6, wall: '#e6f1f8', roof: '#1f5a8a', awning: '#3a8fe0', door: 4, doorCol: '#1f5a8a', flag: true, label: () => gymLabel('g7', T_('🚢 Port Global')) }));
+        return { G, O, warps: [{ x: 17, y: 0, to: 'barcelona', tx: 19, ty: 26, dir: 'up' }, { x: 18, y: 0, to: 'barcelona', tx: 20, ty: 26, dir: 'up' }] };
       }
     }
   };
@@ -602,8 +693,13 @@
   const unlock = {
     tona: () => stageDone(1) || done('1.5'),
     gurb: () => done('2.1'),
-    fira: () => stageDone(2)
+    fira: () => stageDone(2),
+    devesa: () => true,
+    montseny: () => stageDone(2),
+    barcelona: () => stageDone(4),
+    port: () => stageDone(6)
   };
+  const LOCKED = () => ({ fira: T_('El recinte firal està tancat. Obrirà quan arribi la fira (etapa 3).'), port: T_('El port encara no és per a tu: supera l\'etapa 6 per obrir-te pas a l\'internacional.') });
 
   // Pistes que es poden descobrir explorant: activen la mateixa informació que les preguntes dels capítols
   const CLUES = () => ({
@@ -753,6 +849,15 @@
     if (map.id === 'oficina' && S.upgrades && S.upgrades.becari) add({ id: 'becari', pal: TOWNS.nen, x: 9, y: 5, wander: 1, act: () => say([['becari.h', T_('Ja he programat les publicacions de la setmana! Què més puc fer?')]]) });
     if (map.id === 'oficina' && S.upgrades && S.upgrades.comercial) add({ id: 'comercialAg', pal: TOWNS.pare, x: 4, y: 7, dir: 'right', act: () => say([['comercialAg.n', T_('Tinc tres reunions aquesta setmana amb empreses del polígon. Les propostes, a l\'ordinador.')]]) });
     if (map.id === 'fabrica') add({ id: 'obrerF', pal: TOWNS.obrer, x: 3, y: 5, wander: 1, act: () => say([['obrer.n', T_('Fem peces per a màquines agrícoles de mitja Europa. Però la web... la va fer el nebot del gerent el 2011.')]]) });
+    // Entrenadors de Comerçmons (personatges del joc)
+    if (GD.cmTrainers && API.cmReady && API.cmReady()) GD.cmTrainers.forEach(tr => {
+      const p = TRAINER_POS[tr.id]; if (!p || p[0] !== map.id) return;
+      const ex = L.find(n => n.id === tr.id);
+      if (ex) { const talk = ex.act; ex.bubble = ex.bubble || '⚔️'; ex.act = () => menu(speakerName(tr.id) || tr.id, [{ t: T_('💬 Parlar'), fn: talk }, { t: T_('⚔️ Combat d\'entrenament'), fn: () => trainerAct(tr.id) }, { t: T_('Tancar'), fn: () => { } }]); return; }
+      add({ id: tr.id, x: p[1], y: p[2], dir: p[3], bubble: API.cmTrainerFresh(tr.id) ? '⚔️' : null, act: () => trainerAct(tr.id) });
+    });
+    // Comerçmons salvatges
+    if (GD.cmSpeciesIn) wildSpawns(L.map(n => [n.x, n.y])).forEach(w => add({ id: 'mon-' + w.sp.id, mon: w.sp, form: API.cmWildForm(w.sp.id), x: w.x, y: w.y, wander: w.legend ? 0 : 1, legend: w.legend, act: () => wildAct(w.sp) }));
     return L;
   }
   function metOrLocal(who) { return who === 'carme' || S.f['met_' + who] || done({ jordi: '2.1', nuria: '2.3', sergi: '2.4', miquel: '2.2' }[who] || 'x'); }
@@ -796,6 +901,7 @@
   // Objectes amb què es pot interactuar
   function objectAct(o) {
     const id = o.id;
+    if (o.gym) return gymAct(o.gym);
     if (o.t === 'building' && o.say) return say(o.say());
     if (o.say) return say(o.say());
     switch (id) {
@@ -824,22 +930,91 @@
   function warpBlocked(w) {
     if (w.closed === 'escola') return schoolGate();
     if (w.closed === 'traspas') return say([['', T_('«Es traspassa». La persiana està abaixada i plena de cartells vells.')]]);
-    if (w.closed === 'estacio') return say([['', T_('L\'estació de tren. Cap a Barcelona cada hora.')]]);
+    if (w.closed === 'estacio') return trainMenu();
     if (w.closed === 'cambra') return say([['', T_('La Cambra de Comerç d\'Osona. Al tauler hi ha el rànquing de les agències de la classe i les ofertes de col·laboració.')]], () => openHub('classe'));
     if (w.closed === 'catedral') return say([['', T_('La catedral és tancada a aquesta hora.')]]);
-    if (w.to === 'fira' && !unlock.fira()) return say([['', T_('El recinte firal està tancat. Obrirà quan arribi la fira (etapa 3).')]]);
+    if (w.to && unlock[w.to] && !unlock[w.to]()) return say([['', LOCKED()[w.to] || T_('Encara no pots anar-hi.')]]);
+    if (GD.cmGymById && GD.cmGymById(w.closed)) return gymAct(w.closed);
+    if (w.closed === 'estacioBcn') return trainMenu();
     return false;
   }
   function busStop() {
     const here = map.id;
-    const dest = [['vic', T_('🏙️ Vic'), () => true], ['tona', T_('🍽️ Tona (Can Jordi)'), unlock.tona], ['gurb', T_('🏭 Polígon de Gurb (Bellmunt)'), unlock.gurb]].filter(d => d[0] !== here);
+    const dest = [['vic', T_('🏙️ Vic'), () => true], ['tona', T_('🍽️ Tona (Can Jordi)'), unlock.tona], ['gurb', T_('🏭 Polígon de Gurb (Bellmunt)'), unlock.gurb], ['montseny', T_('⛰️ Montseny'), unlock.montseny]].filter(d => d[0] !== here);
     menu(T_('🚌 Parada de bus. On vols anar?'), dest.map(([id, n, ok]) => ({
       t: ok() ? n : '🔒 ' + n, fn: () => {
-        if (!ok()) return say([['', T_('Encara no tens cap motiu per anar-hi. Avança en la campanya.')]]);
-        const spawn = { vic: [26, 34, 'up'], tona: [3, 8, 'down'], gurb: [2, 9, 'down'] }[id];
+        if (!ok()) return say([['', id === 'montseny' ? T_('El bus del Montseny només surt per a les agències que han superat l\'etapa 2.') : T_('Encara no tens cap motiu per anar-hi. Avança en la campanya.')]]);
+        const spawn = { vic: [26, 34, 'up'], tona: [3, 8, 'down'], gurb: [2, 9, 'down'], montseny: [3, 23, 'right'] }[id];
         go(id, spawn[0], spawn[1], spawn[2]);
       }
     })).concat([{ t: T_('Quedar-me aquí'), fn: () => { } }]));
+  }
+
+  const gymLabel = (id, t) => (S && S.cm && S.cm.badges && S.cm.badges[id] ? '🏅 ' : '') + t;
+  function trainMenu() {
+    const inBcn = map.id === 'barcelona';
+    menu(T_('🚆 Estació. On vols anar?'), [
+      inBcn ? { t: T_('🏙️ Tornar a Vic'), fn: () => go('vic', 37, 27, 'down') }
+        : { t: (unlock.barcelona() ? '' : '🔒 ') + T_('🌆 Barcelona · districte digital'), fn: () => unlock.barcelona() ? go('barcelona', 5, 7, 'down') : say([['', T_('Les grans agències de Barcelona encara no et coneixen. Supera l\'etapa 4 i hi podràs anar.')]]) },
+      { t: T_('Quedar-me aquí'), fn: () => { } }
+    ]);
+  }
+
+  /* --- Comerçmons al món: apareixen per zones i torns de 15 minuts (no surten tots alhora) --- */
+  const SLOT_MS = 15 * 60 * 1000;
+  const SPAWN_TILES = { devesa: 'g', montseny: 'g', barcelona: 'g,', port: 'gb', vic: ',', tona: '.', gurb: '.', fira: ';' };
+  const SPAWN_N = { devesa: 4, montseny: 4, barcelona: 3, port: 3, vic: 2, tona: 2, gurb: 2, fira: 2 };
+  const TRAINER_POS = { julia: ['devesa', 22, 10, 'down'], toni: ['devesa', 6, 14, 'right'], quim: ['vic', 25, 30, 'up'], jordi: ['tona', 16, 12, 'up'], miquel: ['gurb', 12, 12, 'up'],
+    laia: ['fira', 4, 4, 'down'], sergi: ['montseny', 16, 21, 'down'], marta: ['barcelona', 22, 10, 'down'], amelie: ['barcelona', 8, 15, 'down'], ramon: ['port', 24, 9, 'left'] };
+  const strHash = (s) => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return h; };
+  function wildState() {
+    const slot = Math.floor(Date.now() / SLOT_MS);
+    if (!st().cm || st().cm.slot !== slot) st().cm = { slot, gone: [] };
+    return st().cm;
+  }
+  function wildSpawns(taken) {
+    const zone = map.id, chars = SPAWN_TILES[zone];
+    if (!chars || !GD.cmSpeciesIn || !API.cmReady || !API.cmReady()) return [];
+    const ws = wildState(), slot = ws.slot, zh = strHash(zone);
+    const pool = GD.cmSpeciesIn(zone).filter(sp => !ws.gone.includes(sp.id) && API.cmVisible(sp.id));
+    const legends = pool.filter(sp => sp.rarity === 'lleg');
+    const rank = (sp) => hash(slot, strHash(sp.id), zh) - (API.cmCatchable(sp.id) ? 0.45 : 0);
+    const pick = pool.filter(sp => sp.rarity !== 'lleg').sort((a, b) => rank(a) - rank(b)).slice(0, SPAWN_N[zone] || 2);
+    const near = (x, y) => map.warps.some(w => Math.abs(w.x - x) + Math.abs(w.y - y) <= 2) || taken.some(([a, b]) => Math.abs(a - x) + Math.abs(b - y) < 3);
+    const tiles = [];
+    for (let y = 1; y < map.h - 1; y++) for (let x = 1; x < map.w - 1; x++) if (chars.includes(map.grid[y][x]) && !map.solid[y][x] && !near(x, y)) tiles.push([x, y, hash(x, y, slot + zh)]);
+    tiles.sort((a, b) => a[2] - b[2]);
+    const out = [];
+    pick.forEach(sp => {
+      const t = tiles.find(([x, y]) => !out.some(o => Math.abs(o.x - x) + Math.abs(o.y - y) < 4) && !near(x, y));
+      if (t) out.push({ sp, x: t[0], y: t[1] });
+    });
+    if (map.def.legend) legends.filter(sp => API.cmCatchable(sp.id)).slice(0, 1).forEach(sp => out.push({ sp, x: map.def.legend[0], y: map.def.legend[1], legend: 1 }));
+    return out;
+  }
+  function wildAct(sp) {
+    held = null; keysDown.clear(); busy = true;
+    API.cmWild(sp.id, map.id, (res) => {
+      busy = false;
+      if (res && res.gone) { const ws = wildState(); if (!ws.gone.includes(sp.id)) ws.gone.push(sp.id); API.save(); }
+      npcs = buildNpcs(); hudDraw();
+    });
+  }
+  function trainerAct(id) {
+    const tr = GD.cmTrainers.find(t => t.id === id); if (!tr) return;
+    held = null; keysDown.clear(); busy = true;
+    API.cmTrainer(tr, () => { busy = false; npcs = buildNpcs(); hudDraw(); });
+  }
+  function gymAct(id) {
+    held = null; keysDown.clear(); busy = true;
+    API.cmGym(id, () => { busy = false; npcs = buildNpcs(); hudDraw(); });
+  }
+  // Imatge petita d'un Comerçmon per dibuixar-lo al mapa
+  const MON_IMG = {};
+  function monImg(sp, form) {
+    const k = sp.id + ':' + form;
+    if (!MON_IMG[k]) { const img = new Image(); img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(CMART.render(sp, form, { size: 48 }).replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ')); MON_IMG[k] = img; }
+    return MON_IMG[k];
   }
 
   /* --- Accions de màrqueting reals --- */
@@ -1038,7 +1213,7 @@
     player.dir = dir;
     const nx = player.x + dx, ny = player.y + dy;
     const w = warpAt(nx, ny);
-    if (w && (w.closed || (w.to === 'fira' && !unlock.fira()))) { warpBlocked(w); return false; }
+    if (w && (w.closed || (w.to && unlock[w.to] && !unlock[w.to]()))) { warpBlocked(w); return false; }
     if (!walkable(nx, ny, player)) {
       // sortir per la vora del mapa
       return false;
@@ -1135,12 +1310,16 @@
     const L = [];
     map.objs.forEach(o => { if (o.floor || (o.wall && o.deco)) return; const s = objSprite(o, ph); if (s) L.push({ y: (o.y + o.h) * TS, s, x: o.x * TS + (o.w * TS - s.width) / 2, top: (o.y + o.h) * TS - s.height + (o.t === 'tree' || o.t === 'pine' ? 2 : 0) }); });
     const ent = (e, key, P) => { const [x, y] = pos(e); const s = charSprite(key, P, e.dir, e.mv > 0 ? e.frame : 0); L.push({ y: y + TS, s, x, top: y + TS - 24, e }); };
-    npcs.forEach(n => { if (n.marker) return; ent(n, n.pal ? 'town:' + n.id.replace(/\d+$/, '') + (n.icon || '') : n.id, palette(n.id, n.pal)); });
+    npcs.forEach(n => {
+      if (n.marker) return;
+      if (n.mon) { const img = monImg(n.mon, n.form || 0); if (img.complete && img.naturalWidth) { const [x, y] = pos(n), sz = n.legend ? 28 : 20, bob = Math.sin(clock * 4 + n.x) * 1.2; L.push({ y: y + TS, s: img, w: sz, h: sz, x: x + (TS - sz) / 2, top: y + TS - sz + bob, e: n }); } return; }
+      ent(n, n.pal ? 'town:' + n.id.replace(/\d+$/, '') + (n.icon || '') : n.id, palette(n.id, n.pal));
+    });
     const PL = palette('pau'); ent(player, ['pau', API.rank(), PL.style, PL.hair, PL.skin, PL.cloth, PL.acc.join('+')].join(':'), PL);
     L.sort((a, b) => a.y - b.y);
     // ombres
     L.forEach(d => { if (d.e) { ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(Math.round(d.x * z + 3 * z - cx), Math.round((d.y - 2) * z - cy), 10 * z, 2 * z); } });
-    L.forEach(d => ctx.drawImage(d.s, Math.round(d.x * z - cx), Math.round(d.top * z - cy), d.s.width * z, d.s.height * z));
+    L.forEach(d => ctx.drawImage(d.s, Math.round(d.x * z - cx), Math.round(d.top * z - cy), (d.w || d.s.width) * z, (d.h || d.s.height) * z));
     birds.forEach(b => { if (b.hide) return; const s = birdSprite(b.fly ? Math.floor(clock * 10) % 2 : (Math.sin(b.t * 3) > .6 ? 1 : 0)); ctx.drawImage(s, Math.round(b.x * z - cx), Math.round(b.y * z - cy), 8 * z, 7 * z); });
     // marcadors i bombolles (en coordenades de pantalla, text nítid)
     const fs = Math.max(11, Math.round(5.5 * z / dpr)) * dpr;
@@ -1341,7 +1520,9 @@
     },
     close,
     refresh() { if (map) { npcs = buildNpcs(); hudDraw(); } },
-    maps: MAPS
+    maps: MAPS,
+    npcs: () => npcs,
+    here: () => map && map.id
   };
   let saveT = 0;
   function savePosThrottled() {
