@@ -56,6 +56,21 @@ A Empresa → 🛒 **Millores**: eines (Canva Pro, analítica, CRM, gestor de pr
 
 Els errors econòmics costen diners: treballar gratis, acceptar feines sense capacitat, comprar bases de dades, campanyes fallides (compensació al client), encàrrecs mal resolts (devolució), préstecs amb interessos... Si la liquiditat (diners + reserva) queda en negatiu, **l'agència fa fallida** i cal començar de zero (es conserven el personatge, el codi de classe, els projectes reals i les webs del Taller). El professorat veu el nombre de fallides de cada alumne.
 
+## Economia validada al servidor, impostos i guardiola de la classe
+
+Tots els diners del joc (una sola moneda: els euros de l'agència) es validen al servidor amb **Netlify Database** (Postgres):
+
+- Cada cobrament o despesa s'envia a la funció `joc-economia` amb una clau d'idempotència: si arriba dues vegades, només compta una.
+- El servidor comprova els límits: un encàrrec, un tracte del mercat o un botiguer només es cobren una vegada; els projectes i les webs només es poden cobrar si hi ha una nota aprovada al servidor, i com a màxim el que correspon a aquella nota; hi ha límits per capítol, per setmana de clients i diaris.
+- Els moviments es desen en un **llibre comptable que no es pot modificar ni esborrar** (ho impedeix la base de dades). El saldo es pot recalcular sempre a partir del llibre (auditoria al panell del professor).
+- Cada ingrés paga un **impost** (per defecte un 5 %; el professor pot definir trams marginals de fins a un 50 %). Els impostos van a la **guardiola comuna de la classe**, que es repartirà en concursos de coneixements (guanya qui encerta més preguntes, mai a l'atzar).
+- Els alumnes nous queden **pendents de validar**: poden jugar, però les operacions no compten fins que el professor els valida al panell (o activa la validació automàtica).
+- Si el saldo del servidor i el del joc no coincideixen, mana el del servidor.
+
+Al panell del professor, amb un codi de classe, apareix la secció **🏦 Economia de la classe**: validar o bloquejar alumnes, configurar impostos i capital inicial, veure la guardiola, el llibre comptable de cada alumne, les operacions rebutjades (amb el motiu) i el registre de canvis del professorat.
+
+> Les partides començades abans d'aquesta versió s'han de tornar a començar perquè el saldo quedi validat des del principi.
+
 ## Correcció automàtica dels projectes (IA)
 
 Quan l'alumne entrega un projecte, la funció `netlify/functions/joc-correccio-background.js` descarrega el document (Google Docs, Slides, Sheets, fitxers de Drive, PDF, imatges o webs públiques), el fa corregir a Claude amb la **rúbrica** del projecte (cada criteri de 0 a 3 punts; nota sobre 10; s'aprova amb un 5) i desa la nota, el nivell de cada criteri i la retroacció. L'alumne la veu al joc en pocs minuts i, si aprova, pot continuar. **El professor sempre la pot modificar** des del panell (llista «Corregits automàticament», on pot validar-la o canviar nivells, nota i comentaris). Si el document és privat, és una carpeta o no es pot llegir, el projecte queda pendent del professor i l'alumne en veu el motiu.
@@ -109,6 +124,8 @@ Totes les empreses, els personatges i els resultats de les campanyes són fictic
 
 Netlify Blobs (on es desen els resultats) s'activa sol, no cal configurar res més.
 
+**Base de dades de l'economia:** en desplegar, Netlify crea sola la base de dades (perquè `@netlify/database` és a `package.json`) i aplica les migracions de `netlify/database/migrations/`. Cal un pla de Netlify basat en crèdits; les migracions no s'han de modificar un cop aplicades (per canviar l'esquema, se n'afegeix una de nova).
+
 ## Desenvolupament
 
 No hi ha cap pas de compilació: són fitxers estàtics. Per provar-lo en local:
@@ -116,6 +133,14 @@ No hi ha cap pas de compilació: són fitxers estàtics. Per provar-lo en local:
 ```sh
 python3 -m http.server 8000
 # obre http://localhost:8000/ (el panell del professor necessita `netlify dev`)
+```
+
+Tests (necessiten `npm install`):
+
+```sh
+node tests/comercmons.test.js         # catàleg i equilibri dels Comerçmons
+node tests/economia.test.mjs          # lògica de l'economia amb una base de dades Postgres local
+node tests/economia-funcio.test.mjs   # la funció joc-economia per HTTP
 ```
 
 Si canvies fitxers del joc, puja la versió de `CACHE` a `sw.js` perquè les apps instal·lades descarreguin la versió nova.

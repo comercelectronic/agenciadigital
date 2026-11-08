@@ -250,6 +250,7 @@
       $('#msg').innerHTML = `<span class="pos">✔ ${T(results.length === 1 ? '{0} alumne' : '{0} alumnes', [results.length])} ${classe ? T('a la classe ') + esc(classe) : T('en total')}.</span>`;
       loadMarket(pw, classe);
     } catch (e) { $('#msg').innerHTML = `<span class="err">${esc(e.message)}</span>`; }
+    loadEcon();
   }
 
   // Mercat entre agències (només amb una classe concreta)
@@ -266,6 +267,108 @@
         </tbody></table></div>` : `<p class="muted">${T('Encara no hi ha cap tracte.')}</p>`)
         + (j.recs.length ? `<p class="small"><b>${T('Recomanacions:')}</b> ${j.recs.map(([a, b]) => `${nm(a)} → ${nm(b)}`).join(' · ')}</p>` : '');
     } catch (e) { $('#mkt').innerHTML = `<p class="err">${esc(e.message)}</p>`; }
+  }
+
+
+  /* ===== Economia de la classe (joc-economia, base de dades) ===== */
+  const EAPI = '/.netlify/functions/joc-economia';
+  let ecoData = null;
+  async function eapi(body) {
+    const r = await fetch(EAPI, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ password: $('#pw').value, classe: normClass($('#cls').value) }, body)) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || 'Error ' + r.status);
+    return j;
+  }
+  const eur = (n) => (+n || 0).toLocaleString(LOCALE) + ' €';
+  const MOTIU = () => ({
+    'ja-cobrat': T('Ja s\'havia cobrat'), 'supera-limit': T('Supera el màxim permès'), 'sense-nota': T('Sense nota aprovada al servidor'),
+    'limit-diari': T('Supera el límit diari'), 'inici-repetit': T('Capital inicial repetit'), 'inici-import': T('Capital inicial incorrecte'),
+    'reinici-sense-fallida': T('Reinici sense fallida'), 'despesa-massa-gran': T('Despesa massa gran'), tipus: T('Tipus no permès'), ref: T('Referència no vàlida'), import: T('Import no vàlid')
+  });
+  const TIPUS_NOM = () => ({
+    inici: T('Capital inicial'), reinici: T('Reinici després de fallida'), capitol: T('Capítol'), clients: T('Clients setmanals'), encarrec: T('Encàrrec'),
+    projecte: T('Projecte'), web: T('Web'), botiguer: T('Botiguer del barri'), mercat: T('Mercat'), despesa: T('Despesa'), estudi: T('Estudi'), altre: T('Altres'),
+    impost: T('Impost'), premi: T('Premi'), missio: T('Missió'), combat: T('Combat')
+  });
+  async function loadEcon() {
+    const classe = normClass($('#cls').value);
+    $('#ecoSec').hidden = !classe;
+    if (!classe) return;
+    $('#eco').innerHTML = `<p class="muted">${T('Carregant…')}</p>`;
+    try { ecoData = await eapi({ action: 'admin-estat' }); renderEcon(); }
+    catch (e) { $('#eco').innerHTML = `<p class="err">${esc(e.message)}</p>`; }
+  }
+  function renderEcon() {
+    const d = ecoData, M = MOTIU(), TN = TIPUS_NOM();
+    const pend = d.jugadors.filter(j => !j.aprovat && !j.bloquejat);
+    const tr = d.config.impost.trams.map(t => `${t.des.toLocaleString(LOCALE)} € → ${t.pct} %`).join(' · ');
+    const audit = d.auditoria.ok ? `<span class="pos">✔ ${T('Auditoria correcta: els saldos coincideixen amb el llibre comptable.')}</span>` : `<span class="err">⚠ ${T('Hi ha diferències entre els saldos i el llibre comptable.')}</span>`;
+    $('#eco').innerHTML = `
+      <div class="stats">
+        <div class="metric"><small>${T('Alumnes')}</small><b>${d.jugadors.length}</b></div>
+        <div class="metric"><small>${T('Per validar')}</small><b>${pend.length}</b></div>
+        <div class="metric"><small>${T('Guardiola comuna')}</small><b>${eur(d.guardiola.saldo)}</b></div>
+        <div class="metric"><small>${T('Impostos recaptats')}</small><b>${eur(d.guardiola.impostos)}</b></div>
+      </div>
+      <p class="small">${audit}</p>
+      <h4>${T('Alumnes')} ${pend.length ? `<button class="btn small primary" data-eco-all>${T('✔ Validar tots els pendents')}</button>` : ''}</h4>
+      ${d.jugadors.length ? `<div class="table-wrap"><table class="tbl"><thead><tr><th>${T('Alumne')}</th><th>${T('Agència')}</th><th>${T('Saldo')}</th><th>${T('Impostos')}</th><th>${T('Moviments')}</th><th>${T('Rebutjats')}</th><th>${T('Estat')}</th><th></th></tr></thead><tbody>
+        ${d.jugadors.map(j => `<tr><td>${esc(j.nom || j.pid)}</td><td>${esc(j.agencia)}</td><td>${eur(j.saldo)}</td><td>${eur(j.impostos)}</td><td><a href="#" data-eco-mov="${j.pid}">${j.moviments}</a></td><td>${j.rebutjats}</td>
+          <td>${j.bloquejat ? T('🚫 Bloquejat') : j.aprovat ? T('✅ Validat') : T('⏳ Pendent')}</td>
+          <td style="white-space:nowrap">${!j.aprovat || j.bloquejat ? `<button class="btn small primary" data-eco-ap="${j.pid}|1|0">${T('Validar')}</button>` : ''} ${!j.bloquejat ? `<button class="btn small" data-eco-ap="${j.pid}|${j.aprovat ? 1 : 0}|1">${T('Bloquejar')}</button>` : ''}</td></tr>`).join('')}
+        </tbody></table></div>` : `<p class="muted">${T('Encara no s\'ha connectat cap alumne d\'aquesta classe.')}</p>`}
+      <h4>${T('Impostos')}</h4>
+      <p class="small">${T('Trams actuals (marginals):')} <b>${tr}</b></p>
+      <div class="form-row">
+        <label><span>${T('Trams (des de € : %), separats per comes')}</span><input class="inp" id="ecoTrams" value="${d.config.impost.trams.map(t => t.des + ':' + t.pct).join(', ')}"></label>
+        <label><span>${T('Capital inicial')}</span><input class="inp" id="ecoIni" type="number" min="0" max="100000" value="${d.config.inicial}"></label>
+        <label style="flex:none"><span>${T('Validar alumnes automàticament')}</span><input type="checkbox" id="ecoAuto" ${d.config.autoaprovar ? 'checked' : ''}></label>
+        <button class="btn small primary" id="ecoSave">${T('Desar')}</button>
+      </div>
+      <p class="muted small">${T('Exemple: «0:5, 2000:10, 5000:20» vol dir un 5 % fins a 2.000 €, un 10 % de 2.000 a 5.000 € i un 20 % a partir de 5.000 €. Màxim un 50 % per tram.')}</p>
+      <h4>${T('Guardiola comuna')}</h4>
+      ${d.guardiola.historial.length ? `<div class="table-wrap"><table class="tbl"><thead><tr><th>${T('Data')}</th><th>${T('Alumne')}</th><th>${T('Concepte')}</th><th>${T('Import')}</th><th>${T('Saldo')}</th></tr></thead><tbody>
+        ${d.guardiola.historial.map(h => `<tr><td><small>${dateTxt(h.at)}</small></td><td>${esc(h.nom)}</td><td>${TN[h.tipus] || esc(h.tipus)} <small class="muted">${esc(String(h.ref || '').replace(/^(\w+):/, (m, k) => (TN[k] || k) + ' · '))}</small></td><td>${eur(h.import)}</td><td>${eur(h.saldo)}</td></tr>`).join('')}
+        </tbody></table></div>` : `<p class="muted">${T('La guardiola encara és buida.')}</p>`}
+      ${d.rebutjats.length ? `<h4>${T('Operacions rebutjades')}</h4><div class="table-wrap"><table class="tbl"><thead><tr><th>${T('Data')}</th><th>${T('Alumne')}</th><th>${T('Tipus')}</th><th>${T('Referència')}</th><th>${T('Import')}</th><th>${T('Motiu')}</th></tr></thead><tbody>
+        ${d.rebutjats.map(r => `<tr><td><small>${dateTxt(r.creat_at)}</small></td><td>${esc(r.nom || r.pid)}</td><td>${TN[r.tipus] || esc(r.tipus)}</td><td>${esc(r.ref)}</td><td>${eur(r.import_demanat)}</td><td>${M[r.motiu] || esc(r.motiu)}</td></tr>`).join('')}
+        </tbody></table></div>` : ''}
+      ${d.admin.length ? `<details><summary class="small">${T('Registre de canvis del professorat')}</summary><ul class="small">${d.admin.map(a => `<li>${dateTxt(a.creat_at)} · ${esc(a.accio)} · <code>${esc(JSON.stringify(a.detall))}</code></li>`).join('')}</ul></details>` : ''}`;
+  }
+  async function ecoMovs(pid) {
+    try {
+      const { moviments } = await eapi({ action: 'admin-moviments', pid });
+      const TN = TIPUS_NOM(), j = ecoData.jugadors.find(x => x.pid === pid);
+      const m = document.createElement('div'); m.className = 'modal';
+      m.innerHTML = `<div class="modal-box wide"><h3>${T('Llibre comptable de {0}', [esc(j ? j.nom || pid : pid)])}</h3>
+        <div class="table-wrap"><table class="tbl"><thead><tr><th>${T('Data')}</th><th>${T('Concepte')}</th><th>${T('Brut')}</th><th>${T('Impost')}</th><th>${T('Net')}</th><th>${T('Saldo')}</th></tr></thead><tbody>
+        ${moviments.map(r => `<tr><td><small>${dateTxt(r.creat_at)}</small></td><td>${TN[r.tipus] || esc(r.tipus)} <small class="muted">${esc(r.ref)}</small></td><td>${eur(r.brut)}</td><td>${eur(r.impost)}</td><td>${eur(r.net)}</td><td>${eur(r.saldo_final)}</td></tr>`).join('') || `<tr><td colspan="6" class="muted">${T('Cap moviment.')}</td></tr>`}
+        </tbody></table></div><div class="row-btns"><button class="btn" data-close>${T('Tancar')}</button></div></div>`;
+      m.onclick = (e) => { if (e.target === m || e.target.closest('[data-close]')) m.remove(); };
+      document.body.appendChild(m);
+    } catch (e) { toast(esc(e.message), 'bad'); }
+  }
+  async function ecoClick(e) {
+    const ap = e.target.closest('[data-eco-ap]');
+    if (ap) { const [pid, a, b] = ap.dataset.ecoAp.split('|'); try { await eapi({ action: 'admin-aprovar', pid, aprovat: a === '1', bloquejat: b === '1' }); await loadEcon(); } catch (err) { toast(esc(err.message), 'bad'); } return true; }
+    if (e.target.closest('[data-eco-all]')) {
+      try { for (const j of ecoData.jugadors.filter(x => !x.aprovat && !x.bloquejat)) await eapi({ action: 'admin-aprovar', pid: j.pid, aprovat: true, bloquejat: false }); toast(T('Alumnes validats')); await loadEcon(); } catch (err) { toast(esc(err.message), 'bad'); }
+      return true;
+    }
+    const mv = e.target.closest('[data-eco-mov]'); if (mv) { e.preventDefault(); ecoMovs(mv.dataset.ecoMov); return true; }
+    if (e.target.closest('#ecoReload')) { loadEcon(); return true; }
+    if (e.target.closest('#ecoSave')) {
+      const trams = $('#ecoTrams').value.split(',').map(x => x.trim()).filter(Boolean).map(x => { const [des, pct] = x.split(':').map(Number); return { des, pct }; }).sort((a, b) => a.des - b.des);
+      const ini = +$('#ecoIni').value;
+      try {
+        await eapi({ action: 'admin-config', clau: 'impost', valor: { trams } });
+        if (ini !== ecoData.config.inicial) await eapi({ action: 'admin-config', clau: 'inicial', valor: ini });
+        if ($('#ecoAuto').checked !== !!ecoData.config.autoaprovar) await eapi({ action: 'admin-config', clau: 'autoaprovar', valor: $('#ecoAuto').checked });
+        toast(T('Configuració desada')); await loadEcon();
+      } catch (err) { toast(esc(err.message), 'bad'); }
+      return true;
+    }
+    return false;
   }
 
   // CSV per a Excel: separador «;», BOM UTF-8 i una columna per lliçó
@@ -351,6 +454,7 @@
     e.target.value = '';
   };
   document.addEventListener('click', async (e) => {
+    if (await ecoClick(e)) return;
     const th = e.target.closest('th[data-sort]');
     if (th) { if (sortKey === th.dataset.sort) sortDir *= -1; else { sortKey = th.dataset.sort; sortDir = 1; } render(); return; }
     const det = e.target.closest('[data-detail]'); if (det) { detail(det.dataset.detail); return; }

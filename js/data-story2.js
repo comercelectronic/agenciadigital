@@ -468,7 +468,7 @@
         { t: T('Demanar un préstec ràpid amb interès alt'), v: 'prestec', fx: { money: 3000, flags: { prestec: true }, log: T('Va demanar un préstec ràpid per pagar nòmines: el tornarà amb un 30 % d\'interessos.') }, say: [['pau.w', T('Problema resolt... de moment. Caldrà tornar-lo amb interessos.')]] }
       ] },
       { t: 'fx', silent: true, fx: (S) => S.f.pag54 === 'reserva' ? { flags: { usedReserve: true } } : null },
-      { t: 'fx', silent: true, fx: (S) => { if (S.f.pag54 === 'reserva') { S.reserve = 0; } return null; } },
+      { t: 'fx', silent: true, fx: (S) => { if (S.f.pag54 === 'reserva' && S.reserve) { const r = S.reserve; S.reserve = 0; S.money += r; return { money: -r }; } return null; } }, // la reserva perduda es registra com a despesa
       { t: 'dlg', lines: (S) => [['pau.t', S.clients.length >= 5 ? T('Tenir molts clients diferents ha fet que aquest cop no fos una catàstrofe.') : T('Depenc massa de pocs clients. He de diversificar.')]] }
     ]
   });

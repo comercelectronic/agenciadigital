@@ -137,6 +137,11 @@
       let m = fx.money;
       if (m > 0 && fx.fee) m = Math.round(m * (1 + 0.05 * sk('comercial') + upBonus('fee') / 100));
       if (m > 0 && fx.src) m = Math.round(m * (1 + cmBonus(fx.src) / 100)); // habilitats passives dels Comerçmons
+      // Economia del servidor: l'operació va a la cua; l'impost dels ingressos va a la guardiola de la classe
+      const [etipus, eref] = econTipus(fx, m);
+      econPush(etipus, eref, m);
+      const imp = econTax(m, etipus);
+      if (imp) { m -= imp; notes.push(T('🐷 −{0} d\'impostos', [eur(imp)])); }
       S.money += m; if (m > 0) S.stats.income += m; else S.stats.expenses -= m;
       if (RUN) RUN.money += m;
       notes.push((m > 0 ? '+' : '') + eur(m));
@@ -182,7 +187,9 @@
       // Préstec ràpid: 3.000 € que es tornen amb un 30 % d'interessos en 26 setmanes
       if (S.f.prestec && (S.f.prestecPagat || 0) < 26) { cost += 150; S.f.prestecPagat = (S.f.prestecPagat || 0) + 1; }
     }
-    S.week += n; S.money += inc - cost; S.stats.income += inc; S.stats.expenses += cost;
+    const incTax = econTax(Math.round(inc), 'clients');
+    econPush('clients', 'setmana-' + (S.week + n), inc); econPush('despesa', 'setmana-' + (S.week + n), -cost);
+    S.week += n; S.money += inc - incTax - cost; S.stats.income += inc; S.stats.expenses += cost;
     if (S.money < 0) S.f.numerosVermells = (S.f.numerosVermells || 0) + 1;
     return { inc, cost, n };
   }
@@ -218,7 +225,9 @@
         fallides: (S.fallides || 0) + 1,
         fallidesLog: (S.fallidesLog || []).concat([{ at: new Date().toISOString(), setmana: S.week, nivell: S.level, capitols: Object.keys(S.done).length }])
       };
+      const econKeep = S.econ;
       S = Object.assign(newState(), keep);
+      S.econ = econKeep; econPush('reinici', 'fallida', 1);
       applyPlayer(); save(); queueSync();
       goWorld();
       toast(T('Nova oportunitat. Aquesta vegada, vigila els diners!'), 'good');
@@ -459,7 +468,7 @@
     const newMonthly = (weeklyCost() * 4) + (u.monthly || 0);
     confirmBox(T("Comprar «{0}» per {1}{2}? Les despeses fixes passaran a {3} al mes.", [esc(u.n), eur(u.price), u.monthly ? ` + ${eur(u.monthly)}${T('/mes')}` : '', eur(newMonthly)]), () => {
       if (S.money < u.price) return toast(T('No tens prou liquiditat.'), 'bad');
-      S.money -= u.price; S.stats.expenses += u.price;
+      S.money -= u.price; S.stats.expenses += u.price; econPush('despesa', 'millora-' + id, -u.price);
       S.upgrades[id] = { week: S.week };
       applyFx({ rep: u.rep || 0, log: T("Va invertir en «{0}» ({1}).", [u.n, eur(u.price)]) }, true);
       save(); queueSync(); toast(`${u.i} ${esc(u.n)} ✔`, 'good');
@@ -475,7 +484,9 @@
 
   function tabEmpresa(el) {
     const inc = weeklyIncome() * 4, cost = weeklyCost() * 4;
+    if (S.classe && (!econ().srv || Date.now() - econ().srv.at > 60000)) econSync().then(r => { if (r && hubTab === 'empresa' && $('.econ-card')) hubScreen('empresa'); });
     el.innerHTML = `
+      ${econCard()}
       ${upgradesCard()}
       <div class="grid2">
         <div class="card"><h3>${T("💶 Finances")}</h3>
@@ -527,6 +538,104 @@
     updateInstallBtn();
   }
   function trustHearts(v) { if (v < 0) return '💔'.repeat(Math.min(3, -v)); return '♥'.repeat(Math.min(10, v)) + '<span class="empty">' + '♡'.repeat(Math.max(0, 5 - v)) + '</span>'; }
+
+  /* ================= Economia validada al servidor (Netlify Database) ================= */
+  // Cada moviment de diners es desa en una cua amb una clau única (idempotència) i s'envia a joc-economia.
+  // El servidor el valida, hi aplica l'impost i actualitza la guardiola de la classe. El saldo del servidor mana:
+  // quan la cua està buida, la liquiditat del joc (diners + reserva) s'iguala amb el saldo del servidor.
+  const EAPI = '/.netlify/functions/joc-economia';
+  const TAXED = ['capitol', 'clients', 'encarrec', 'projecte', 'web', 'botiguer', 'mercat', 'altre'];
+  function econ() {
+    if (!S.econ) S.econ = { seq: 0, queue: [], srv: null, inici: false };
+    return S.econ;
+  }
+  function econTax(brut, tipus) {
+    const e = econ(); if (!S.classe || !(brut > 0)) return 0;
+    const imp = (e.srv && e.srv.impost) || { trams: [{ des: 0, pct: 5 }], tipus: TAXED };
+    if (!(imp.tipus || TAXED).includes(tipus)) return 0;
+    const t = imp.trams.slice().sort((a, b) => a.des - b.des); let x = 0;
+    t.forEach((tr, i) => { const hi = i + 1 < t.length ? t[i + 1].des : Infinity; x += Math.max(0, Math.min(brut, hi) - tr.des) * tr.pct / 100; });
+    return Math.floor(x);
+  }
+  function econPush(tipus, ref, brut) {
+    brut = Math.round(brut);
+    if (!brut && tipus !== 'reinici') return;
+    const e = econ();
+    e.queue.push({ idem: `${S.player.id.slice(0, 10)}-${Date.now().toString(36)}-${++e.seq}`, tipus, ref: String(ref || '').slice(0, 80), brut: brut || 1 });
+    if (e.queue.length > 2000) e.queue.splice(0, e.queue.length - 2000);
+    econSoon();
+  }
+  // Tipus d'operació segons d'on venen els diners
+  function econTipus(fx, m) {
+    if (m < 0) return fx.src === 'mercat' ? ['mercat', fx.ref] : ['despesa', fx.ref || fx.src || (S.cur ? S.cur.id : '')];
+    switch (fx.src) {
+      case 'gig': return ['encarrec', fx.ref];
+      case 'chapter': return ['capitol', fx.ref || (S.cur && S.cur.id) || (curCh && curCh.id)];
+      case 'proj': return [String(fx.ref || '').startsWith('web-') ? 'web' : 'projecte', fx.ref];
+      case 'world': return ['botiguer', fx.ref];
+      case 'mercat': return ['mercat', fx.ref];
+      default: return S.cur && GD.chapters[S.cur.id] ? ['capitol', S.cur.id] : ['altre', fx.src || ''];
+    }
+  }
+  let econTimer = null, econBusy = false;
+  function econSoon() { clearTimeout(econTimer); econTimer = setTimeout(() => econSync(), 2500); }
+  async function econSync(manual) {
+    if (!S || !S.classe || econBusy) return null;
+    const e = econ(); econBusy = true;
+    let rejected = 0, lastEstat = null, pending = false;
+    try {
+      do {
+        const batch = e.queue.slice(0, 50);
+        const res = await fetch(EAPI, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: batch.length ? 'moviments' : 'estat', classe: S.classe, id: S.player.id, nom: `${S.player.name} ${S.player.surname || ''}`.trim(), agencia: S.agency, events: batch }) });
+        if (!res.ok) throw new Error('Error ' + res.status);
+        const j = await res.json();
+        lastEstat = j.estat || j;
+        if (!batch.length) break;
+        const done = new Set();
+        (j.results || []).forEach(r => { if (r.pendent) { pending = true; return; } done.add(r.idem); if (!r.ok && !r.repetit) rejected += batch.find(b => b.idem === r.idem).brut; });
+        e.queue = e.queue.filter(q => !done.has(q.idem));
+        if (pending || !done.size) break;
+      } while (e.queue.length);
+      e.srv = Object.assign({}, lastEstat, { at: Date.now() });
+      // El saldo del servidor és el bo: si no hi ha res pendent, la liquiditat del joc s'hi iguala
+      if (!e.queue.length && lastEstat && lastEstat.aprovat) {
+        const liq = S.money + S.reserve;
+        if (liq !== lastEstat.saldo) { S.money = lastEstat.saldo - S.reserve; if (Math.abs(liq - lastEstat.saldo) >= 1 && $('#hud')) hud(); }
+      }
+      save();
+      if (rejected > 0) toast(T('⚠️ El servidor no ha acceptat {0} en operacions que superen els límits del joc.', [eur(rejected)]), 'bad');
+      if (manual) toast(pending ? T('El professor encara ha de validar el teu compte.') : T('Economia sincronitzada amb el servidor.'), pending ? '' : 'good');
+      return e.srv;
+    } catch (err) {
+      if (manual) toast(T('No s\'ha pogut connectar amb el servidor de l\'economia.'), 'bad');
+      return null;
+    } finally { econBusy = false; }
+  }
+  async function econGuardiola() {
+    if (!S.classe) return null;
+    try { const r = await fetch(EAPI, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'guardiola', classe: S.classe, id: S.player.id, nom: `${S.player.name} ${S.player.surname || ''}`.trim(), agencia: S.agency }) }); return r.ok ? r.json() : null; } catch (e) { return null; }
+  }
+  const MOVT = () => ({ inici: T('Capital inicial'), reinici: T('Reinici després de la fallida'), capitol: T('Missió'), clients: T('Clients recurrents'), encarrec: T('Encàrrec'), projecte: T('Projecte'), web: T('Web del Taller'), botiguer: T('Botiguer de Vic'), mercat: T('Tracte entre agències'), despesa: T('Despesa'), altre: T('Altres') });
+  function econCard() {
+    const e = econ(), s = e.srv;
+    if (!S.classe) return `<div class="card"><h3>${T('🏦 Economia i guardiola')}</h3><p class="muted small">${T('Posa el codi de classe perquè el servidor validi la teva economia i participis en la guardiola comuna.')}</p><button class="btn small" data-act="setClass">${T('🏷️ Posar codi de classe')}</button></div>`;
+    return `<div class="card econ-card"><h3>${T('🏦 Economia i guardiola')}</h3>
+      ${!s ? `<p class="muted small">${T('Connectant amb el servidor…')}</p>` : !s.aprovat ? `<div class="warn small">${T('⏳ El professor encara ha de validar el teu compte. Mentrestant pots jugar: les operacions s\'enviaran quan et validi.')}</div>` : ''}
+      ${s ? `<dl class="kv"><dt>${T('Saldo validat')}</dt><dd>${eur(s.saldo)}</dd><dt>${T('Impost sobre els ingressos')}</dt><dd>${(s.impost.trams || []).map(t => `${t.pct} %${t.des ? ' ' + T('des de {0}', [eur(t.des)]) : ''}`).join(' · ')}</dd><dt>${T('🐷 Guardiola de la classe')}</dt><dd>${eur(s.guardiola)}</dd>${e.queue.length ? `<dt>${T('Pendents d\'enviar')}</dt><dd>${e.queue.length}</dd>` : ''}</dl>
+        ${s.darrers && s.darrers.length ? `<details class="small"><summary>${T('Darrers moviments')}</summary><table class="tbl small"><tbody>${s.darrers.slice(0, 12).map(m => `<tr><td>${esc(MOVT()[m.tipus] || m.tipus)}${m.ref ? ` <span class="muted">${esc(m.ref)}</span>` : ''}</td><td class="${m.net < 0 ? 'neg' : ''}">${m.net > 0 ? '+' : ''}${eur(m.net)}</td><td class="muted">${m.impost ? '🐷 ' + eur(m.impost) : ''}</td></tr>`).join('')}</tbody></table></details>` : ''}` : ''}
+      <div class="row-btns"><button class="btn small" data-act="econSync">🔄 ${T('Sincronitzar')}</button><button class="btn small" data-act="guardiola">🐷 ${T('Veure la guardiola')}</button></div></div>`;
+  }
+  async function guardiolaModal() {
+    const g = await econGuardiola();
+    if (!g) { toast(T('No s\'ha pogut consultar la guardiola.'), 'bad'); return; }
+    const d = document.createElement('div'); d.className = 'modal';
+    d.innerHTML = `<div class="modal-box"><h3>🐷 ${T('Guardiola de la classe')}</h3>
+      <dl class="kv"><dt>${T('Saldo disponible')}</dt><dd>${eur(g.saldo)}</dd><dt>${T('Impostos recaptats')}</dt><dd>${eur(g.impostos)}</dd><dt>${T('Premis entregats')}</dt><dd>${eur(g.premis)}</dd><dt>${T('Aportacions')}</dt><dd>${g.aportacions}</dd></dl>
+      <p class="muted small">${T('Cada ingrés del joc paga un impost que va a la guardiola. Es repartirà en concursos de coneixements: guanya qui encerta més preguntes, mai a l\'atzar.')}</p>
+      <table class="tbl small"><tbody>${g.historial.map(h => `<tr><td>${esc(h.nom || '—')}</td><td>${h.tipus === 'impost' ? T('Impost') : h.tipus === 'premi' ? T('Premi') : esc(h.tipus)}</td><td>${h.import > 0 ? '+' : ''}${eur(h.import)}</td><td class="muted">${new Date(h.at).toLocaleDateString(LOCALE)}</td></tr>`).join('')}</tbody></table>
+      <div class="row-btns"><button class="btn" id="n">${T('Tancar')}</button></div></div>`;
+    document.body.appendChild(d); d.querySelector('#n').onclick = () => d.remove();
+  }
 
   /* ================= COMERÇMONS: col·lecció, equip, captures, evolucions i Comerçdex ================= */
   // Estat: S.cm = { owned: { id: { lvl, xp, form, at, trained } }, team: [id…], seen: { id: 1 }, escape: { id: hora }, starter, evoQueue: [] }
@@ -1039,12 +1148,12 @@
   const payBox = (max, paid) => max > 0 ? `<div class="pay-box">💶 <b>${T('Pagament: fins a {0}', [eur(max)])}</b>
       <span class="small">${T('Cobraràs segons la nota: amb un 5 → {0} · amb un 7 → {1} · amb un 10 → {2}. Si la nota puja, cobres la diferència.', [eur(GD.payFor(max, 5)), eur(GD.payFor(max, 7)), eur(max)])}</span>
       ${paid > 0 ? `<span class="paid">✅ ${T('Has cobrat {0}.', [eur(paid)])}</span>` : ''}</div>` : '';
-  function settlePay(rec, max, rv, title) {
+  function settlePay(rec, max, rv, title, ref) {
     if (!rv || rv.status !== 'approved' || !(max > 0)) return 0;
     const g = rv.grade != null ? rv.grade : GD.PASS_GRADE, target = GD.payFor(max, g), delta = target - (rec.paid || 0);
     if (delta <= 0) return 0;
     const keep = RUN; RUN = null;
-    applyFx({ money: delta, fee: false, src: 'proj', log: T('Cobrament pel projecte «{0}» (nota {1}): {2}.', [title, g, eur(delta)]), key: true }, true);
+    applyFx({ money: delta, fee: false, src: 'proj', ref, log: T('Cobrament pel projecte «{0}» (nota {1}): {2}.', [title, g, eur(delta)]), key: true }, true);
     RUN = keep; rec.paid = target;
     return delta;
   }
@@ -1238,7 +1347,7 @@
           applyFx({ xp: R.xp, rep: R.rep, trust: R.trust ? { [R.trust]: 1 } : null, log: T('Projecte aprovat: «{0}».', [txt(p.title)]), key: true }, true);
           RUN = keep;
         }
-        const got = settlePay(r, GD.projMax(p), rv, txt(p.title));
+        const got = settlePay(r, GD.projMax(p), rv, txt(p.title), p.id);
         toast(got ? T('✅ Projecte aprovat: {0} · nota {1} · +{2}', [txt(p.title), rv.grade != null ? rv.grade : GD.PASS_GRADE, eur(got)]) : T('✅ Projecte aprovat: {0} (+{1} EXP)', [txt(p.title), p.reward.xp]), 'good');
       } else if (rv.status === 'changes' && rv.v >= r.v) toast((rv.by === 'teacher' ? T('✏️ El professor demana canvis a «{0}» (nota {1}).', [txt(p.title), rv.grade != null ? rv.grade : '—']) : T('✏️ Cal millorar «{0}» (nota {1}).', [txt(p.title), rv.grade != null ? rv.grade : '—'])) + ' ' + T('Pots continuar jugant: corregeix-lo a 📋 Projectes.'), 'bad');
       else if (rv.autoError && rv.autoError.v >= r.v) toast(T('🤖 No s\'ha pogut corregir automàticament «{0}». Obre el projecte per veure-ne el motiu.', [txt(p.title)]), 'bad');
@@ -1252,7 +1361,7 @@
       r.review = rv; changed = true;
       if (r.paid == null) r.paid = r.v ? 0 : ((L.reward && L.reward.money) || 0);
       if (rv.status === 'approved') {
-        const got = settlePay(r, GD.webMax(L), rv, title);
+        const got = settlePay(r, GD.webMax(L), rv, title, 'web-' + L.n);
         toast(got ? T('✅ Web aprovada: {0} · nota {1} · +{2}', [title, rv.grade != null ? rv.grade : GD.PASS_GRADE, eur(got)]) : T('✅ Web aprovada: {0} · nota {1}', [title, rv.grade != null ? rv.grade : GD.PASS_GRADE]), 'good');
       } else if (rv.status === 'changes' && rv.v >= r.v) toast(T('✏️ Cal millorar la web «{0}» (nota {1}).', [title, rv.grade != null ? rv.grade : '—']));
       else if (rv.autoError && rv.autoError.v >= r.v) toast(T('🤖 No s\'ha pogut corregir automàticament «{0}». Obre el projecte per veure-ne el motiu.', [title]), 'bad');
@@ -1285,7 +1394,7 @@
         if (r.fx) {
           const sv = GD.serviceById(o.kind), other = o.names[o.buyer === m.me ? o.seller : o.buyer];
           const keep = RUN; RUN = null;
-          applyFx(Object.assign({ fee: false, log: o.buyer === m.me ? T('Va contractar «{0}» a {1} per {2}.', [sv.n, other, eur(o.price)]) : T('Va fer «{0}» per a {1} i en va cobrar {2}.', [sv.n, other, eur(o.price)]) }, r.fx), true);
+          applyFx(Object.assign({ fee: false, src: 'mercat', ref: o.id, log: o.buyer === m.me ? T('Va contractar «{0}» a {1} per {2}.', [sv.n, other, eur(o.price)]) : T('Va fer «{0}» per a {1} i en va cobrar {2}.', [sv.n, other, eur(o.price)]) }, r.fx), true);
           RUN = keep; M.closed = (M.closed || 0) + 1;
           toast(T('🤝 Tracte tancat amb {0}: {1}{2}', [esc(other), r.fx.money > 0 ? '+' : '', eur(r.fx.money)]), 'good');
         }
@@ -1451,7 +1560,7 @@
         const finish = (bonus) => {
           const money = o.q < 0.4 ? -Math.round(g.pay * 0.4) : Math.round(g.pay * mult * (1 + upBonus('gig') / 100));
           const xp = Math.round(g.xp * mult * bonus);
-          applyFx({ money, fee: money > 0, src: 'gig', xp, rep: ok ? 1 : (o.q < 0.4 ? -2 : 0), know: { [t.area]: ok ? 1 : 0 }, log: money < 0 ? T('Encàrrec mal resolt: «{0}». Va haver de retornar {1}.', [t.title, eur(-money)]) : null }, true);
+          applyFx({ money, fee: money > 0, src: 'gig', ref: g.id, xp, rep: ok ? 1 : (o.q < 0.4 ? -2 : 0), know: { [t.area]: ok ? 1 : 0 }, log: money < 0 ? T('Encàrrec mal resolt: «{0}». Va haver de retornar {1}.', [t.title, eur(-money)]) : null }, true);
           const w = advanceWeeks(1);
           S.stats.gigs++; queueSync();
           (S.gigsDone = S.gigsDone || {})[g.id] = 1;
@@ -1841,7 +1950,7 @@
     if (!replay) {
       const val = (v) => typeof v === 'function' ? v(S, H) : v;
       const xp = st.xp != null ? val(st.xp) : (ch.xp != null ? ch.xp : 110 + 60 * ch.stage);
-      applyFx({ xp, money: val(st.money), fee: true, src: 'chapter', rep: val(st.rep), flags: st.flags }, true);
+      applyFx({ xp, money: val(st.money), fee: true, src: 'chapter', ref: ch.id, rep: val(st.rep), flags: st.flags }, true);
       if (st.fx) applyFx(st.fx, true);
     }
     const w = replay ? { inc: 0, cost: 0, n: 0 } : advanceWeeks(ch.weeks != null ? ch.weeks : 2);
@@ -2021,7 +2130,7 @@
     $('#sBack').onclick = () => editing ? hubScreen('pau') : titleScreen();
     $('#sGo').onclick = () => {
       if (!d.name) { $('#sName').focus(); toast(T('Escriu el teu nom'), 'bad'); return; }
-      if (!editing) S = base;
+      if (!editing) { S = base; S.econ = { seq: 0, queue: [], srv: null, inici: true }; econPush('inici', 'inici', S.money); }
       Object.assign(S.player, { name: d.name, surname: d.surname, g: d.g, look: d.look });
       const c = normClass(d.classe);
       if (c !== S.classe) { S.classe = c; S.lastSync = 0; }
@@ -2132,6 +2241,7 @@
     S = loadSave();
     if (!S) return titleScreen();
     S = Object.assign(newState(), S);
+    if (!S.econ) { econ().inici = true; econPush('inici', 'inici', 3000); }
     applyPlayer();
     if (S.syncPending) queueSync();
     if (S.cur && GD.chapters[S.cur.id]) startChapter(S.cur.id, true); else goWorld();
@@ -2161,6 +2271,8 @@
       case 'hub': if (S.ending && $('.ending')) { hubScreen('campanya'); } else goWorld(); break;
       case 'world': goWorld(); break;
       case 'hubGigs': hubScreen('encarrecs'); break;
+      case 'econSync': econSync(true).then(() => hubScreen('empresa')); break;
+      case 'guardiola': guardiolaModal(); break;
       case 'hubTaller': hubScreen('taller'); break;
       case 'hubProj': hubScreen('projectes'); break;
       case 'checkReviews': checkReviews(true); break;
@@ -2220,6 +2332,6 @@
   }, true);
 
   loadSettings();
-  window.GAME = { get S() { return S; }, startChapter, hubScreen };
+  window.GAME = { get S() { return S; }, startChapter, hubScreen, applyFx, econSync };
   titleScreen();
 })();
