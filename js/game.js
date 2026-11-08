@@ -1111,6 +1111,7 @@
         <div class="cm-bar"><i style="width:${Math.round(own / all.length * 100)}%"></i></div>
         <p class="muted small">${T('Capturats: {0} · Vistos: {1} · Per descobrir: {2}', [own, seen, all.length - seen])} · ${T('Dies de joc: {0}', [Object.keys(S.days).length])}</p>
         ${avail.length ? `<div class="cm-alert">🔔 ${T('{0} Comerçmon(s) ja confien en tu. Busca\'ls al món i guanya\'ls un combat:', [avail.length])} ${avail.map(s => `<button class="btn small primary" data-cm="${s.id}">${esc(s.forms[0].name)} · ${GD.cmZonesOf(s.id).map(z => GD.cmZones[z].i).join('')}</button>`).join(' ')} <button class="btn small" data-act="hub">🗺️ ${T('Sortir a explorar')}</button></div>` : ''}
+        ${avail.length ? '' : `<p class="small">📍 ${T('Els Comerçmons viuen al món. El lloc més fàcil per començar és el 🌳 Parc de la Devesa: surt de Vic per l\'oest, pel passeig del riu (passa el pont de la plaça cap al sud). Els que tenen ✨ ja confien en tu.')}</p>`}
         <div class="cm-badges"><b>🏅 ${T('Agències rivals')}</b> ${GD.cmGyms.map(g => { const b = cmBadges()[g.id]; return `<span class="cm-badge ${b ? 'got' : ''}" title="${esc(g.n + ' · ' + g.badge + ' · ' + GD.cmZones[g.map].n)}">${b ? g.i : '🔒'}<small>${esc(g.n)}</small></span>`; }).join('')}</div>
       </div>
       <div class="card cm-team">
@@ -1153,7 +1154,7 @@
       const st = cmState(); if (st.starter) return;
       st.starter = b.dataset.start; starters.forEach(s => { st.seen[s.id] = 1; });
       cmGet(b.dataset.start); save(); queueSync();
-      cmCaptureAnim(GD.cmById(b.dataset.start), () => hubScreen('comercdex'));
+      cmCaptureAnim(GD.cmById(b.dataset.start), () => { hubScreen('comercdex'); toast(T('Ara surt a explorar: al 🌳 Parc de la Devesa (oest de Vic, pel passeig del riu) hi viuen molts Comerçmons.'), 'good'); });
     });
   }
 

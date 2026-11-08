@@ -6236,4 +6236,9 @@ Object.assign(I18N, {
 "35juw2": "🏙️ Volver a Vic",
 "ks5y8e": "🌆 Barcelona · distrito digital",
 "bh3akx": "Las grandes agencias de Barcelona todavía no te conocen. Supera la etapa 4 y podrás ir.",
+"1qt04h8": "↓ Puente del río · ← Paseo del río hacia el Parque de la Devesa. En la hierba alta del parque viven Comerçmons.",
+"wb7uew": "¡Hay Comerçmons por aquí! Pero antes de combatirlos y capturarlos tienes que elegir tu Comerçmon inicial: menú ☰ → 🐾 Comerçdex.",
+"1yifg1j": "El Parque de la Devesa está lleno de hierba alta: es el mejor lugar para encontrar Comerçmons al principio. Los que tienen ✨ ya confían en ti y puedes capturarlos.",
+"19p1y53": "Los Comerçmons viven en el mundo. El lugar más fácil para empezar es el 🌳 Parque de la Devesa: sal de Vic por el oeste, por el paseo del río (cruza el puente de la plaza hacia el sur). Los que tienen ✨ ya confían en ti.",
+"axbkpv": "Ahora sal a explorar: en el 🌳 Parque de la Devesa (oeste de Vic, por el paseo del río) viven muchos Comerçmons.",
 });

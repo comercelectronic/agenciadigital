@@ -351,6 +351,7 @@
         B({ id: 'estacio', x: 35, y: 21, w: 7, h: 6, wall: '#e8d8c0', roof: '#6a4a3a', door: 3, label: T_('🚆 Estació') });
         O.push({ t: 'sign', x: 10, y: 27, solid: true, id: 'perruqueriaSign', say: () => [['', T_('«Perruqueria Marisa» — fletxa cap al carrer de baix.')]] });
         O.push({ t: 'busstop', x: 26, y: 33, solid: true, id: 'bus' });
+        O.push({ t: 'sign', x: 19, y: 30, solid: true, say: () => [['', T_('↓ Pont del riu · ← Passeig del riu cap al Parc de la Devesa. A l\'herba alta del parc hi viuen Comerçmons.')]] });
         O.push({ t: 'sign', x: 42, y: 18, solid: true, say: () => [['', T_('→ Recinte firal')]] });
         O.push({ t: 'car', arg: '#d63c3c', x: 34, y: 33, w: 2, solid: true, deco: true });
         return { G, O, warps: [{ x: 43, y: 19, to: 'fira', tx: 9, ty: 9 }, { x: 43, y: 20, to: 'fira', tx: 9, ty: 9 }, { x: 0, y: 33, to: 'devesa', tx: 36, ty: 12, dir: 'left' }, { x: 0, y: 34, to: 'devesa', tx: 36, ty: 13, dir: 'left' }] };
@@ -857,7 +858,7 @@
       add({ id: tr.id, x: p[1], y: p[2], dir: p[3], bubble: API.cmTrainerFresh(tr.id) ? '⚔️' : null, act: () => trainerAct(tr.id) });
     });
     // Comerçmons salvatges
-    if (GD.cmSpeciesIn) wildSpawns(L.map(n => [n.x, n.y])).forEach(w => add({ id: 'mon-' + w.sp.id, mon: w.sp, form: API.cmWildForm(w.sp.id), x: w.x, y: w.y, wander: w.legend ? 0 : 1, legend: w.legend, act: () => wildAct(w.sp) }));
+    if (GD.cmSpeciesIn) wildSpawns(L.map(n => [n.x, n.y])).forEach(w => add({ id: 'mon-' + w.sp.id, mon: w.sp, form: API.cmWildForm(w.sp.id), x: w.x, y: w.y, wander: w.legend ? 0 : 1, legend: w.legend, bubble: API.cmCatchable(w.sp.id) ? '✨' : null, act: () => wildAct(w.sp) }));
     return L;
   }
   function metOrLocal(who) { return who === 'carme' || S.f['met_' + who] || done({ jordi: '2.1', nuria: '2.3', sergi: '2.4', miquel: '2.2' }[who] || 'x'); }
@@ -951,6 +952,16 @@
   }
 
   const gymLabel = (id, t) => (S && S.cm && S.cm.badges && S.cm.badges[id] ? '🏅 ' : '') + t;
+  // Pistes per trobar Comerçmons (una sola vegada)
+  function cmHint() {
+    if (!GD.cmZones || !GD.cmZones[map.id] || !map.outdoor) return;
+    const h = st().cmHints = st().cmHints || {};
+    if (API.cmReady && !API.cmReady()) {
+      if (h.starter) return; h.starter = 1; API.save();
+      return say([['', T_('Hi ha Comerçmons per aquí! Però abans de combatre\'ls i capturar-los has de triar el teu Comerçmon inicial: menú ☰ → 🐾 Comerçdex.')]]);
+    }
+    if (map.id === 'devesa' && !h.devesa) { h.devesa = 1; API.save(); return say([['', T_('El Parc de la Devesa és ple d\'herba alta: és el millor lloc per trobar Comerçmons al principi. Els que tenen ✨ ja confien en tu i els pots capturar.')]]); }
+  }
   function trainMenu() {
     const inBcn = map.id === 'barcelona';
     menu(T_('🚆 Estació. On vols anar?'), [
@@ -963,7 +974,7 @@
   /* --- Comerçmons al món: apareixen per zones i torns de 15 minuts (no surten tots alhora) --- */
   const SLOT_MS = 15 * 60 * 1000;
   const SPAWN_TILES = { devesa: 'g', montseny: 'g', barcelona: 'g,', port: 'gb', vic: ',', tona: '.', gurb: '.', fira: ';' };
-  const SPAWN_N = { devesa: 4, montseny: 4, barcelona: 3, port: 3, vic: 2, tona: 2, gurb: 2, fira: 2 };
+  const SPAWN_N = { devesa: 4, montseny: 4, barcelona: 3, port: 3, vic: 3, tona: 2, gurb: 2, fira: 2 };
   const TRAINER_POS = { julia: ['devesa', 22, 10, 'down'], toni: ['devesa', 6, 14, 'right'], quim: ['vic', 25, 30, 'up'], jordi: ['tona', 16, 12, 'up'], miquel: ['gurb', 12, 12, 'up'],
     laia: ['fira', 4, 4, 'down'], sergi: ['montseny', 16, 21, 'down'], marta: ['barcelona', 22, 10, 'down'], amelie: ['barcelona', 8, 15, 'down'], ramon: ['port', 24, 9, 'left'] };
   const strHash = (s) => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return h; };
@@ -974,7 +985,7 @@
   }
   function wildSpawns(taken) {
     const zone = map.id, chars = SPAWN_TILES[zone];
-    if (!chars || !GD.cmSpeciesIn || !API.cmReady || !API.cmReady()) return [];
+    if (!chars || !GD.cmSpeciesIn || !API.cmVisible) return [];
     const ws = wildState(), slot = ws.slot, zh = strHash(zone);
     const pool = GD.cmSpeciesIn(zone).filter(sp => !ws.gone.includes(sp.id) && API.cmVisible(sp.id));
     const legends = pool.filter(sp => sp.rarity === 'lleg');
@@ -1256,6 +1267,7 @@
       bannerT = 2.2; root.querySelector('.w-loc').textContent = map.def.name();
       f.classList.remove('on'); busy = false;
       hudDraw();
+      cmHint();
     }, 220);
   }
   function makeBirds() { return [[17, 13], [23, 17], [27, 14], [20, 13], [15, 15]].map(([x, y]) => ({ x: x * TS + 4, y: y * TS + 8, home: [x * TS + 4, y * TS + 8], fly: 0, t: Math.random() * 3 })); }

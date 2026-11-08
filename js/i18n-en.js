@@ -6322,4 +6322,9 @@ Object.assign(I18N, {
 "35juw2": "🏙️ Back to Vic",
 "ks5y8e": "🌆 Barcelona · digital district",
 "bh3akx": "Barcelona's big agencies don't know you yet. Complete stage 4 and you'll be able to go.",
+"1qt04h8": "↓ River bridge · ← River walk to Devesa Park. Comerçmons live in the park's tall grass.",
+"wb7uew": "There are Comerçmons around here! But before battling and catching them you need to choose your starter Comerçmon: menu ☰ → 🐾 Comerçdex.",
+"1yifg1j": "Devesa Park is full of tall grass: it's the best place to find Comerçmons early on. Those with ✨ already trust you and can be caught.",
+"19p1y53": "Comerçmons live out in the world. The easiest place to start is 🌳 Devesa Park: leave Vic to the west along the river walk (cross the bridge south of the square). Those with ✨ already trust you.",
+"axbkpv": "Now go exploring: lots of Comerçmons live in 🌳 Devesa Park (west of Vic, along the river walk).",
 });
