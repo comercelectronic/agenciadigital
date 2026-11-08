@@ -1,7 +1,8 @@
 /* Agència Digital — panell del professor: consulta i exportació dels resultats dels alumnes */
 (function () {
   'use strict';
-  const API = '/.netlify/functions/joc-resultats';
+  const FN = location.pathname.replace(/[^/]*$/, '') + '.netlify/functions/';
+  const API = FN + 'joc-resultats';
   const $ = (s) => document.querySelector(s);
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const LESSONS = Object.keys(GD.lessons);
@@ -258,7 +259,7 @@
     $('#mktSec').hidden = !classe;
     if (!classe) return;
     try {
-      const r = await fetch('/.netlify/functions/joc-classe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'teacher', password: pw, classe }) });
+      const r = await fetch(FN + 'joc-classe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'teacher', password: pw, classe }) });
       const j = await r.json(); if (!r.ok) throw new Error(j.error);
       const nm = (p) => esc(j.names[p] || p);
       const ST = { pending: T('⏳ En negociació'), accepted: T('✅ Tancat'), rejected: T('❌ Rebutjat'), cancelled: T('🚫 Anul·lat'), expired: T('⌛ Caducat') };
@@ -271,7 +272,7 @@
 
 
   /* ===== Economia de la classe (joc-economia, base de dades) ===== */
-  const EAPI = '/.netlify/functions/joc-economia';
+  const EAPI = FN + 'joc-economia';
   let ecoData = null;
   async function eapi(body) {
     const r = await fetch(EAPI, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ password: $('#pw').value, classe: normClass($('#cls').value) }, body)) });

@@ -24,7 +24,9 @@
     f: [T('Emprenedora novella'), T('Consultora local'), T('Estratega digital'), T('Directora d\'equip'), T('Gestora de crisis'), T('Directora d\'agència'), T('Directora estratègica'), T('Referent del sector'), T('Llegenda d\'Osona')],
     n: [T('Primeres passes'), T('Consultoria local'), T('Estratègia digital'), T('Direcció d\'equip'), T('Gestió de crisis'), T('Direcció d\'agència'), T('Direcció estratègica'), T('Referent del sector'), T('Llegenda d\'Osona')]
   };
-  const API = '/.netlify/functions/joc-resultats';
+  // Les funcions es criden amb una ruta relativa a la carpeta del joc: serveix tant a la seva adreça de Netlify com dins d'ecoynexo.com/jocs/agencia-digital/
+  const FN = location.pathname.replace(/[^/]*$/, '') + '.netlify/functions/';
+  const API = FN + 'joc-resultats';
   // Progressió a 100 nivells: cada nivell antic equival a 3 nivells nous (mateixa experiència total)
   const xpNeed = (lvl) => 60 + 25 * Math.ceil(lvl / 12);
   const MAX_LEVEL = 100;
@@ -548,7 +550,7 @@
   // Cada moviment de diners es desa en una cua amb una clau única (idempotència) i s'envia a joc-economia.
   // El servidor el valida, hi aplica l'impost i actualitza la guardiola de la classe. El saldo del servidor mana:
   // quan la cua està buida, la liquiditat del joc (diners + reserva) s'iguala amb el saldo del servidor.
-  const EAPI = '/.netlify/functions/joc-economia';
+  const EAPI = FN + 'joc-economia';
   const TAXED = ['capitol', 'clients', 'encarrec', 'projecte', 'web', 'botiguer', 'mercat', 'gimnas', 'altre'];
   function econ() {
     if (!S.econ) S.econ = { seq: 0, queue: [], srv: null, inici: false };
@@ -1581,7 +1583,7 @@
       </tbody></table></div><p class="muted small">${L.map((l, i) => `<b>${i} ${esc(l.n)}:</b> ${esc(l.d)}`).join(' · ')} ${T('Nota = punts obtinguts ÷ punts possibles × 10. S\'aprova amb un {0}.', [GD.PASS_GRADE])}</p>`;
   }
   function requestAutograde(task, v) {
-    fetch('/.netlify/functions/joc-correccio-background', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ classe: S.classe, id: S.player.id, task, v }) }).catch(() => { });
+    fetch(FN + 'joc-correccio-background', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ classe: S.classe, id: S.player.id, task, v }) }).catch(() => { });
   }
 
   let lastReviewCheck = 0;
@@ -1639,7 +1641,7 @@
   }
 
   /* ================= Classe: rànquing i mercat entre agències ================= */
-  const CAPI = '/.netlify/functions/joc-classe';
+  const CAPI = FN + 'joc-classe';
   let classView = 'rank', rankSort = 'punts', classData = null, lastMarket = 0;
   async function capi(body) {
     const r = await fetch(CAPI, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ classe: S.classe, id: S.player.id }, body)) });
