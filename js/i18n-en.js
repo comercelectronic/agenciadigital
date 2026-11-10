@@ -6402,4 +6402,6 @@ Object.assign(I18N, {
 "4m14iu": "More management capacity and better-served clients.",
 "13efs4z": "More reputation and more income from local clients.",
 "16qswjj": "Reputation and recurring clients who pay more.",
+"1d4u8bc": "You negotiate better. +5% fees for every 20 levels and more client trust.",
+"t4i42d": "You organise team and money. −4% fixed costs for every 20 levels and more room in crises.",
 });

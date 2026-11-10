@@ -13,11 +13,11 @@
     estrategia:  { n: T('Estratègia'),  i: '🧭', d: T('Diagnòstics més encertats i plans més sòlids. +qualitat a totes les campanyes.') },
     creativitat: { n: T('Creativitat'), i: '🎨', d: T('Missatges i continguts que connecten. +resultats en marca, xarxes i anuncis.') },
     analitica:   { n: T('Analítica'),   i: '📊', d: T('Llegeixes les dades amb rigor. +precisió i opcions de diàleg basades en dades.') },
-    comercial:   { n: T('Comercial'),   i: '🤝', d: T('Negocies millor. +5% als honoraris per cada 10 nivells i més confiança dels clients.') },
-    gestio:      { n: T('Direcció'),    i: '🏢', d: T('Organitzes equip i diners. −4% de despeses fixes per cada 10 nivells i més marge en crisis.') }
+    comercial:   { n: T('Comercial'),   i: '🤝', d: T('Negocies millor. +5% als honoraris per cada 20 nivells i més confiança dels clients.') },
+    gestio:      { n: T('Direcció'),    i: '🏢', d: T('Organitzes equip i diners. −4% de despeses fixes per cada 20 nivells i més marge en crisis.') }
   };
   // Habilitats: 50 nivells (S.skills) que la història llegeix en una escala de 0 a 5 (cada 10 nivells, 1 punt)
-  const SKILL_MAX = 50, SKILL_TIER = 10, SKILL_TIERS = SKILL_MAX / SKILL_TIER;
+  const SKILL_MAX = 100, SKILL_TIER = 20, SKILL_TIERS = SKILL_MAX / SKILL_TIER;
   const CHARS_TRUST = ['carme', 'miquel', 'julia', 'berta', 'quim', 'laia'];
   const RANKS = {
     m: [T('Emprenedor novell'), T('Consultor local'), T('Estrateg digital'), T('Director d\'equip'), T('Gestor de crisis'), T('Director d\'agència'), T('Director estratègic'), T('Referent del sector'), T('Llegenda d\'Osona')],
@@ -32,7 +32,7 @@
   const xpNeed = (lvl) => 133 + 3 * lvl;
   const xpNeedV2 = (lvl) => 60 + 25 * Math.ceil(lvl / 12); // corba anterior, per convertir partides
   const MAX_LEVEL = 100;
-  const SP_PER_LEVEL = 3;
+  const SP_PER_LEVEL = 5; // 99 pujades de nivell × 5 = 495 punts: les cinc habilitats gairebé al màxim en acabar el joc
 
   /* ================= Estat ================= */
   let S = null;
@@ -43,7 +43,7 @@
       v: 1, agency: T('Píxel d\'Osona'), profile: null,
       player: { id: uid(), name: 'Pau', surname: 'Riera', g: 'm', look: Object.assign({}, ART.PLAYER_DEFAULT) },
       classe: '', quizLog: {}, syncPending: false, lastSync: 0, web: { platforms: [], levels: {} }, proj: {}, upgrades: {},
-      level: 1, xp: 0, sp: 0, prog: 3,
+      level: 1, xp: 0, sp: 0, prog: 4,
       skills: { estrategia: 0, creativitat: 0, analitica: 0, comercial: 0, gestio: 0 },
       money: 3000, reserve: 0, week: 1, rep: 5,
       trust: { carme: 0, miquel: 0, julia: 0, berta: 0, quim: 0, laia: 0 },
@@ -2573,8 +2573,8 @@
   function migrateProgress() {
     S.level = Math.min(MAX_LEVEL, (S.level - 1) * 3 + 1);
     S.xp = Math.floor((S.xp || 0) / 3);
-    S.sp = (S.sp || 0) * SKILL_TIER;
-    for (const k in S.skills) S.skills[k] = Math.min(SKILL_MAX, (S.skills[k] || 0) * SKILL_TIER);
+    S.sp = (S.sp || 0) * 10; // habilitats de 0–5 a 0–50
+    for (const k in S.skills) S.skills[k] = Math.min(50, (S.skills[k] || 0) * 10);
     S.prog = 2;
   }
   // Partides amb la corba anterior (experiència massa ràpida): es recalcula el nivell amb la mateixa experiència total
@@ -2584,8 +2584,14 @@
     let lvl = 1;
     while (lvl < MAX_LEVEL && total >= xpNeed(lvl)) { total -= xpNeed(lvl); lvl++; }
     S.level = lvl; S.xp = lvl >= MAX_LEVEL ? 0 : total;
-    S.sp = Math.min(S.sp || 0, SP_PER_LEVEL * (lvl - 1));
+    S.sp = Math.min(S.sp || 0, 3 * (lvl - 1)); // en aquella versió, 3 punts per nivell
     S.prog = 3;
+  }
+  // Habilitats de 0–50 a 0–100 (es manté el mateix percentatge, i la història les llegeix igual)
+  function migrateSkills100() {
+    for (const k in S.skills) S.skills[k] = Math.min(SKILL_MAX, (S.skills[k] || 0) * 2);
+    S.sp = (S.sp || 0) * 2;
+    S.prog = 4;
   }
   // Comprova al núvol si hi ha una partida més nova (jugada en un altre dispositiu) i el grup actual
   async function refreshFromCloud() {
@@ -2600,14 +2606,24 @@
       }
     } catch (e) { if (e.status === 401) { acc.expired = true; setAcc(acc); toast(T('La sessió ha caducat. Torna a entrar perquè la partida es desi al núvol.'), 'bad'); } }
   }
+  // Converteix una partida antiga a les regles actuals (nivells i experiència). Si ha canviat, la desa i
+  // envia el resum al professor de seguida perquè el panell i el rànquing mostrin el nivell nou.
+  function upgradeSave(d) {
+    const v1 = !d.prog;
+    S = Object.assign(newState(), d);
+    if (v1) S.prog = 1;
+    const before = S.prog;
+    if (S.prog === 1) migrateProgress();
+    if (S.prog === 2) migrateXpCurve();
+    if (S.prog === 3) migrateSkills100();
+    if (S.prog !== before) { save(); if (S.classe) setTimeout(queueSync, 0); }
+    return S;
+  }
   function continueGame(fromCloud) {
     S = loadSave();
     if (!S) return titleScreen();
     if (acc && !mineSave(S)) { S = null; return titleScreen(); }
-    const old = !S.prog;
-    S = Object.assign(newState(), S);
-    if (old) migrateProgress();
-    if (S.prog === 2) migrateXpCurve();
+    S = upgradeSave(S);
     if (!S.econ) { econ().inici = true; econPush('inici', 'inici', 3000); }
     applyPlayer();
     if (S.syncPending) queueSync();
@@ -2649,7 +2665,7 @@
       case 'useReserve': S.money += S.reserve; S.reserve = 0; save(); hubScreen('empresa'); break;
       case 'export': textBox(T('Codi de la teva partida (copia\'l i enganxa\'l a l\'altre dispositiu):'), btoa(unescape(encodeURIComponent(JSON.stringify(S))))); break;
       case 'import': textBox(T('Enganxa el codi de la partida:'), '', (v) => {
-        try { const d = JSON.parse(decodeURIComponent(escape(atob(v)))); if (!d || !d.v) throw 0; if (acc) { d.player.id = acc.id; d.classe = acc.classe; d.owner = acc.usuari; } S = Object.assign(newState(), d); applyPlayer(); save(); toast(T('Partida importada'), 'good'); goWorld(); }
+        try { const d = JSON.parse(decodeURIComponent(escape(atob(v)))); if (!d || !d.v) throw 0; if (acc) { d.player.id = acc.id; d.classe = acc.classe; d.owner = acc.usuari; } S = upgradeSave(d); applyPlayer(); save(); toast(T('Partida importada'), 'good'); goWorld(); }
         catch (e) { toast(T('El codi no és vàlid'), 'bad'); }
       }); break;
       case 'speed': settings.speed = settings.speed <= 8 ? 18 : settings.speed <= 18 ? 32 : 6; saveSettings(); hubScreen('empresa'); break;

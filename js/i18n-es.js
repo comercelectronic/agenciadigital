@@ -6316,4 +6316,6 @@ Object.assign(I18N, {
 "4m14iu": "Más capacidad de gestión y clientes mejor atendidos.",
 "13efs4z": "Más reputación y más ingresos de los clientes locales.",
 "16qswjj": "Reputación y clientes recurrentes que pagan más.",
+"1d4u8bc": "Negocias mejor. +5 % en los honorarios por cada 20 niveles y más confianza de los clientes.",
+"t4i42d": "Organizas equipo y dinero. −4 % de gastos fijos por cada 20 niveles y más margen en crisis.",
 });
