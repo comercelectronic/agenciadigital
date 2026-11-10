@@ -356,7 +356,7 @@ GD.cmRegister([
     personality: T('Analític i perfeccionista. No suporta la frase «el nostre públic és tothom».'),
     utility: T('Augmenta l\'experiència que guanyes.'),
     passive: { name: T('Públic objectiu'), combat: T('Fa un 20 % més de dany a un tipus triat a l\'inici del combat.'), kind: 'xp', v: 3 },
-    capture: { cond: { area: ['mercat', 2], level: 22 }, text: T('Supera 2 lliçons d\'investigació de mercat i arriba al nivell 22.') },
+    capture: { cond: { area: ['mercat', 2], level: 12 }, text: T('Supera 2 lliçons d\'investigació de mercat i arriba al nivell 12.') },
     forms: [
       { name: 'Segmentiu', lvl: 1, desc: T('Un cristall amb potes que fa arcs de Sant Martí.'),
         look: { body: 'crystal', head: 'crystal', eyes: 'big', mouth: 'smile', acc: 'pie', pattern: 'facets' },
@@ -410,7 +410,7 @@ GD.cmRegister([
     personality: T('Precís, exigent i bon calculador. No regala mai res.'),
     utility: T('Augmenta els ingressos dels clients recurrents.'),
     passive: { name: T('Marge sa'), combat: T('Els seus atacs costen un 10 % menys d\'energia.'), kind: 'gig', v: 4 },
-    capture: { cond: { area: ['mercat', 1], level: 16 }, text: T('Supera una lliçó d\'investigació de mercat i arriba al nivell 16.') },
+    capture: { cond: { area: ['mercat', 1], level: 9 }, text: T('Supera una lliçó d\'investigació de mercat i arriba al nivell 9.') },
     forms: [
       { name: 'Preuxí', lvl: 1, desc: T('Una balança amb potes i dues pinces.'),
         look: { body: 'crab', head: 'round', eyes: 'small', mouth: 'smile', acc: 'scale', pattern: 'shell' },
@@ -626,7 +626,7 @@ GD.cmRegister([
     personality: T('Valent, impacient i somiador. Cau, s\'aixeca i torna a provar.'),
     utility: T('Augmenta els diners de les missions de la campanya.'),
     passive: { name: T('Pivotar'), combat: T('Quan falla un atac, el següent fa un 30 % més de dany.'), kind: 'chapter', v: 5 },
-    capture: { cond: { ch: '3.1', level: 34 }, text: T('Completa el capítol 3.1 i arriba al nivell 34.') },
+    capture: { cond: { ch: '3.1', level: 19 }, text: T('Completa el capítol 3.1 i arriba al nivell 19.') },
     forms: [
       { name: 'Startupí', lvl: 1, desc: T('Un esquirol amb un coet a l\'esquena.'),
         look: { body: 'blob', head: 'squirrel', ears: 'tuft', tail: 'bushy', acc: 'rocket', eyes: 'big', mouth: 'open', pattern: 'belly' },
@@ -717,7 +717,7 @@ GD.cmRegister([
     personality: T('Lògic, tranquil i tossut. No descansa fins que tot encaixa.'),
     utility: T('Rebaixa el cost de les respostes incorrectes dels tests.'),
     passive: { name: T('Peça clau'), combat: T('Els efectes negatius que rep duren un torn menys.'), kind: 'quizcost', v: 8 },
-    capture: { cond: { lessons: 15, level: 28 }, text: T('Supera 15 lliçons i arriba al nivell 28.') },
+    capture: { cond: { lessons: 15, level: 16 }, text: T('Supera 15 lliçons i arriba al nivell 16.') },
     forms: [
       { name: 'Puzzlet', lvl: 1, desc: T('Un robotet de peces de colors.'),
         look: { body: 'robot', head: 'robot', ears: 'antenna', eyes: 'robot', mouth: 'smile', acc: 'puzzle', pattern: 'panels' },

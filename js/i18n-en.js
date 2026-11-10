@@ -6404,4 +6404,8 @@ Object.assign(I18N, {
 "16qswjj": "Reputation and recurring clients who pay more.",
 "1d4u8bc": "You negotiate better. +5% fees for every 20 levels and more client trust.",
 "t4i42d": "You organise team and money. −4% fixed costs for every 20 levels and more room in crises.",
+"10n363e": "Pass 2 market research lessons and reach level 12.",
+"1y98tj9": "Pass a market research lesson and reach level 9.",
+"196pnbq": "Complete chapter 3.1 and reach level 19.",
+"1bus2jd": "Pass 15 lessons and reach level 16.",
 });

@@ -6318,4 +6318,8 @@ Object.assign(I18N, {
 "16qswjj": "Reputación y clientes recurrentes que pagan más.",
 "1d4u8bc": "Negocias mejor. +5 % en los honorarios por cada 20 niveles y más confianza de los clientes.",
 "t4i42d": "Organizas equipo y dinero. −4 % de gastos fijos por cada 20 niveles y más margen en crisis.",
+"10n363e": "Supera 2 lecciones de investigación de mercado y llega al nivel 12.",
+"1y98tj9": "Supera una lección de investigación de mercado y llega al nivel 9.",
+"196pnbq": "Completa el capítulo 3.1 y llega al nivel 19.",
+"1bus2jd": "Supera 15 lecciones y llega al nivel 16.",
 });

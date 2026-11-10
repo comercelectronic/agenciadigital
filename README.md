@@ -58,9 +58,9 @@ Els errors econòmics costen diners: treballar gratis, acceptar feines sense cap
 
 ## Progressió: 100 nivells
 
-- El personatge puja fins al **nivell 100**, repartit per tota la partida: cada nivell costa 133 + 3 × nivell EXP. En acabar cada etapa s'arriba just al nivell que demana la següent (1, 10, 19, 31, 43, 55, 67 i 79), i el 100 només s'assoleix en acabar la campanya, els projectes i les webs del Taller (unes 28.000 EXP).
+- El personatge pot pujar fins al **nivell 100**, però a poc a poc: cada nivell costa 266 + 6 × nivell EXP. En acabar cada etapa s'arriba al nivell que demana la següent (1, 5, 13, 20, 27, 35, 42 i 50). Fent tota la campanya, els projectes i les webs s'arriba al voltant del nivell 55-60 (uns 70 amb bonificacions d'experiència): el 100 és un repte.
 - Cada nivell dona **5 punts d'habilitat** (495 en total). Cada habilitat té **100 nivells**; la història les llegeix en una escala de 0 a 5 (cada 20 nivells, 1 punt), i les bonificacions (honoraris, despeses, qualitat) creixen nivell a nivell.
-- Els Comerçmons pugen fins al nivell 50.
+- Els Comerçmons pugen fins al nivell 50 (la seva experiència és independent de la del personatge).
 - Les partides començades es converteixen soles quan l'alumne torna a obrir el joc (també les desades al núvol i les importades): es recalcula el nivell amb la mateixa experiència total i les habilitats passen a l'escala de 100 mantenint el percentatge. El resum s'envia al professor de seguida.
 
 ## Comptes dels alumnes (usuari i contrasenya)

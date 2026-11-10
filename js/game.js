@@ -27,10 +27,11 @@
   // Les funcions es criden amb una ruta relativa a la carpeta del joc: serveix tant a la seva adreça de Netlify com dins d'ecoynexo.com/jocs/agencia-digital/
   const FN = location.pathname.replace(/[^/]*$/, '') + '.netlify/functions/';
   const API = FN + 'joc-resultats';
-  // Progressió a 100 nivells repartits per tota la partida: en acabar cada etapa de la campanya s'arriba just al nivell
-  // que demana la següent, i el nivell 100 només s'assoleix en acabar-ho tot (campanya, projectes i webs del Taller).
-  const xpNeed = (lvl) => 133 + 3 * lvl;
-  const xpNeedV2 = (lvl) => 60 + 25 * Math.ceil(lvl / 12); // corba anterior, per convertir partides
+  // Progressió lenta: en acabar tota la campanya s'arriba al voltant del nivell 55-60 (uns 70 amb bonificacions);
+  // el nivell 100 és un repte per a qui ho faci tot. En acabar cada etapa s'arriba al nivell que demana la següent.
+  const xpNeed = (lvl) => 266 + 6 * lvl;
+  const xpNeedV3 = (lvl) => 133 + 3 * lvl; // corbes anteriors, per convertir partides
+  const xpNeedV2 = (lvl) => 60 + 25 * Math.ceil(lvl / 12);
   const MAX_LEVEL = 100;
   const SP_PER_LEVEL = 5; // 99 pujades de nivell × 5 = 495 punts: les cinc habilitats gairebé al màxim en acabar el joc
 
@@ -43,7 +44,7 @@
       v: 1, agency: T('Píxel d\'Osona'), profile: null,
       player: { id: uid(), name: 'Pau', surname: 'Riera', g: 'm', look: Object.assign({}, ART.PLAYER_DEFAULT) },
       classe: '', quizLog: {}, syncPending: false, lastSync: 0, web: { platforms: [], levels: {} }, proj: {}, upgrades: {},
-      level: 1, xp: 0, sp: 0, prog: 4,
+      level: 1, xp: 0, sp: 0, prog: 5,
       skills: { estrategia: 0, creativitat: 0, analitica: 0, comercial: 0, gestio: 0 },
       money: 3000, reserve: 0, week: 1, rep: 5,
       trust: { carme: 0, miquel: 0, julia: 0, berta: 0, quim: 0, laia: 0 },
@@ -2578,11 +2579,20 @@
     S.prog = 2;
   }
   // Partides amb la corba anterior (experiència massa ràpida): es recalcula el nivell amb la mateixa experiència total
+  // Recalcula el nivell amb la mateixa experiència total en passar d'una corba a una altra
+  function relevel(from, to) {
+    let total = S.xp || 0;
+    for (let l = 1; l < S.level; l++) total += from(l);
+    let lvl = 1;
+    while (lvl < MAX_LEVEL && total >= to(lvl)) { total -= to(lvl); lvl++; }
+    S.level = lvl; S.xp = lvl >= MAX_LEVEL ? 0 : total;
+    return lvl;
+  }
   function migrateXpCurve() {
     let total = S.xp || 0;
     for (let l = 1; l < S.level; l++) total += xpNeedV2(l);
     let lvl = 1;
-    while (lvl < MAX_LEVEL && total >= xpNeed(lvl)) { total -= xpNeed(lvl); lvl++; }
+    while (lvl < MAX_LEVEL && total >= xpNeedV3(lvl)) { total -= xpNeedV3(lvl); lvl++; }
     S.level = lvl; S.xp = lvl >= MAX_LEVEL ? 0 : total;
     S.sp = Math.min(S.sp || 0, 3 * (lvl - 1)); // en aquella versió, 3 punts per nivell
     S.prog = 3;
@@ -2592,6 +2602,13 @@
     for (const k in S.skills) S.skills[k] = Math.min(SKILL_MAX, (S.skills[k] || 0) * 2);
     S.sp = (S.sp || 0) * 2;
     S.prog = 4;
+  }
+  // Experiència més lenta (cada nivell costa el doble): menys nivells, i els punts sense gastar s'ajusten
+  function migrateSlowXp() {
+    const lvl = relevel(xpNeedV3, xpNeed);
+    const spent = Object.values(S.skills || {}).reduce((a, v) => a + (v || 0), 0);
+    S.sp = Math.max(0, Math.min(S.sp || 0, SP_PER_LEVEL * (lvl - 1) - spent));
+    S.prog = 5;
   }
   // Comprova al núvol si hi ha una partida més nova (jugada en un altre dispositiu) i el grup actual
   async function refreshFromCloud() {
@@ -2616,6 +2633,7 @@
     if (S.prog === 1) migrateProgress();
     if (S.prog === 2) migrateXpCurve();
     if (S.prog === 3) migrateSkills100();
+    if (S.prog === 4) migrateSlowXp();
     if (S.prog !== before) { save(); if (S.classe) setTimeout(queueSync, 0); }
     return S;
   }
