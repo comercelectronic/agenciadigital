@@ -9,7 +9,7 @@
      forms:[{ name, lvl, cond?, desc, look:{...}, attacks:[...] }] }
    - stats: atac, defensa, velocitat, energia, intel·ligència (atk, def, vel, ene, int)
    - arch (arquetip): reparteix les estadístiques; tots sumen el mateix, així cap espècie és millor en tot
-   - passive.kind: on ajuda dins del joc (xp, gig, proj, chapter, world, quizcost, costs, monxp, rep) i v = % a la 1a forma
+   - passive.kind: on ajuda dins del joc (xp, gig = clients recurrents, proj, chapter, world, quizcost, costs, monxp, rep) i v = % a la 1a forma
    - attacks: { n, cat: ofensiu|defensiu|estrategic|especial, cost (energia), pow (potència), acc (precisió %), cd (torns de recuperació), fx (efecte) } */
 window.GD = window.GD || {};
 
@@ -79,7 +79,7 @@ GD.cmStatNames = { atk: T('Atac'), def: T('Defensa'), vel: T('Velocitat'), ene: 
 GD.cmAttackCats = { ofensiu: T('Ofensiu'), defensiu: T('Defensiu'), estrategic: T('Estratègic'), especial: T('Especial') };
 // On ajuden les habilitats passives dins del joc
 GD.cmKinds = {
-  xp: T('experiència del jugador'), gig: T('diners dels encàrrecs'), proj: T('pagament de projectes i webs'), chapter: T('diners de les missions de la campanya'),
+  xp: T('experiència del jugador'), gig: T('ingressos dels clients recurrents'), proj: T('pagament de projectes i webs'), chapter: T('diners de les missions de la campanya'),
   world: T('diners dels botiguers de Vic'), quizcost: T('cost de les respostes incorrectes'), costs: T('despeses setmanals'),
   monxp: T('experiència dels Comerçmons'), rep: T('reputació guanyada')
 };
@@ -219,7 +219,7 @@ GD.cmRegister([
     id: 'vendifox', num: 6, family: 'vend', specialty: T('Negociació i tancament de vendes'), type: 'foc', rarity: 'comu', arch: 'atacant', tweak: ['int', 'ene'], starter: true,
     desc: T('Llegeix les objeccions dels clients abans que les diguin. La cua s\'encén quan tanca una venda.'),
     personality: T('Xerraire, segur de si mateix i amb respostes per a tot. Una mica massa insistent.'),
-    utility: T('Augmenta els diners dels encàrrecs.'),
+    utility: T('Augmenta els ingressos dels clients recurrents.'),
     passive: { name: T('Tancament perfecte'), combat: T('Fa un 20 % més de dany als rivals amb menys de la meitat de vida.'), kind: 'gig', v: 5 },
     capture: { cond: { starter: 1 }, text: T('Un dels tres Comerçmons inicials.') },
     forms: [
@@ -297,7 +297,7 @@ GD.cmRegister([
     personality: T('Ordenada, fiable i tossuda. Té un pla B per a cada retard.'),
     utility: T('Redueix les despeses setmanals de l\'agència.'),
     passive: { name: T('Cadena eficient'), combat: T('Els seus atacs tenen un torn menys de recuperació.'), kind: 'costs', v: 3 },
-    capture: { cond: { gigs: 3 }, text: T('Completa 3 encàrrecs lliures.') },
+    capture: { cond: { lessons: 5 }, text: T('Supera 5 lliçons de la biblioteca.') },
     forms: [
       { name: 'Logistort', lvl: 1, desc: T('Una tortugueta amb una caixa de cartó per closca.'),
         look: { body: 'turtle', head: 'round', eyes: 'small', mouth: 'smile', acc: 'box', pattern: 'shell' },
@@ -408,9 +408,9 @@ GD.cmRegister([
     id: 'preuxi', num: 16, family: 'mkt', specialty: T('Política de preus i marges'), type: 'metall', rarity: 'pococ', arch: 'estrateg', tweak: ['def', 'vel'],
     desc: T('Un cranc-balança que pesa cada preu amb les pinces. Si el marge és dolent, fa soroll de calaix buit.'),
     personality: T('Precís, exigent i bon calculador. No regala mai res.'),
-    utility: T('Augmenta els diners dels encàrrecs.'),
+    utility: T('Augmenta els ingressos dels clients recurrents.'),
     passive: { name: T('Marge sa'), combat: T('Els seus atacs costen un 10 % menys d\'energia.'), kind: 'gig', v: 4 },
-    capture: { cond: { gigs: 5, level: 16 }, text: T('Completa 5 encàrrecs i arriba al nivell 16.') },
+    capture: { cond: { area: ['mercat', 1], level: 16 }, text: T('Supera una lliçó d\'investigació de mercat i arriba al nivell 16.') },
     forms: [
       { name: 'Preuxí', lvl: 1, desc: T('Una balança amb potes i dues pinces.'),
         look: { body: 'crab', head: 'round', eyes: 'small', mouth: 'smile', acc: 'scale', pattern: 'shell' },
@@ -426,9 +426,9 @@ GD.cmRegister([
     id: 'imanto', num: 17, family: 'vend', specialty: T('Captació de clients'), type: 'electric', rarity: 'comu', arch: 'rapid', tweak: ['atk', 'int'],
     desc: T('Un eriçó amb punxes d\'imant: atrau clients potencials allà on va.'),
     personality: T('Optimista i persistent. Fa trenta trucades i no es cansa.'),
-    utility: T('Augmenta els diners dels encàrrecs.'),
+    utility: T('Augmenta els ingressos dels clients recurrents.'),
     passive: { name: T('Atracció'), combat: T('Els rivals l\'ataquen més sovint i protegeix els aliats febles.'), kind: 'gig', v: 4 },
-    capture: { cond: { gigs: 1 }, text: T('Completa el teu primer encàrrec lliure.') },
+    capture: { cond: { ch: '1.5' }, text: T('Completa el capítol 1.5 de la campanya.') },
     forms: [
       { name: 'Imantó', lvl: 1, desc: T('Un eriçó amb punxes magnètiques.'),
         look: { body: 'blob', head: 'round', ears: 'spikes', eyes: 'big', mouth: 'smile', acc: 'magnet', pattern: 'belly' },
@@ -736,7 +736,7 @@ GD.cmRegister([
     id: 'monopolion', num: 34, family: 'lleg', specialty: T('Monopoli'), type: 'ombra', rarity: 'lleg', arch: 'tanc', tweak: ['atk', 'vel'],
     desc: T('Un lleó d\'ombra assegut damunt d\'un tauler de joc. Quan rugeix, la competència desapareix… i els clients es queden sense alternatives.'),
     personality: T('Imponent, poderós i perillós. Recorda per què existeixen les lleis de la competència.'),
-    utility: T('Augmenta els diners dels encàrrecs, però el seu poder té límits: no es pot combinar amb un altre llegendari a l\'equip.'),
+    utility: T('Augmenta els ingressos dels clients recurrents, però el seu poder té límits: no es pot combinar amb un altre llegendari a l\'equip.'),
     passive: { name: T('Barreres d\'entrada'), combat: T('Els rivals no poden canviar de Comerçmon mentre ell és al camp.'), kind: 'gig', v: 7 },
     capture: { cond: { stage: 7, days: 25, dex: 20 }, text: T('Supera l\'etapa 7, juga 25 dies diferents i captura 20 Comerçmons.') },
     forms: [
@@ -792,9 +792,9 @@ GD.cmSynergies = [
   { ids: ['publifoc', 'socialbee'], n: T('Campanya viral'), d: T('Bonificació d\'experiència.'), kind: 'xp', v: 5 },
   { ids: ['brandalia', 'creativola'], n: T('Identitat suprema'), d: T('Més defensa en combat i més reputació.'), kind: 'rep', v: 8 },
   { ids: ['analitopus', 'seolop'], n: T('Domini digital'), d: T('Més precisió en combat i tests més barats.'), kind: 'quizcost', v: 10 },
-  { ids: ['vendifox', 'financrac'], n: T('Negoci perfecte'), d: T('Bonificació econòmica als encàrrecs.'), kind: 'gig', v: 8 },
+  { ids: ['vendifox', 'financrac'], n: T('Negoci perfecte'), d: T('Bonificació econòmica amb els clients recurrents.'), kind: 'gig', v: 8 },
   { ids: ['sabionet', 'estratego'], n: T('Ment empresarial'), d: T('Avantatge estratègic: més experiència per als Comerçmons.'), kind: 'monxp', v: 12 },
-  { ids: ['imanto', 'fideli'], n: T('Embut complet'), d: T('Captar i fidelitzar: més diners dels encàrrecs.'), kind: 'gig', v: 6 },
+  { ids: ['imanto', 'fideli'], n: T('Embut complet'), d: T('Captar i fidelitzar: més ingressos dels clients recurrents.'), kind: 'gig', v: 6 },
   { ids: ['clicarro', 'logistort'], n: T('Comanda perfecta'), d: T('Botiga i logística coordinades: més pagament de projectes.'), kind: 'proj', v: 6 },
   { ids: ['copiuma', 'videolot'], n: T('Contingut que enganxa'), d: T('Text i vídeo junts: més experiència.'), kind: 'xp', v: 5 },
   { ids: ['aparadorix', 'ateneta'], n: T('Botiga de deu'), d: T('Aparador i atenció: més diners dels botiguers.'), kind: 'world', v: 8 },

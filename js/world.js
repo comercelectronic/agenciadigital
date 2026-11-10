@@ -805,7 +805,7 @@
       return { kind: 'proj', id: p.id, who: p.who, map: h[0], x: h[1], y: h[2], status: API.projStatus(p), text: T_('Projecte real: {0}', [API.txt(p.title)]) };
     }
     const lv = ids.find(c => API.chapterState(c) === 'level');
-    if (lv) return { kind: 'level', id: lv, text: T_('Arriba al nivell {0} per continuar: ajuda els botiguers de Vic o fes encàrrecs.', [GD.stages[GD.chapters[lv].stage - 1].minLevel]) };
+    if (lv) return { kind: 'level', id: lv, text: T_('Arriba al nivell {0} per continuar: fes projectes reals i ajuda els botiguers de Vic.', [GD.stages[GD.chapters[lv].stage - 1].minLevel]) };
     return null;
   }
 
@@ -910,7 +910,7 @@
         { t: T_('🗺️ Campanya i missions'), fn: () => openHub('campanya') }, { t: T_('📋 Projectes reals'), fn: () => openHub('projectes') },
         { t: T_('🛒 Millores de l\'agència'), fn: () => openHub('empresa') }, { t: T_('🏆 Classe: rànquing i mercat'), fn: () => openHub('classe') }, { t: T_('🛠️ Taller web'), fn: () => openHub('taller') }, { t: T_('🏢 Empresa i finances'), fn: () => openHub('empresa') }, { t: T_('Tancar'), fn: () => { } }]);
       case 'prestatge': return openHub('biblioteca');
-      case 'telefon': return say([['', T_('El telèfon de l\'agència. Hi ha encàrrecs nous esperant.')]], () => openHub('encarrecs'));
+      case 'telefon': return say([['', T_('El telèfon de l\'agència. Els clients truquen per encarregar-te feina: la trobaràs a la campanya i als projectes reals.')]], () => openHub('projectes'));
       case 'pissarra': return notebook();
       case 'lleixa': return say(findClue('lleixa', [['', T_('La lleixa del pa. Ara, a la tarda, encara hi ha moltes coques de vidre i pans de motlle.')]]));
       case 'caixa': return say(findClue('caixa', [['', T_('La caixa enregistradora. Els tiquets del mes mostren les vendes per hores.')]]));
@@ -1195,7 +1195,7 @@
     el.hidden = false;
     el.innerHTML = `<div class="w-note-box">
       <h3>${T_('📒 Llibreta')}</h3>
-      <h4>${T_('🎯 Objectiu')}</h4><p>${obj ? API.esc(obj.text) + (obj.map ? `<br><small>📍 ${API.esc(placeName(obj.map))}</small>` : '') : T_('Explora Vic, ajuda els botiguers i fes encàrrecs.')}</p>
+      <h4>${T_('🎯 Objectiu')}</h4><p>${obj ? API.esc(obj.text) + (obj.map ? `<br><small>📍 ${API.esc(placeName(obj.map))}</small>` : '') : T_('Explora Vic, ajuda els botiguers i troba Comerçmons.')}</p>
       <h4>${T_('🔍 Pistes trobades ({0}/{1})', [found.length, Object.keys(C).length])}</h4>
       ${found.length ? `<ul>${found.map(([, c]) => `<li><b>${API.esc(GD.names[c.who] || '')}:</b> ${API.esc(c.t)}</li>`).join('')}</ul>` : `<p class="muted">${T_('Encara cap. Mira les coses dels negocis i parla amb la gent: les pistes t\'ajudaran a les missions.')}</p>`}
       <h4>${T_('🏪 Botiguers que has ajudat')}</h4>

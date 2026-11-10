@@ -1,4 +1,4 @@
-/* Agència Digital — guió de les etapes 6, 7 i 8, encàrrecs i finals */
+/* Agència Digital — guió de les etapes 6, 7 i 8 i finals */
 (function () {
   const CH = (id, o) => { GD.chapters[id] = Object.assign({ id, stage: +id.split('.')[0] }, o); };
   const tbl = GD.tbl;
@@ -331,61 +331,4 @@
     return E;
   };
 
-  /* ============================================================
-     ENCÀRRECS LLIURES (repetibles)
-     ============================================================ */
-  GD.gigs = [
-    { id: 'g_perru', who: 'client', title: T('Perruqueria sense clientes al matí'), area: 'seo', pay: 180, intro: T('Una perruqueria de Manlleu té el matí buit.'), problem: T('La fitxa de Google no diu que obren a les 9 h i no es pot reservar en línia. Què proposes?'), opts: [
-      { t: T('Actualitzar la fitxa, activar reserves en línia i una oferta de matí'), q: 0.9, r: T('Les reserves del matí es dupliquen en tres setmanes.') },
-      { t: T('Fer vídeos per a TikTok'), q: 0.35, r: T('Molts visionats de gent jove de fora, poques reserves.') },
-      { t: T('Repartir fulletons a tot Osona'), q: 0.4, r: T('Algunes trucades, però cost alt per reserva.') }] },
-    { id: 'g_casa', who: 'client', title: T('Casa rural amb reserves per Booking'), area: 'web', pay: 220, intro: T('Una casa rural paga molta comissió a les plataformes.'), problem: T('Vol més reserves directes. Què prioritzes?'), opts: [
-      { t: T('Web pròpia amb reserva directa, millor preu garantit i correu als antics hostes que van acceptar rebre\'n'), q: 0.9, r: T('El 30 % de les reserves passen a ser directes.') },
-      { t: T('Deixar Booking de cop'), q: 0.2, r: T('Les reserves cauen en picat.') },
-      { t: T('Comprar una llista de correus de turistes'), q: 0.1, r: T('Queixes i problemes de protecció de dades.') }] },
-    { id: 'g_ferret', who: 'client', title: T('Ferreteria i el supermercat de bricolatge'), area: 'fonaments', pay: 160, intro: T('Una gran superfície de bricolatge ha obert a Vic.'), problem: T('La ferreteria de barri no pot competir en preu. On es diferencia?'), opts: [
-      { t: T('Assessorament expert, servei a domicili i comandes per WhatsApp'), q: 0.85, r: T('Els clients professionals tornen.') },
-      { t: T('Baixar preus un 25 %'), q: 0.25, r: T('Marge destruït; la gran superfície baixa encara més.') },
-      { t: T('Canviar el logo'), q: 0.2, r: T('Bonic, però tot continua igual.') }] },
-    { id: 'g_dentista', who: 'client', title: T('Clínica dental i anuncis cars'), area: 'ads', pay: 260, intro: T('Una clínica dental gasta 1.000 €/mes en anuncis.'), problem: T('CTR del 4 %, 300 clics, 2 cites. Què revises primer?'), opts: [
-      { t: T('La pàgina de destinació i el formulari de cita al mòbil'), q: 0.9, r: T('El formulari no funcionava al mòbil. Ara: 24 cites/mes.') },
-      { t: T('Canviar l\'anunci'), q: 0.3, r: T('El CTR ja era bo; les cites no pugen.') },
-      { t: T('Duplicar el pressupost'), q: 0.15, r: T('Més clics, mateixes cites, més cost.') }] },
-    { id: 'g_vi', who: 'client', title: T('Celler del Lluçanès'), area: 'marca', pay: 240, intro: T('Un celler petit vol vendre a restaurants de Barcelona.'), problem: T('Quin missatge proposes?'), opts: [
-      { t: T('Història real del celler, varietats autòctones i maridatges per a cartes de restaurant'), q: 0.85, r: T('Quatre restaurants hi incorporen els vins.') },
-      { t: T('«El millor vi del món»'), q: 0.2, r: T('Ningú no s\'ho creu.') },
-      { t: T('Copiar l\'estil d\'un celler famós'), q: 0.3, r: T('Es confon amb la competència.') }] },
-    { id: 'g_ong', who: 'client', title: T('Entitat social que vol voluntaris'), area: 'xarxes', pay: 140, intro: T('Una entitat de Vic necessita voluntaris per al banc d\'aliments.'), problem: T('Com ho plantejaries?'), opts: [
-      { t: T('Històries reals de voluntaris, crida concreta (dates i hores) i formulari senzill'), q: 0.9, r: T('45 inscripcions en dues setmanes.') },
-      { t: T('Publicar «Necessitem voluntaris» cada dia'), q: 0.35, r: T('Poca resposta: no hi ha concreció.') },
-      { t: T('Un sorteig de samarretes'), q: 0.25, r: T('Molts participants, pocs voluntaris.') }] },
-    { id: 'g_report', who: 'client', title: T('Informe per a un comitè de direcció'), area: 'analitica', pay: 300, minStage: 2, intro: T('Una empresa et demana un informe de resultats digitals.'), problem: T('Quina estructura proposes?'), opts: [
-      { t: T('Objectiu → resultats comercials → resultats de màrqueting → activitat → recomanacions'), q: 0.9, r: T('El comitè entén l\'informe en cinc minuts.') },
-      { t: T('Totes les mètriques de totes les plataformes'), q: 0.3, r: T('Quaranta pàgines que ningú no llegeix.') },
-      { t: T('Només els seguidors i els m\'agrada'), q: 0.1, r: T('La directora financera fa preguntes incòmodes.') }] },
-    { id: 'g_b2b', who: 'client', title: T('Fabricant de pinsos'), area: 'creixement', pay: 320, minStage: 2, intro: T('Un fabricant vol captar granges com a clients.'), problem: T('Quin canal prioritzes?'), opts: [
-      { t: T('Contingut tècnic útil, fires del sector i seguiment comercial en 24 h'), q: 0.85, r: T('Contactes qualificats i tres clients nous.') },
-      { t: T('Anuncis a Instagram per a públic jove urbà'), q: 0.15, r: T('Cap granger a la vista.') },
-      { t: T('Enviar correus massius a una base comprada'), q: 0.1, r: T('Queixes i risc legal.') }] },
-    { id: 'g_preu', who: 'client', title: T('Pressupost per a una web'), area: 'direccio', pay: 260, minStage: 3, intro: T('Un client vol «una web senzilla», però canvia d\'idea cada dia.'), problem: T('Com plantegeu el pressupost?'), opts: [
-      { t: T('Abast tancat, dues rondes de revisió i canvis fora d\'abast pressupostats a part'), q: 0.9, r: T('Projecte entregat a temps i amb marge.') },
-      { t: T('Preu tancat, «el que calgui»'), q: 0.2, r: T('Tres mesos de canvis. Pèrdues.') },
-      { t: T('Cobrar per hores sense estimació'), q: 0.45, r: T('El client se sent insegur i regateja cada factura.') }] },
-    { id: 'g_crisi', who: 'client', title: T('Hotel amb una ressenya viral'), area: 'xarxes', pay: 300, minStage: 4, intro: T('Un hotel rep una ressenya negativa que es fa viral.'), problem: T('Què li recomanes?'), opts: [
-      { t: T('Respondre amb empatia, reconèixer l\'error, explicar la solució i aplicar-la'), q: 0.9, r: T('La resposta es comparteix com a exemple de bona gestió.') },
-      { t: T('Amenaçar el client amb accions legals'), q: 0.1, r: T('Efecte Streisand: tothom en parla.') },
-      { t: T('No dir res i esperar'), q: 0.35, r: T('La crisi s\'apaga lentament, però deixa marca.') }] },
-    { id: 'g_ab', who: 'client', title: T('Prova A/B d\'una botiga en línia'), area: 'analitica', pay: 340, minStage: 5, intro: T('Una botiga ha provat dos botons de compra durant dos dies.'), problem: T('Botó verd: 6 vendes. Botó taronja: 4. Què recomanes?'), opts: [
-      { t: T('Continuar la prova fins a tenir prou dades amb el criteri definit abans'), q: 0.9, r: T('Al cap de tres setmanes, no hi havia diferència real.') },
-      { t: T('El verd guanya: canviar-ho tot'), q: 0.3, r: T('Conclusió precipitada.') },
-      { t: T('Provar deu colors alhora'), q: 0.3, r: T('Massa variants per a poc trànsit.') }] },
-    { id: 'g_ia', who: 'client', title: T('Textos amb IA per a un e-commerce'), area: 'avancat', pay: 380, minStage: 6, intro: T('Un e-commerce vol generar 2.000 descripcions de producte amb IA.'), problem: T('Com ho planteges?'), opts: [
-      { t: T('Plantilla amb dades reals de cada producte, generació amb IA i revisió per mostreig abans de publicar'), q: 0.9, r: T('Ràpid, coherent i sense errors greus.') },
-      { t: T('Generar-les i publicar-les directament'), q: 0.25, r: T('Diverses descripcions inventen característiques que el producte no té.') },
-      { t: T('Escriure-les totes a mà'), q: 0.5, r: T('Bona qualitat, però sis mesos de feina.') }] },
-    { id: 'g_intl', who: 'client', title: T('Formatgeria que vol vendre a Andorra'), area: 'avancat', pay: 360, minStage: 7, intro: T('Una formatgeria vol vendre a Andorra.'), problem: T('Quin és el primer pas?'), opts: [
-      { t: T('Investigar demanda, normativa d\'enviament i distribuïdors, i fer una prova petita'), q: 0.9, r: T('Dos distribuïdors interessats i la logística resolta.') },
-      { t: T('Llançar una campanya gran directament'), q: 0.25, r: T('Les comandes no es poden enviar per la normativa duanera.') },
-      { t: T('Traduir la web al francès'), q: 0.3, r: T('A Andorra la llengua oficial és el català...') }] }
-  ];
 })();

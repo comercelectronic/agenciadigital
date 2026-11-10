@@ -1,6 +1,6 @@
 # Agència Digital — joc de màrqueting d'estètica anime
 
-Un joc narratiu en català en què el jugador crea el seu personatge (nom, tractament i aspecte) i torna a Vic i munta una agència de màrqueting digital. Segueix el guió de campanya «Agència Digital» (versió 1.0): 8 etapes, 37 capítols, 32 lliçons, 13 encàrrecs repetibles i 5 finals.
+Un joc narratiu en català en què el jugador crea el seu personatge (nom, tractament i aspecte) i torna a Vic i munta una agència de màrqueting digital. Segueix el guió de campanya «Agència Digital» (versió 1.0): 8 etapes, 37 capítols, 32 lliçons i 5 finals.
 
 Es juga des del navegador i es pot instal·lar com a app (PWA) al mòbil o a l'ordinador. Funciona sense connexió un cop carregat.
 
@@ -19,7 +19,7 @@ El joc i el panell del professor es poden fer servir en **català, castellà i a
 ## Personatge i resultats per al professorat
 
 - **Creació del personatge:** en començar, l'alumne tria nom, cognom, tractament (masculí «en», femení «la» o neutre sense article), un dels 14 pentinats, el color dels cabells i dels ulls (amb mostres o qualsevol color amb el selector 🎨), el to de pell, el color de la roba (o «Auto», que canvia amb el rang) i diversos complements combinables (ulleres, gorra, boina, diadema, llaç, auriculars, arracades, bufanda, pigues, barba). El nom i el tractament substitueixen «Pau» a tot el guió (marcadors `{nom}`, `{nomc}`, `{en}`, `{En}`, `{den}` i `{g:masculí|femení|neutre}` als fitxers de dades). Es pot canviar després des de la pestanya del personatge.
-- **Codi de classe:** si l'alumne escriu el codi que li dona el professor, els resultats s'envien automàticament cada vegada que acaba un capítol, un encàrrec o una lliçó (funció `netlify/functions/joc-resultats.js`, desada a Netlify Blobs). Sense connexió, pot descarregar un fitxer de resultats des de la pestanya Empresa.
+- **Codi de classe:** si l'alumne escriu el codi que li dona el professor, els resultats s'envien automàticament cada vegada que acaba un capítol o una lliçó (funció `netlify/functions/joc-resultats.js`, desada a Netlify Blobs). Sense connexió, pot descarregar un fitxer de resultats des de la pestanya Empresa.
 - **Panell del professor:** `/professor.html`. Amb la contrasenya, mostra els alumnes (filtrables per classe), el detall de cada un (lliçons amb primer intent, millor resultat i intents; habilitats; decisions clau) i exporta-ho tot a un CSV per a Excel amb una columna per lliçó. També accepta els fitxers que hagin descarregat els alumnes.
 - **Temari:** cada lliçó, missió, projecte, nivell del taller web i acció del món està etiquetat amb els punts del temari que treballa (1.1–5.9; vegeu [TEMARI.md](TEMARI.md)). Els punts amb tecnologies antiquades (TDT, IRC, web 2.0, FTP...) es treballen amb les eines actuals (TV connectada, chatbots d'IA, contingut dels usuaris, publicació amb Git...), i la Biblioteca ho explica a «Com es treballa avui». L'alumne veu els punts treballats a la Biblioteca. El CSV general afegeix una columna de percentatge per punt i el codi del punt a cada columna de projecte, web, lliçó i decisió; el botó **CSV per punts del temari** exporta una fila per alumne, punt i contingut (bloc, punt, títol, tipus de contingut, contingut, resultat i puntuació).
 - **Contrasenya:** variable d'entorn `TEACHER_PASSWORD` del lloc de Netlify (obligatòria perquè funcioni el panell).
@@ -43,25 +43,25 @@ En sortir d'una missió, l'alumne es mou per **Vic** en vista zenital (fletxes o
 - **Pistes:** mirant coses dels negocis i parlant amb la gent es descobreix informació útil (la fitxa de Google errònia, la lleixa plena a la tarda, el súper nou, el polígon de Tona...). A les investigacions dels capítols ja surt com a sabuda i no gasta temps.
 - **Botiguers amb ❗:** petits encàrrecs de consultoria; les bones recomanacions es cobren i les dolentes fan perdre diners.
 - **Accions de màrqueting reals:** corregir la fitxa de Google del forn, fer fotos de producte, repartir cupons a la sortida de l'escola (minijoc de 40 s), demanar ressenyes a Can Jordi i dissenyar el cartell de la cansaladeria.
-- **Despatx:** l'ordinador obre campanya, projectes, millores, taller i finances; el prestatge, la biblioteca; el telèfon, els encàrrecs; la pissarra, la llibreta.
+- **Despatx:** l'ordinador obre campanya, projectes, millores, taller i finances; el prestatge, la biblioteca; el telèfon, els projectes; la pissarra, la llibreta.
 - Codi a `js/world.js` (mapes, art en píxel generat amb codi i contingut del món).
 
 ## Millores de l'agència
 
-A Empresa → 🛒 **Millores**: eines (Canva Pro, analítica, CRM, gestor de projectes, certificacions), equip (becari, videògraf, comercial), publicitat de l'agència (fitxa de Google, web, LinkedIn, patrocini) i local (rètol, cafetera, ordinador, despatx renovat). Tenen cost inicial i, sovint, quota mensual. Les bonificacions d'habilitat compten a les missions (desbloquegen opcions i milloren els resultats de les campanyes); d'altres pugen els honoraris, els encàrrecs, l'experiència o la reputació. Les millores es veuen al despatx del món. Dades a `js/data-upgrades.js`.
+A Empresa → 🛒 **Millores**: eines (Canva Pro, analítica, CRM, gestor de projectes, certificacions), equip (becari, videògraf, comercial), publicitat de l'agència (fitxa de Google, web, LinkedIn, patrocini) i local (rètol, cafetera, ordinador, despatx renovat). Tenen cost inicial i, sovint, quota mensual. Les bonificacions d'habilitat compten a les missions (desbloquegen opcions i milloren els resultats de les campanyes); d'altres pugen els honoraris, els ingressos dels clients recurrents, l'experiència o la reputació. Les millores es veuen al despatx del món. Dades a `js/data-upgrades.js`.
 
 ## Economia exigent i fallida
 
-- **Tests de les lliçons:** cada lliçó té 5 preguntes (3 de concepte i 2 de casos reals d'empreses: Kodak, Zara, Amazon, Patagonia, KFC...). Cada pregunta té 4 opcions semblants, en ordre aleatori. Cada resposta incorrecta costa diners (30 € a l'etapa 1 i 20 € més a cada etapa), també a les preguntes de repàs dels encàrrecs i als tests del món: estudiar té un cost.
+- **Tests de les lliçons:** cada lliçó té 5 preguntes (3 de concepte i 2 de casos reals d'empreses: Kodak, Zara, Amazon, Patagonia, KFC...). Cada pregunta té 4 opcions semblants, en ordre aleatori. Cada resposta incorrecta costa diners (30 € a l'etapa 1 i 20 € més a cada etapa), també als tests del món: estudiar té un cost.
 
-Els errors econòmics costen diners: treballar gratis, acceptar feines sense capacitat, comprar bases de dades, campanyes fallides (compensació al client), encàrrecs mal resolts (devolució), préstecs amb interessos... Si la liquiditat (diners + reserva) queda en negatiu, **l'agència fa fallida** i cal començar de zero (es conserven el personatge, el codi de classe, els projectes reals i les webs del Taller). El professorat veu el nombre de fallides de cada alumne.
+Els errors econòmics costen diners: treballar gratis, acceptar feines sense capacitat, comprar bases de dades, campanyes fallides (compensació al client), préstecs amb interessos... Si la liquiditat (diners + reserva) queda en negatiu, **l'agència fa fallida** i cal començar de zero (es conserven el personatge, el codi de classe, els projectes reals i les webs del Taller). El professorat veu el nombre de fallides de cada alumne.
 
 ## Progressió: 100 nivells
 
-- El personatge puja fins al **nivell 100**. Cada etapa de la campanya es desbloqueja a partir d'un nivell (1, 10, 19, 31, 43, 55, 67 i 79).
+- El personatge puja fins al **nivell 100**, repartit per tota la partida: cada nivell costa 133 + 3 × nivell EXP. En acabar cada etapa s'arriba just al nivell que demana la següent (1, 10, 19, 31, 43, 55, 67 i 79), i el 100 només s'assoleix en acabar la campanya, els projectes i les webs del Taller (unes 28.000 EXP).
 - Cada nivell dona **3 punts d'habilitat**. Cada habilitat té **50 nivells**; la història les llegeix en una escala de 0 a 5 (cada 10 nivells, 1 punt), i les bonificacions (honoraris, despeses, qualitat) creixen nivell a nivell.
 - Els Comerçmons pugen fins al nivell 50.
-- Les partides antigues (30 nivells) es converteixen soles en continuar-les: nivell ×3 i habilitats ×10.
+- Les partides antigues es converteixen soles en continuar-les (es recalcula el nivell amb la mateixa experiència total).
 
 ## Comptes dels alumnes (usuari i contrasenya)
 
@@ -127,6 +127,9 @@ Pestanya 🛠️ **Taller**: un curs a part on l'alumne aprèn a crear webs prof
 
 ## Què hi ha al joc
 
+> Els encàrrecs lliures (pestanya 📨 Encàrrecs) s'han tret del joc: l'experiència i els diners venen de la campanya, els projectes reals, el Taller, els botiguers i el món.
+
+
 | Sistema | On és |
 |---|---|
 | Campanya de 8 etapes amb gating per nivell (1, 4, 7, 11, 15, 19, 23, 27) | `js/data-story1.js` (etapes 1–2), `js/data-story2.js` (3–5), `js/data-story3.js` (6–8) |
@@ -136,7 +139,6 @@ Pestanya 🛠️ **Taller**: un curs a part on l'alumne aprèn a crear webs prof
 | Millora del personatge: nivells 1–30, EXP, punts d'habilitat (5 habilitats × 5 nivells), rangs i vestuari que evoluciona | `js/game.js` (SKILLS, RANKS) i `js/art.js` (PAU_OUTFITS) |
 | Variables persistents: reputació, confiança per personatge, coneixement per àrea, liquiditat, reserva, clients recurrents, equip, historial de decisions | estat `S` a `js/game.js` |
 | Economia setmanal: quotes recurrents, lloguer, eines i sous; els pressupostos dels clients no compten com a ingressos | `advanceWeeks()` a `js/game.js` |
-| Encàrrecs lliures repetibles (EXP i diners extra, amb preguntes de repàs) | `GD.gigs` a `js/data-story3.js` |
 | 5 finals segons la decisió final i l'estat de l'empresa | `GD.computeEnding` i `GD.endings` a `js/data-story3.js` |
 | Retrats anime i escenaris generats en SVG (sense imatges externes) | `js/art.js` |
 
@@ -179,7 +181,7 @@ Criatures col·leccionables del món del comerç i el màrqueting (pestanya 🐾
 - **Catàleg** (`js/data-comercmons.js`): 37 espècies de la generació 1 (12 inicials del document de disseny, 21 més i 4 llegendaris empresarials: Monopolion, Disruptor, Globàlia i Líderax), amb 94 formes. Cada espècie té família, especialitat, element, raresa, perfil d'estadístiques, habilitat passiva, atacs (cost, potència, precisió i recuperació), evolucions amb nivell i condicions, condició de captura, descripció, personalitat i utilitat.
 - **Equilibri**: totes les espècies sumen les mateixes estadístiques a la forma final, repartides segons el perfil (atacant, resistent, ràpid, estratega, suport, equilibrat). La raresa dona passives i atacs més potents, no força bruta. Cada element és fort contra dos i feble contra dos. `node tests/comercmons.test.js` comprova que cap espècie no superi una altra en totes les estadístiques.
 - **Captura**: depèn del progrés real (capítols, lliçons, projectes, webs, botiguers, nivell, setmanes i **dies diferents de joc**) i d'un repte de coneixement. Si falles, el Comerçmon torna d'aquí a una hora. Els rars, èpics i llegendaris demanen diversos dies de joc.
-- **Equip** de 3: les passives donen bonificacions a l'experiència, els encàrrecs, els projectes, les missions, els botiguers, el cost dels tests, les despeses o la reputació (límit del 25 % per tipus). Hi ha 12 sinergies de parella i bonificacions per família o per elements diferents.
+- **Equip** de 3: les passives donen bonificacions a l'experiència, els clients recurrents, els projectes, les missions, els botiguers, el cost dels tests, les despeses o la reputació (límit del 25 % per tipus). Hi ha 12 sinergies de parella i bonificacions per família o per elements diferents.
 - **Nivells i evolució**: fins al nivell 50; els de l'equip reben el 40 % de l'experiència del jugador i poden fer un entrenament diari. Algunes evolucions demanen condicions especials.
 - **Il·lustracions** (`js/art-comercmons.js`): SVG generat amb una mateixa línia artística a partir de la descripció `look` de cada forma.
 - **Noves generacions**: crea un fitxer que cridi `GD.cmRegister([...])` amb el mateix format i afegeix-lo a `index.html` i `sw.js`.

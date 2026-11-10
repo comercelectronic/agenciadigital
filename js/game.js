@@ -27,8 +27,10 @@
   // Les funcions es criden amb una ruta relativa a la carpeta del joc: serveix tant a la seva adreça de Netlify com dins d'ecoynexo.com/jocs/agencia-digital/
   const FN = location.pathname.replace(/[^/]*$/, '') + '.netlify/functions/';
   const API = FN + 'joc-resultats';
-  // Progressió a 100 nivells: cada nivell antic equival a 3 nivells nous (mateixa experiència total)
-  const xpNeed = (lvl) => 60 + 25 * Math.ceil(lvl / 12);
+  // Progressió a 100 nivells repartits per tota la partida: en acabar cada etapa de la campanya s'arriba just al nivell
+  // que demana la següent, i el nivell 100 només s'assoleix en acabar-ho tot (campanya, projectes i webs del Taller).
+  const xpNeed = (lvl) => 133 + 3 * lvl;
+  const xpNeedV2 = (lvl) => 60 + 25 * Math.ceil(lvl / 12); // corba anterior, per convertir partides
   const MAX_LEVEL = 100;
   const SP_PER_LEVEL = 3;
 
@@ -41,14 +43,14 @@
       v: 1, agency: T('Píxel d\'Osona'), profile: null,
       player: { id: uid(), name: 'Pau', surname: 'Riera', g: 'm', look: Object.assign({}, ART.PLAYER_DEFAULT) },
       classe: '', quizLog: {}, syncPending: false, lastSync: 0, web: { platforms: [], levels: {} }, proj: {}, upgrades: {},
-      level: 1, xp: 0, sp: 0, prog: 2,
+      level: 1, xp: 0, sp: 0, prog: 3,
       skills: { estrategia: 0, creativitat: 0, analitica: 0, comercial: 0, gestio: 0 },
       money: 3000, reserve: 0, week: 1, rep: 5,
       trust: { carme: 0, miquel: 0, julia: 0, berta: 0, quim: 0, laia: 0 },
       know: Object.fromEntries(Object.keys(GD.areas).map(k => [k, 0])),
       rent: 350, tools: 50, team: [], clients: [],
       f: {}, history: [], lessons: {}, done: {}, cur: null,
-      gigs: [], gigsDone: {}, cm: {}, days: {}, stats: { income: 0, expenses: 0, gigs: 0, campaigns: 0, good: 0 },
+      cm: {}, days: {}, stats: { income: 0, expenses: 0, campaigns: 0, good: 0 },
       ending: null, started: Date.now()
     };
   }
@@ -107,7 +109,8 @@
   function upSkill(k) { return owned().reduce((a, u) => a + ((u.bonus.skill || {})[k] || 0), 0); }
   function upBonus(kind) { return owned().reduce((a, u) => a + (u.bonus[kind] || 0), 0); }
   function upMonthly() { return owned().reduce((a, u) => a + (u.monthly || 0), 0); }
-  function weeklyIncome() { return S.clients.reduce((a, c) => a + c.fee, 0) / 4; }
+  // Ingressos dels clients recurrents (les millores i els Comerçmons amb habilitat «clients» els augmenten)
+  function weeklyIncome() { return S.clients.reduce((a, c) => a + c.fee, 0) / 4 * (1 + upBonus('gig') / 100 + cmBonus('gig') / 100); }
   function weeklyCost() {
     const base = S.rent + S.tools + upMonthly() + S.team.reduce((a, t) => a + t.salary, 0);
     return base * (1 - 0.04 * sk('gestio')) * (1 - cmBonus('costs') / 100) / 4;
@@ -457,12 +460,12 @@
         <div class="hub-body" id="hubBody"></div>
       </main>
       <nav class="tabs">
-        ${[['campanya', '🗺️', T('Campanya')], ['pau', '🧑', esc(S.player.name)], ['encarrecs', '📨', T('Encàrrecs')], ['projectes', '📋', T('Projectes')], ['comercdex', '🐾', T('Comerçdex')], ['classe', '🏆', T('Classe')], ['taller', '🛠️', T('Taller')], ['biblioteca', '📚', T('Biblioteca')], ['empresa', '🏢', T('Empresa')]]
+        ${[['campanya', '🗺️', T('Campanya')], ['pau', '🧑', esc(S.player.name)], ['projectes', '📋', T('Projectes')], ['comercdex', '🐾', T('Comerçdex')], ['classe', '🏆', T('Classe')], ['taller', '🛠️', T('Taller')], ['biblioteca', '📚', T('Biblioteca')], ['empresa', '🏢', T('Empresa')]]
           .map(([k, i, n]) => `<button class="tab ${hubTab === k ? 'on' : ''}" data-tab="${k}"><span>${i}</span>${n}${k === 'pau' && S.sp ? `<em class="dot">${S.sp}</em>` : ''}${k === 'projectes' && projTodo() ? `<em class="dot">${projTodo()}</em>` : ''}${k === 'comercdex' && (!cmState().starter || cmAvailable().length) ? `<em class="dot">${cmState().starter ? cmAvailable().length : '!'}</em>` : ''}${k === 'classe' && S.market && S.market.myTurn ? `<em class="dot">${S.market.myTurn}</em>` : ''}</button>`).join('')}
       </nav>`;
     hud();
     const body = $('#hubBody');
-    ({ campanya: tabCampanya, pau: tabPau, encarrecs: tabGigs, projectes: tabProjectes, classe: tabClasse, taller: tabTaller, comercdex: tabComercdex, biblioteca: tabLibrary, empresa: tabEmpresa })[hubTab](body);
+    ({ campanya: tabCampanya, pau: tabPau, projectes: tabProjectes, classe: tabClasse, taller: tabTaller, comercdex: tabComercdex, biblioteca: tabLibrary, empresa: tabEmpresa })[hubTab](body);
   }
 
   function chapterState(chId) {
@@ -482,7 +485,7 @@
   function tabCampanya(el) {
     const next = Object.keys(GD.chapters).find(c => chapterState(c) === 'open');
     el.innerHTML = `
-      ${S.ending ? `<div class="card ending-mini"><b>${T("Has arribat a un final:")} ${esc(GD.endings[S.ending].title)}</b><p>${T("Pots continuar en mode lliure amb els encàrrecs o començar una partida nova amb una altra estratègia.")}</p><button class="btn" data-act="showEnding">${T("Tornar a veure el final")}</button></div>` : ''}
+      ${S.ending ? `<div class="card ending-mini"><b>${T("Has arribat a un final:")} ${esc(GD.endings[S.ending].title)}</b><p>${T("Pots continuar explorant el món, fent projectes i entrenant els Comerçmons, o començar una partida nova amb una altra estratègia.")}</p><button class="btn" data-act="showEnding">${T("Tornar a veure el final")}</button></div>` : ''}
       ${fixesCard()}
       ${next ? `<button class="next-mission" data-ch="${next}">
           <span class="nm-ava">${ART.portrait(GD.chapters[next].who || 'pau', 'n', { rank: rank() })}</span>
@@ -516,7 +519,7 @@
   function levelHint() {
     const st = GD.stages.find(s => s.chapters.some(c => !S.done[c]));
     if (!st) return T('Has completat la campanya!');
-    if (S.level < st.minLevel) return `${T("🔒 L'etapa")} <b>${txt(st.title)}</b> ${T("requereix nivell")} ${st.minLevel}${T(". Fes encàrrecs a la pestanya")} <b>${T("📨 Encàrrecs")}</b> ${T("per guanyar experiència i diners.")}`;
+    if (S.level < st.minLevel) return `${T("🔒 L'etapa")} <b>${txt(st.title)}</b> ${T("requereix nivell")} ${st.minLevel}${T(". Guanya experiència amb els projectes reals, els botiguers de Vic i les accions del món.")}`;
     return T('Continua amb la següent missió.');
   }
 
@@ -583,7 +586,7 @@
     const st = curStage(), mine = S.upgrades || {};
     const fx = (u) => [
       ...Object.entries(u.bonus.skill || {}).map(([k, v]) => `${SKILLS[k].i} +${v} ${SKILLS[k].n}`),
-      u.bonus.fee ? T('💶 +{0} % honoraris', [u.bonus.fee]) : '', u.bonus.gig ? T('📨 +{0} % encàrrecs', [u.bonus.gig]) : '',
+      u.bonus.fee ? T('💶 +{0} % honoraris', [u.bonus.fee]) : '', u.bonus.gig ? T('👥 +{0} % ingressos dels clients recurrents', [u.bonus.gig]) : '',
       u.bonus.xp ? T('✨ +{0} % EXP', [u.bonus.xp]) : '', u.rep ? T('⭐ +{0} reputació', [u.rep]) : ''
     ].filter(Boolean).join(' · ');
     return `<div class="card upgrades" id="millores"><h3>${T("🛒 Millores de l'agència")}</h3>
@@ -710,7 +713,6 @@
   function econTipus(fx, m) {
     if (m < 0) return fx.src === 'mercat' ? ['mercat', fx.ref] : ['despesa', fx.ref || fx.src || (S.cur ? S.cur.id : '')];
     switch (fx.src) {
-      case 'gig': return ['encarrec', fx.ref];
       case 'gimnas': return ['gimnas', fx.ref];
       case 'chapter': return ['capitol', fx.ref || (S.cur && S.cur.id) || (curCh && curCh.id)];
       case 'proj': return [String(fx.ref || '').startsWith('web-') ? 'web' : 'projecte', fx.ref];
@@ -813,7 +815,6 @@
     if (c.proj) { const n = GD.projects.filter(p => projStatus(p) === 'approved').length; add(n >= c.proj, T('Projectes aprovats'), n, c.proj); }
     if (c.web) { const n = Object.keys(webState().levels).length; add(n >= c.web, T('Webs entregades al Taller'), n, c.web); }
     if (c.world) { const n = Object.keys((S.world && S.world.problems) || {}).length; add(n >= c.world, T('Botiguers de Vic ajudats'), n, c.world); }
-    if (c.gigs) add(S.stats.gigs >= c.gigs, T('Encàrrecs completats'), S.stats.gigs, c.gigs);
     if (c.week) add(S.week >= c.week, T('Setmana de joc'), S.week, c.week);
     if (c.days) { const n = Object.keys(S.days || {}).length; add(n >= c.days, T('Dies diferents de joc'), n, c.days); }
     if (c.dex) add(cmOwnedCount() >= c.dex, T('Comerçmons capturats'), cmOwnedCount(), c.dex);
@@ -1351,7 +1352,7 @@
     if (act('train')) act('train').onclick = () => { d.remove(); cmTrain(id); };
   }
 
-  /* ================= Encàrrecs lliures ================= */
+  /* ================= Estudi: cost dels errors ================= */
   // Estudiar té un cost: cada resposta incorrecta d'un test es paga (material i hores de repàs), més car a cada etapa
   function studyCost() { return Math.round((30 + 20 * (curStage() - 1)) * (1 - cmBonus('quizcost') / 100)); }
   function payStudy(title) {
@@ -1362,20 +1363,6 @@
   // Ordre aleatori de les opcions d'una pregunta (retorna els índexs originals)
   function shuffledIdx(n) { const a = [...Array(n).keys()]; for (let i = n - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
   function curStage() { const st = GD.stages.find(s => s.chapters.some(c => !S.done[c])); return st ? st.id : 8; }
-  // Els encàrrecs lliures no es repeteixen: un cop fets s'esborren i ja no tornen a aparèixer
-  function gigPool() { const st = curStage(), done = S.gigsDone || {}; return GD.gigs.filter(g => (g.minStage || 1) <= st && !done[g.id]); }
-  function genGigs() {
-    const st = curStage();
-    const pool = gigPool();
-    const picks = [];
-    const used = new Set();
-    while (picks.length < 3 && used.size < pool.length) {
-      const i = Math.floor(Math.random() * pool.length); if (used.has(i)) continue; used.add(i);
-      const g = pool[i];
-      picks.push({ id: g.id, pay: Math.round((g.pay || 180) * (0.8 + 0.25 * st) / 10) * 10, xp: 50 + 22 * st });
-    }
-    S.gigs = picks;
-  }
   /* ================= Taller web (curs opcional) ================= */
   const WP = () => GD.webPlatforms;
   function webState() { if (!S.web) S.web = { platforms: [], levels: {} }; return S.web; }
@@ -1932,66 +1919,6 @@
     upd();
   }
 
-  function tabGigs(el) {
-    if (!S.gigs || !S.gigs.length) genGigs();
-    if (!S.gigs.length) {
-      const left = GD.gigs.some(g => !(S.gigsDone || {})[g.id]);
-      el.innerHTML = `<div class="card"><p>${left ? T("Ara no hi ha més encàrrecs disponibles. N'arribaran de nous quan avancis a la campanya.") : T("Has fet tots els encàrrecs lliures. Bona feina!")}</p></div>`;
-      return;
-    }
-    el.innerHTML = `<p class="muted">${T("Petits encàrrecs que arriben per recomanacions. Cada encàrrec dura una setmana, et fa guanyar experiència i diners, i posa a prova el que has après.")}</p>
-      <div class="gigs">${S.gigs.map((g, i) => {
-        const t = GD.gigs.find(x => x.id === g.id);
-        return `<div class="gig card"><span class="gig-ava">${ART.portrait(t.who || 'client', 'n')}</span><div><b>${esc(t.title)}</b><p>${esc(t.intro)}</p><small>💶 ${eur(g.pay)} · ✨ ${g.xp} ${T("EXP · 1 setmana")}</small></div><button class="btn primary" data-gig="${i}">${T("Acceptar")}</button></div>`;
-      }).join('')}</div>
-      ${gigPool().length > S.gigs.length ? `<button class="btn ghost small" data-act="refreshGigs">${T("↻ Buscar altres encàrrecs (−1 setmana)")}</button>` : ''}`;
-  }
-
-  function playGig(i) {
-    const g = S.gigs[i]; const t = GD.gigs.find(x => x.id === g.id);
-    sceneShell(t.bg || 'despatx');
-    showActors(t.who || 'client', 'n');
-    const learned = Object.keys(S.lessons);
-    const qPool = [];
-    learned.forEach(id => GD.lessons[id].quiz.forEach(q => qPool.push({ id, q })));
-    const extra = qPool.length ? qPool[Math.floor(Math.random() * qPool.length)] : null;
-    panel(`<div class="pn-h"><b>${esc(t.title)}</b><small>${T("Encàrrec")}</small></div><p>${esc(t.problem)}</p>
-      <div class="opts">${t.opts.map((o, k) => `<button class="opt" data-k="${k}"><b>${esc(o.t)}</b></button>`).join('')}</div>`, (root) => {
-      root.querySelectorAll('.opt').forEach(b => b.onclick = () => {
-        const o = t.opts[+b.dataset.k];
-        const ok = o.q >= 0.7;
-        const mult = o.q >= 0.7 ? 1 : o.q >= 0.4 ? 0.5 : 0;
-        const finish = (bonus) => {
-          const money = o.q < 0.4 ? -Math.round(g.pay * 0.4) : Math.round(g.pay * mult * (1 + upBonus('gig') / 100));
-          const xp = Math.round(g.xp * mult * bonus);
-          applyFx({ money, fee: money > 0, src: 'gig', ref: g.id, xp, rep: ok ? 1 : (o.q < 0.4 ? -2 : 0), know: { [t.area]: ok ? 1 : 0 }, log: money < 0 ? T('Encàrrec mal resolt: «{0}». Va haver de retornar {1}.', [t.title, eur(-money)]) : null }, true);
-          const w = advanceWeeks(1);
-          S.stats.gigs++; queueSync();
-          (S.gigsDone = S.gigsDone || {})[g.id] = 1;
-          S.gigs.splice(i, 1);
-          save();
-          panel(`<div class="pn-h"><b>${ok ? T('✨ Bona feina!') : o.q >= 0.4 ? T('🙂 Correcte, però millorable') : T('😓 No ha funcionat')}</b></div>
-            <p>${esc(o.r)}</p>
-            <dl class="kv">${money < 0 ? `<dt>${T("Devolució al client")}</dt><dd class="neg">−${eur(-money)}</dd>` : `<dt>${T("Honoraris cobrats")}</dt><dd>${eur(money * (1 + 0.05 * sk('comercial')))}</dd>`}<dt>${T("Experiència")}</dt><dd>+${xp} ${T("EXP")}</dd><dt>${T("Balanç de la setmana")}</dt><dd>+${eur(w.inc)} / −${eur(w.cost)}</dd></dl>
-            <button class="btn primary" data-act="hubGigs">${T("Tornar al despatx")}</button>`);
-          if (bankrupt()) return;
-        };
-        if (extra) {
-          const q = extra.q;
-          panel(`<div class="pn-h"><b>${T("Pregunta del client")}</b><small>${T("Repàs:")} ${esc(GD.lessons[extra.id].title)}</small></div><p>${esc(t.opts[+b.dataset.k].t)} ${T("— d'acord. Però abans, una pregunta:")}</p><p class="quiz-q">${esc(q.q)}</p>
-            <div class="opts">${shuffledIdx(q.o.length).map(k => `<button class="opt" data-a="${k}">${q.o[k]}</button>`).join('')}</div>`, (r2) => {
-            r2.querySelectorAll('[data-a]').forEach(bb => bb.onclick = () => {
-              const right = +bb.dataset.a === q.c;
-              const cost = right ? 0 : payStudy(GD.lessons[extra.id].title);
-              toast(right ? T('✔ Resposta correcta: +50% EXP') : '✘ −' + eur(cost) + ' · ' + q.why, right ? 'good' : 'bad');
-              finish(right ? 1.5 : 1);
-            });
-          });
-        } else finish(1);
-      });
-    });
-  }
-
   /* ================= Escenes ================= */
   let curCh = null;
 
@@ -2365,7 +2292,6 @@
     const stageComplete = !wasDone && stage.chapters.every(c => S.done[c]);
     S.cur = null;
     queueSync();
-    S.gigs = []; // nous encàrrecs disponibles
     save();
     const summary = st.text ? txt(st.text) : '';
     if (bankrupt()) return;
@@ -2407,7 +2333,6 @@
         <div class="metric"><small>${T("Clients recurrents")}</small><b>${S.clients.length}</b></div>
         <div class="metric"><small>${T("Equip")}</small><b>${S.team.length + 1} persones</b></div>
         <div class="metric"><small>${T("Campanyes amb bon resultat")}</small><b>${S.stats.good}/${S.stats.campaigns}</b></div>
-        <div class="metric"><small>${T("Encàrrecs lliures")}</small><b>${S.stats.gigs}</b></div>
       </div>
       <p><b>${T("Especialitats dominades:")}</b> ${best.join(', ') || '—'}</p>
       <p><b>${T("Risc financer:")}</b> ${S.money + S.reserve < 0 ? T('Alt: l\'empresa té números vermells.') : S.money + S.reserve < weeklyCost() * 8 ? T('Mitjà: la liquiditat cobreix menys de dos mesos de despeses.') : T('Baix: hi ha coixí per fer front a imprevistos.')}</p>
@@ -2569,7 +2494,7 @@
       reputacio: S.rep, liquiditat: Math.round(S.money + S.reserve), clients: S.clients.length, equip: S.team.length + 1,
       cami: S.f.path || '', final: S.ending ? GD.endings[S.ending].title : '',
       habilitats: S.skills, coneixement: S.know, confianca: S.trust,
-      encarrecs: S.stats.gigs, campanyes: S.stats.campaigns, campanyesBones: S.stats.good,
+      campanyes: S.stats.campaigns, campanyesBones: S.stats.good,
       webPlataformes: (S.web && S.web.platforms) || [],
       webs: Object.fromEntries(Object.entries((S.web && S.web.levels) || {}).map(([k, v]) => [k, { url: v.url, platform: v.platform, at: v.at, reflection: v.reflection, note: v.note, reachable: v.reachable, v: v.v || 0 }])),
       websEntregades: Object.keys((S.web && S.web.levels) || {}).length,
@@ -2652,6 +2577,16 @@
     for (const k in S.skills) S.skills[k] = Math.min(SKILL_MAX, (S.skills[k] || 0) * SKILL_TIER);
     S.prog = 2;
   }
+  // Partides amb la corba anterior (experiència massa ràpida): es recalcula el nivell amb la mateixa experiència total
+  function migrateXpCurve() {
+    let total = S.xp || 0;
+    for (let l = 1; l < S.level; l++) total += xpNeedV2(l);
+    let lvl = 1;
+    while (lvl < MAX_LEVEL && total >= xpNeed(lvl)) { total -= xpNeed(lvl); lvl++; }
+    S.level = lvl; S.xp = lvl >= MAX_LEVEL ? 0 : total;
+    S.sp = Math.min(S.sp || 0, SP_PER_LEVEL * (lvl - 1));
+    S.prog = 3;
+  }
   // Comprova al núvol si hi ha una partida més nova (jugada en un altre dispositiu) i el grup actual
   async function refreshFromCloud() {
     if (!acc || !S) return;
@@ -2672,6 +2607,7 @@
     const old = !S.prog;
     S = Object.assign(newState(), S);
     if (old) migrateProgress();
+    if (S.prog === 2) migrateXpCurve();
     if (!S.econ) { econ().inici = true; econPush('inici', 'inici', 3000); }
     applyPlayer();
     if (S.syncPending) queueSync();
@@ -2684,7 +2620,7 @@
     if (lb && !lb.closest('.setup')) { if (lb.dataset.lang !== LANG) setLang(lb.dataset.lang); return; }
     const ub = ev.target.closest('[data-buy],[data-unbuy]');
     if (ub && !ub.disabled) { if (ub.dataset.buy) buyUpgrade(ub.dataset.buy); else unbuyUpgrade(ub.dataset.unbuy); return; }
-    const b = ev.target.closest('[data-act],[data-ch],[data-tab],[data-skill],[data-lesson],[data-gig],[data-web],[data-proj]');
+    const b = ev.target.closest('[data-act],[data-ch],[data-tab],[data-skill],[data-lesson],[data-web],[data-proj]');
     if (!b || b.disabled) return;
     if (b.dataset.ch) { startChapter(b.dataset.ch); return; }
     if (b.dataset.tab) { hubScreen(b.dataset.tab); return; }
@@ -2695,7 +2631,6 @@
       return;
     }
     if (b.dataset.lesson) { sceneShell('despatx'); showActors('pau', 't'); lessonFlow(b.dataset.lesson, false, () => hubScreen('biblioteca')); return; }
-    if (b.dataset.gig != null) { playGig(+b.dataset.gig); return; }
     if (b.dataset.web != null) { webLevel(+b.dataset.web); return; }
     if (b.dataset.proj) { projectScreen(b.dataset.proj); return; }
     switch (b.dataset.act) {
@@ -2703,7 +2638,6 @@
       case 'continue': continueGame(); break;
       case 'hub': if (S.ending && $('.ending')) { hubScreen('campanya'); } else goWorld(); break;
       case 'world': goWorld(); break;
-      case 'hubGigs': hubScreen('encarrecs'); break;
       case 'econSync': econSync(true).then(() => hubScreen('empresa')); break;
       case 'guardiola': guardiolaModal(); break;
       case 'hubTaller': hubScreen('taller'); break;
@@ -2712,7 +2646,6 @@
       case 'webPlatforms': webPicker($('#hubBody')); break;
       case 'title': titleScreen(); break;
       case 'showEnding': endingScreen(S.ending, false); break;
-      case 'refreshGigs': if (gigPool().length <= (S.gigs || []).length) { toast(T('No hi ha més encàrrecs per ara.')); break; } advanceWeeks(1); genGigs(); save(); if (bankrupt()) break; hubScreen('encarrecs'); toast(T('Ha passat una setmana. Nous encàrrecs disponibles.')); break;
       case 'useReserve': S.money += S.reserve; S.reserve = 0; save(); hubScreen('empresa'); break;
       case 'export': textBox(T('Codi de la teva partida (copia\'l i enganxa\'l a l\'altre dispositiu):'), btoa(unescape(encodeURIComponent(JSON.stringify(S))))); break;
       case 'import': textBox(T('Enganxa el codi de la partida:'), '', (v) => {

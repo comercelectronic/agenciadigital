@@ -200,7 +200,6 @@
         <div class="metric"><small>${T("Lliçons superades")}</small><b>${r.llicionsSuperades} / ${r.llicionsTotal}</b></div>
         <div class="metric"><small>${T("Mitjana 1r intent")}</small><b>${pctTxt(r.mitjanaPrimerIntent)}</b></div>
         <div class="metric"><small>${T("Campanyes bones")}</small><b>${r.campanyesBones || 0} / ${r.campanyes || 0}</b></div>
-        <div class="metric"><small>${T("Encàrrecs fets")}</small><b>${r.encarrecs || 0}</b></div>
         <div class="metric"><small>${T("Final")}</small><b style="font-size:.9em">${esc(r.final || T('Encara no'))}</b></div>
         <div class="metric ${r.fallides ? 'bad' : ''}"><small>${T("Fallides")}</small><b>${r.fallides || 0}</b></div>
       </div>
@@ -477,7 +476,7 @@
     const list = [...rows.values()].sort((a, b) => (a.classe || '').localeCompare(b.classe || '') || fullName(a).localeCompare(fullName(b)));
     const head = [T('Classe'), T('Nom'), T('Cognom'), T('Agència'), T('Perfil'), T('Nivell'), T('Etapa actual'), T('Etapes completades'), T('Capítols completats'), T('Capítols totals'), T('Capítol en curs'),
       T('Lliçons superades'), T('Lliçons totals'), T('Mitjana 1r intent (%)'), T('Mitjana millor (%)'), T('Reputació'), T('Liquiditat (€)'), T('Clients'), T('Equip'), T('Camí'), T('Final'),
-      T('Campanyes bones'), T('Campanyes'), T('Encàrrecs'), T('Setmana de joc'), T('Iniciat'), T('Darrera actualització'), T('Decisions clau'), T('Projectes aprovats'), T('Fallides'), T('Webs entregades'), T('Plataformes web'),
+      T('Campanyes bones'), T('Campanyes'), T('Setmana de joc'), T('Iniciat'), T('Darrera actualització'), T('Decisions clau'), T('Projectes aprovats'), T('Fallides'), T('Webs entregades'), T('Plataformes web'),
       ...GD.temari.map(([c, t]) => T('Temari {0} · {1} (%)', [c, t])),
       ...GD.projects.flatMap(p => { const tg = tag(GD.codes.projects[p.id]); return [tg + T('{0} · estat', [p.title]), tg + T('{0} · nota', [p.title]), tg + T('{0} · enllaç', [p.title])]; }),
       ...TM_CHOICES.map(c => tag(c.ch.codes) + T('Missió {0} · {1}', [c.ch.id, c.prompt])),
@@ -489,7 +488,7 @@
       const ll = r.llicons || {};
       lines.push([r.classe, r.nom, r.cognom, r.agencia, r.perfil, r.nivell, r.etapaActual, r.etapesCompletades, r.capitolsCompletats, r.capitolsTotal, r.capitolActual,
         r.llicionsSuperades, r.llicionsTotal, r.mitjanaPrimerIntent, r.mitjanaMillor, r.reputacio, r.liquiditat, r.clients, r.equip, r.cami, r.final,
-        r.campanyesBones, r.campanyes, r.encarrecs, r.setmana, dateTxt(r.iniciat), dateTxt(r.actualitzat), (r.decisions || []).join(' | '), projCount(r, 'passed'), r.fallides || 0, r.websEntregades || 0, (r.webPlataformes || []).join(', '),
+        r.campanyesBones, r.campanyes, r.setmana, dateTxt(r.iniciat), dateTxt(r.actualitzat), (r.decisions || []).join(' | '), projCount(r, 'passed'), r.fallides || 0, r.websEntregades || 0, (r.webPlataformes || []).join(', '),
         ...(() => { const it = temariItems(r); return GD.temari.map(([c]) => codePct(it, c)); })(),
         ...GD.projects.flatMap(p => { const st = projState(r, p), sub = (r.projectes || {})[p.id], rv = (r.revisions || {})[p.id]; return [st === 'none' ? '' : PLB()[st][1], rv && rv.grade != null ? rv.grade : '', sub ? sub.url : '']; }),
         ...TM_CHOICES.map(c => { const d = (r.decisionsTemari || {})[c.key]; return d ? QL()[d.q] : ''; }),
