@@ -22,7 +22,7 @@ GD.CM = {
   BONUS_CAP: 25,          // límit (%) de bonificació per a cada tipus d'activitat
   FORM_MULT: [1, 1.5, 2], // la bonificació passiva creix amb cada evolució
   // Multiplicador d'estadístiques de cada forma segons quantes formes té l'espècie (la forma final sempre val 1,8)
-  STAT_MULT: { 1: [1.8], 2: [1.25, 1.8], 3: [1, 1.4, 1.8] },
+  STAT_MULT: { 1: [1.8], 2: [1.25, 1.8], 3: [1, 1.4, 1.8], 4: [1, 1.25, 1.5, 1.8], 5: [1, 1.2, 1.4, 1.6, 1.8] },
   ESCAPE_MS: 60 * 60 * 1000 // si falles el repte de captura, el Comerçmon torna d'aquí a una hora
 };
 // Experiència per passar del nivell l al l+1
@@ -100,7 +100,8 @@ GD.cmStats = (sp, form, level) => {
   return out;
 };
 // La passiva creix amb cada evolució (la forma final d'una espècie de 2 formes equival a la 3a d'una de 3)
-GD.cmPassive = (sp, form) => { const k = form === sp.forms.length - 1 ? 2 : form; return Math.round(sp.passive.v * GD.CM.FORM_MULT[Math.min(k, 2)] * 10) / 10; };
+// (×1 a la primera forma i ×2 a la final, repartit entre les formes del mig)
+GD.cmPassive = (sp, form) => { const n = sp.forms.length; const m = n === 1 ? 2 : 1 + form / (n - 1); return Math.round(sp.passive.v * m * 10) / 10; };
 
 /* ---------- Registre ---------- */
 GD.cmSpecies = [];
@@ -809,3 +810,107 @@ GD.cmTeamBonus = [
 ];
 // Especialitat principal de cada família (per a la bonificació «Departament complet»)
 GD.cmFamilyKind = { mkt: 'quizcost', vend: 'gig', com: 'xp', emp: 'costs', crea: 'proj', lleg: 'rep' };
+
+/* ================= EVOLUCIONS AMPLIADES =================
+   Cada espècie guanya dues formes noves al final de la seva línia evolutiva (de 3 a 5 formes, de 2 a 4 i els
+   llegendaris d'1 a 3). Els nivells d'evolució es reparteixen fins al 50 i l'aspecte de les formes noves parteix
+   de l'última forma anterior (capa, gemma, corona i una aura cada cop més intensa). */
+(function () {
+  const E = {
+    publifoc: [['Hypebrasa', T('Una tempesta de foc que converteix qualsevol llançament en un esdeveniment.'), A(T('Llançament mundial'), 'ofensiu', 45, 95, 90, 3, T('Dany molt elevat.'))],
+      ['Omnifènix', T('Quan s\'encén, totes les pantalles del món emeten el seu anunci alhora.'), A(T('Prime time'), 'especial', 60, 115, 90, 4, T('Dany enorme a tots els rivals.'))]],
+    analitopus: [['Oceanalític', T('Llegeix els corrents de dades com si fossin onades.'), A(T('Marea de dades'), 'estrategic', 30, 0, 100, 3, T('El rival rep un 25 % més de dany durant 2 torns.'))],
+      ['Leviadata', T('Un leviatan de dades que preveu el mercat abans que es mogui.'), A(T('Big Bang de dades'), 'especial', 60, 115, 100, 4, T('Dany enorme que no falla mai.'))]],
+    brandalia: [['Brandsequoia', T('Una marca tan arrelada que fa segles que ningú no la mou.'), A(T('Arrels profundes'), 'defensiu', 30, 0, 100, 3, T('Escut que absorbeix el 40 % del dany durant 2 torns.'))],
+      ['Iconàlia', T('Ja no és una marca: és una icona que tothom reconeix d\'una sola mirada.'), A(T('Marca icònica'), 'especial', 55, 110, 95, 4, T('Dany molt elevat i l\'equip guanya un 20 % de defensa.'))]],
+    financrac: [['Fondcrac', T('Gestiona un fons d\'inversió des de la seva closca blindada.'), A(T('Rendibilitat'), 'estrategic', 30, 0, 100, 3, T('Recupera el 40 % de l\'energia.'))],
+      ['Capitalíssim', T('Un imperi financer amb potes: on posa la pinça, el valor es multiplica.'), A(T('Fusió total'), 'especial', 60, 110, 90, 4, T('Dany molt elevat i roba el 15 % de l\'energia del rival.'))]],
+    socialbee: [['Trendirusc', T('Un rusc vivent que marca la tendència del dia a tot el planeta.'), A(T('Trending topic'), 'ofensiu', 40, 85, 95, 2, T('Dany i +20 % de velocitat.'))],
+      ['Hiperreina', T('La reina de totes les xarxes: un sol brunzit i milions de persones la segueixen.'), A(T('Tempesta viral'), 'especial', 60, 110, 90, 4, T('Dany enorme a tots els rivals.'))]],
+    vendifox: [['Tancatòrium', T('Cap objecció li resisteix: les respon totes abans que es formulin.'), A(T('Objecció resolta'), 'ofensiu', 45, 90, 95, 3, T('Dany doble si el rival té menys del 30 % de vida.'))],
+      ['Megavendix', T('La guineu que va vendre la lluna... i va fidelitzar el sol.'), A(T('Venda del segle'), 'especial', 60, 115, 90, 4, T('Dany molt elevat que no falla mai.'))]],
+    sabionet: [['Doctorònix', T('Un mussol doctorat en totes les disciplines del negoci.'), A(T('Tesi doctoral'), 'estrategic', 30, 0, 100, 3, T('Redueix un 25 % totes les estadístiques del rival.'))],
+      ['Sapientíssim', T('Diuen que guarda a les ales tot el coneixement de la humanitat.'), A(T('Saviesa infinita'), 'especial', 55, 110, 100, 4, T('Dany basat en la intel·ligència; no falla.'))]],
+    creativola: [['Inspiràlia', T('Les seves ales pinten l\'aire amb idees que ningú no havia imaginat.'), A(T('Pluja d\'idees màgica'), 'estrategic', 30, 0, 100, 3, T('+30 % d\'atac durant 3 torns.'))],
+      ['Musàlia', T('La musa de tots els creatius: on vola, neixen campanyes llegendàries.'), A(T('Idea genial'), 'especial', 60, 115, 90, 4, T('Dany enorme i confusió.'))]],
+    seolop: [['Indexllop', T('Rastreja cada racó d\'internet abans que els cercadors.'), A(T('Indexació total'), 'ofensiu', 40, 85, 100, 2, T('Dany precís que no falla.'))],
+      ['Rànquimus', T('Sempre el primer resultat, en qualsevol cerca i en qualsevol idioma.'), A(T('Primera posició'), 'especial', 60, 115, 95, 4, T('Dany molt elevat.'))]],
+    logistort: [['Hubtità', T('Un centre logístic sencer que camina sobre quatre potes.'), A(T('Xarxa de distribució'), 'defensiu', 30, 0, 100, 3, T('Escut que absorbeix el 40 % del dany durant 2 torns.'))],
+      ['Logisàurus', T('Entrega qualsevol cosa a qualsevol lloc del món abans que la demanin.'), A(T('Entrega instantània'), 'especial', 60, 110, 95, 4, T('Dany molt elevat que sempre actua primer.'))]],
+    comunivol: [['Mediàguila', T('Totes les redaccions esperen la seva roda de premsa.'), A(T('Roda de premsa'), 'estrategic', 30, 0, 100, 3, T('Redueix un 25 % l\'atac del rival.'))],
+      ['Comunicòsmic', T('El seu missatge arriba a tots els racons del planeta alhora.'), A(T('Missatge universal'), 'especial', 55, 105, 95, 4, T('Dany molt elevat a tots els rivals.'))]],
+    estratego: [['Visionari', T('Veu deu jugades per endavant en qualsevol tauler de negocis.'), A(T('Visió de futur'), 'estrategic', 35, 0, 100, 3, T('+20 % a totes les estadístiques pròpies.'))],
+      ['Estratègum', T('La llegenda diu que va dissenyar l\'estratègia de totes les grans empreses.'), A(T('Pla perfecte'), 'especial', 65, 125, 100, 4, T('Dany enorme que no falla mai.'))]],
+    segmentiu: [['Nínxolum', T('Troba el públic perfecte fins i tot dins d\'un mercat petitíssim.'), A(T('Públic objectiu'), 'ofensiu', 40, 85, 95, 2, T('Dany elevat.'))],
+      ['Personàlix', T('Coneix cada client pel nom, pels gustos i per l\'hora preferida de compra.'), A(T('Hiperpersonalització'), 'especial', 55, 110, 100, 4, T('Dany molt elevat que no falla mai.'))]],
+    posicionix: [['Diferencial', T('Brilla tant que la competència desapareix al seu costat.'), A(T('Avantatge competitiu'), 'defensiu', 30, 0, 100, 3, T('Escut que absorbeix el 40 % del dany durant 2 torns.'))],
+      ['Diamantix', T('Una marca de metall precís: única, inimitable i impossible de copiar.'), A(T('Proposta única'), 'especial', 60, 110, 95, 4, T('Dany molt elevat.'))]],
+    enquestola: [['Mostràlia', T('Pregunta a milers de persones en un sol vol i entén què volen.'), A(T('Mostra perfecta'), 'estrategic', 30, 0, 100, 3, T('El rival rep un 25 % més de dany durant 2 torns.'))],
+      ['Insightòria', T('Descobreix desitjos que els clients encara no saben que tenen.'), A(T('Gran descobriment'), 'especial', 55, 105, 100, 4, T('Dany molt elevat que no falla mai.'))]],
+    preuxi: [['Rendibilux', T('Calcula el preu just en mil·lisegons i mai no perd marge.'), A(T('Marge òptim'), 'estrategic', 30, 0, 100, 3, T('Recupera el 40 % de l\'energia.'))],
+      ['Valorius', T('Ha entès que el preu és el que pagues i el valor, el que t\'emportes.'), A(T('Preu de valor'), 'especial', 55, 105, 95, 4, T('Dany molt elevat i roba el 15 % de l\'energia del rival.'))]],
+    imanto: [['Leadmagnus', T('Atreu clients potencials de tota la comarca com un imant gegant.'), A(T('Camp magnètic'), 'ofensiu', 40, 85, 95, 2, T('Dany i paralitza el rival un torn.'))],
+      ['Captàstron', T('Una estrella de captació: la seva gravetat atrau mercats sencers.'), A(T('Gravetat comercial'), 'especial', 60, 110, 90, 4, T('Dany enorme a tots els rivals.'))]],
+    pactoru: [['Tractàurus', T('Signa acords amb una petjada que fa tremolar les sales de reunions.'), A(T('Contracte marc'), 'defensiu', 30, 0, 100, 3, T('Retorna el 50 % del dany rebut aquest torn.'))],
+      ['Pactòlit', T('Un acord de pedra: ningú no ha trencat mai cap tracte seu.'), A(T('Acord indestructible'), 'especial', 60, 110, 95, 4, T('Dany molt elevat i l\'equip guanya un 20 % de defensa.'))]],
+    fideli: [['Fidelàngel', T('Els clients que l\'han conegut ja no volen cap altra marca.'), A(T('Programa VIP'), 'defensiu', 30, 0, 100, 3, T('Recupera el 35 % de la vida.'))],
+      ['Eternòfil', T('La lleialtat feta llum: els seus clients el segueixen tota la vida.'), A(T('Fidelitat eterna'), 'especial', 55, 105, 95, 4, T('Dany molt elevat i cura igual al dany causat.'))]],
+    ateneta: [['Omniatenta', T('Respon per telèfon, xat i correu alhora sense perdre el somriure.'), A(T('Resposta empàtica'), 'defensiu', 25, 0, 100, 3, T('Recupera el 35 % de la vida.'))],
+      ['Clientària', T('Converteix cada queixa en una experiència memorable.'), A(T('Experiència de client'), 'especial', 55, 100, 100, 4, T('Dany elevat que no falla mai.'))]],
+    aparadorix: [['Showroomix', T('Cada aparador seu és una obra d\'art que atura el carrer.'), A(T('Aparador viu'), 'estrategic', 30, 0, 100, 3, T('+25 % d\'atac durant 3 torns.'))],
+      ['Flagshipàlia', T('La botiga insígnia de totes les botigues: la gent hi fa cua per entrar.'), A(T('Inauguració estel·lar'), 'especial', 60, 110, 90, 4, T('Dany enorme a tots els rivals.'))]],
+    copiuma: [['Titulàrium', T('Els seus titulars s\'enganxen al cap durant dies.'), A(T('Titular irresistible'), 'ofensiu', 40, 90, 95, 2, T('Dany elevat.'))],
+      ['Narratòrix', T('Explica històries que fan riure, plorar... i comprar.'), A(T('Relat inoblidable'), 'especial', 55, 110, 95, 4, T('Dany molt elevat i confusió.'))]],
+    videolot: [['Viralnauta', T('Grava, edita i publica en el temps que dura un llamp.'), A(T('Muntatge exprés'), 'ofensiu', 40, 85, 95, 2, T('Dany i +20 % de velocitat.'))],
+      ['Cinemàxim', T('Les seves superproduccions fan bategar milions de pantalles.'), A(T('Estrena mundial'), 'especial', 60, 110, 90, 4, T('Dany enorme a tots els rivals.'))]],
+    bustiola: [['Automedusa', T('Envia el missatge perfecte a cada persona en el moment exacte.'), A(T('Seqüència automàtica'), 'estrategic', 30, 0, 100, 3, T('Recupera el 40 % de l\'energia.'))],
+      ['Inboxeana', T('Un oceà de correus que tothom obre amb ganes.'), A(T('Bústia plena'), 'especial', 55, 100, 100, 4, T('Dany elevat que no falla mai.'))]],
+    ressenyol: [['Cincestrelles', T('Només acumula ressenyes de cinc estrelles... i sap per què.'), A(T('Valoració perfecta'), 'defensiu', 30, 0, 100, 3, T('Escut que absorbeix el 40 % del dany durant 2 torns.'))],
+      ['Reputàlia', T('La seva reputació brilla tant que ningú no gosa criticar-la.'), A(T('Prova social total'), 'especial', 55, 100, 95, 4, T('Dany elevat i l\'equip guanya un 20 % de defensa.'))]],
+    clicarro: [['Marketplàxer', T('Un mercat sencer sobre rodes que ven a tot el món les 24 hores.'), A(T('Carretó ple'), 'ofensiu', 40, 85, 95, 2, T('Dany elevat.'))],
+      ['Hipercheckout', T('Un sol clic i la comanda ja és a casa.'), A(T('Compra en un clic'), 'especial', 60, 110, 95, 4, T('Dany molt elevat que sempre actua primer.'))]],
+    estocadillo: [['Inventàrium', T('Sap on és cada caixa del magatzem sense mirar.'), A(T('Inventari perfecte'), 'defensiu', 30, 0, 100, 3, T('Escut que absorbeix el 40 % del dany durant 2 torns.'))],
+      ['Automagatzem', T('Un magatzem automàtic que no s\'equivoca mai.'), A(T('Estoc just a temps'), 'especial', 55, 100, 95, 4, T('Dany elevat.'))]],
+    startupi: [['Escalàxia', T('Creix tan de pressa que els inversors fan cua a la porta.'), A(T('Ronda sèrie B'), 'estrategic', 30, 0, 100, 3, T('+30 % d\'atac durant 3 torns.'))],
+      ['Decacornut', T('Ha passat d\'un garatge a valer deu mil milions.'), A(T('Expansió exponencial'), 'especial', 60, 115, 90, 4, T('Dany enorme a tots els rivals.'))]],
+    facturo: [['Auditòrix', T('Revisa cada número i troba l\'error abans que existeixi.'), A(T('Auditoria completa'), 'estrategic', 30, 0, 100, 3, T('Redueix un 25 % la defensa del rival.'))],
+      ['Tresorus', T('Un bosc de comptes ben quadrats que dona fruits cada trimestre.'), A(T('Beneficis'), 'especial', 55, 105, 95, 4, T('Dany molt elevat.'))]],
+    exportas: [['Aranzelau', T('Coneix totes les normes de tots els ports del món.'), A(T('Despatx de duanes'), 'defensiu', 30, 0, 100, 3, T('Escut que absorbeix el 40 % del dany durant 2 torns.'))],
+      ['Mundialbatros', T('Vola d\'un continent a l\'altre obrint mercats a cada escala.'), A(T('Obertura de mercats'), 'especial', 60, 110, 90, 4, T('Dany enorme a tots els rivals.'))]],
+    pinzellet: [['Grafitàlia', T('Converteix qualsevol paret en una campanya.'), A(T('Grafit gegant'), 'ofensiu', 40, 85, 95, 2, T('Dany elevat.'))],
+      ['Pantonix', T('Domina tots els colors que existeixen i alguns que encara no.'), A(T('Paleta infinita'), 'especial', 55, 110, 95, 4, T('Dany molt elevat i confusió.'))]],
+    innovolt: [['Prototità', T('Fa un prototip nou cada matí i el prova cada tarda.'), A(T('Prototip ràpid'), 'estrategic', 30, 0, 100, 3, T('+25 % d\'atac durant 3 torns.'))],
+      ['Futurvolt', T('Ve del futur per explicar-nos com comprarem d\'aquí a vint anys.'), A(T('Salt tecnològic'), 'especial', 60, 115, 90, 4, T('Dany enorme i paralitza el rival.'))]],
+    puzzlet: [['Enigmàtic', T('No hi ha problema que no pugui desmuntar peça a peça.'), A(T('Anàlisi de causes'), 'estrategic', 30, 0, 100, 3, T('El rival rep un 25 % més de dany durant 2 torns.'))],
+      ['Resolutòrium', T('Ha resolt tots els trencaclosques del món i ara en crea de nous.'), A(T('Solució mestra'), 'especial', 55, 110, 100, 4, T('Dany molt elevat que no falla mai.'))]],
+    monopolion: [['Oligopolion', T('Ja no està sol: controla el mercat amb dos o tres còmplices.'), A(T('Barrera d\'entrada'), 'defensiu', 35, 0, 100, 3, T('Escut que absorbeix el 40 % del dany durant 2 torns.'))],
+      ['Hegemonion', T('Una ombra que cobreix sectors sencers... fins que arriba la competència.'), A(T('Domini absolut'), 'especial', 65, 120, 90, 4, T('Dany enorme a tots els rivals.'))]],
+    disruptor: [['Disruptàlix', T('Cada cop que apareix, un sector sencer canvia per sempre.'), A(T('Canvi de paradigma'), 'estrategic', 35, 0, 100, 3, T('Redueix un 25 % totes les estadístiques del rival.'))],
+      ['Revolutrix', T('La revolució digital feta criatura.'), A(T('Revolució'), 'especial', 65, 125, 90, 4, T('Dany enorme que sempre actua primer.'))]],
+    globalia: [['Multinàcia', T('Té seus a tots els continents i parla totes les llengües.'), A(T('Xarxa global'), 'defensiu', 35, 0, 100, 3, T('Recupera el 35 % de la vida.'))],
+      ['Planetària', T('Abraça el planeta sencer: on hi ha un client, hi és ella.'), A(T('Mercat mundial'), 'especial', 65, 120, 95, 4, T('Dany enorme a tots els rivals.'))]],
+    liderax: [['Liderànim', T('Inspira equips sencers només amb la seva presència.'), A(T('Lideratge inspirador'), 'estrategic', 35, 0, 100, 3, T('+20 % a totes les estadístiques pròpies.'))],
+      ['Megalíder', T('El número u indiscutible: el mercat sencer mira què fa.'), A(T('Número u'), 'especial', 65, 125, 95, 4, T('Dany enorme que no falla mai.'))]]
+  };
+  // Nous nivells d'evolució repartits fins al 50 (es manté l'ordre i, si n'hi havia, les condicions especials)
+  function levels(sp) {
+    const o = sp.forms.map(f => f.lvl), n = o.length;
+    if (n >= 3) { const a = Math.max(8, o[1] - 4), b = Math.max(a + 8, Math.round(o[2] * 0.7)), c = b + 10; return [1, a, b, c, Math.min(49, c + 10)]; }
+    if (n === 2) { const a = Math.max(8, o[1] - 2), b = a + 12; return [1, a, b, Math.min(49, b + 12)]; }
+    return [1, 36, 46];
+  }
+  const CROWN_UP = { none: 'star', star: 'halo', halo: 'orbit', orbit: 'halo' };
+  GD.cmSpecies.forEach(sp => {
+    const extra = E[sp.id]; if (!extra || sp.forms.length >= 5 || sp.evoExtended) return;
+    const lv = levels(sp);
+    const base = sp.forms[sp.forms.length - 1].look || {};
+    extra.forEach(([name, desc, atk], k) => {
+      const look = Object.assign({}, base, k === 0
+        ? { cape: 1, aura: Math.max(2, base.aura || 0), crown: base.crown || 'star' }
+        : { cape: 1, gem: 1, aura: 3, crown: CROWN_UP[base.crown || 'none'] || 'halo', eyes: base.eyes === 'glasses' || base.eyes === 'robot' ? base.eyes : 'sharp' });
+      sp.forms.push({ name, lvl: 0, desc, look, attacks: [atk] });
+    });
+    sp.forms.forEach((f, i) => { f.lvl = lv[i]; });
+    sp.evoExtended = true;
+  });
+})();

@@ -254,10 +254,16 @@
     const [hx, hy, hr] = bd.head;
     const face = bd.face || [hx, hy + (hr ? hr * .12 : 0)];
     const tailAnchor = { bird: [124, 150], octo: [0, 0], crab: [0, 0], turtle: [146, 152], horse: [134, 140], lizard: [140, 152], snail: [0, 0], jelly: [0, 0], cart: [0, 0], robot: [0, 0], bulb: [0, 0], whale: [0, 0] }[lk.body] || [128, 150];
-    const scale = [0.86, 0.98, 1.08][Math.min(formIdx || 0, 2)] * (sp.forms.length === 1 ? 1.06 : 1);
+    const nF = sp.forms.length, fi = Math.min(formIdx || 0, nF - 1);
+    const scale = nF === 1 ? 1.06 : 0.86 + 0.26 * fi / (nF - 1); // les formes avançades són més grans
     let s = '';
     // aura (formes avançades i llegendaris)
     if (lk.aura) s += `<circle cx="100" cy="112" r="${lk.aura > 1 ? 92 : 84}" fill="url(#aura${uid})"/>` + (lk.aura > 1 ? [[30, 50], [170, 60], [36, 160], [168, 158], [100, 18]].map(([x, y]) => `<path d="M${x} ${y - 7} l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 z" fill="#fff6c8"/>`).join('') : '');
+    // aura màxima (darreres formes): anell d'energia i més espurnes
+    if (lk.aura > 2) s += `<ellipse cx="100" cy="164" rx="70" ry="16" fill="none" stroke="${ty.c2}" stroke-width="5" opacity=".75"/><ellipse cx="100" cy="164" rx="58" ry="11" fill="none" stroke="#fff6c8" stroke-width="2.5" opacity=".9"/>` + [[16, 104], [184, 104], [58, 26], [142, 22], [100, 196]].map(([x, y]) => `<path d="M${x} ${y - 9} l2.5 6.5 l6.5 2.5 l-6.5 2.5 l-2.5 6.5 l-2.5 -6.5 l-6.5 -2.5 l6.5 -2.5 z" fill="${ty.c2}" stroke="${INK}" stroke-width="1.2"/>`).join('');
+    // capa (formes noves): darrere del cos
+    if (lk.cape && hr) s += `<path d="M${hx - hr * .7} ${hy + hr * .55} C ${hx - hr * 1.5} ${hy + hr * 1.6}, ${hx - hr * 1.3} ${hy + hr * 2.4}, ${hx - hr * 1.15} ${hy + hr * 2.55} L ${hx + hr * 1.15} ${hy + hr * 2.55} C ${hx + hr * 1.3} ${hy + hr * 2.4}, ${hx + hr * 1.5} ${hy + hr * 1.6}, ${hx + hr * .7} ${hy + hr * .55} Z" ${st(shade(ty.c, -55))}/><path d="M${hx - hr * .9} ${hy + hr * 2.4} L ${hx + hr * .9} ${hy + hr * 2.4}" stroke="${ty.c2}" stroke-width="4" stroke-linecap="round"/>`;
+    else if (lk.cape) s += `<path d="M60 104 C 30 140, 34 176, 44 184 L 156 184 C 166 176, 170 140, 140 104 Z" ${st(shade(ty.c, -55))}/>`;
     if (lk.wings) s += wings(lk.wings, C, hx, hy);
     if (lk.tail && tailAnchor[0]) s += tail(lk.tail, C, tailAnchor, lk.tails);
     if (lk.mane && hr) s += head('wolf-mane', hx, hy, hr, C).split('<ellipse')[0];
@@ -277,6 +283,8 @@
     s += `<ellipse cx="${face[0] - 24 * eyeSz}" cy="${eyeY + 13}" rx="6" ry="3.5" fill="#ff7a8a" opacity=".55"/><ellipse cx="${face[0] + 24 * eyeSz}" cy="${eyeY + 13}" rx="6" ry="3.5" fill="#ff7a8a" opacity=".55"/>`;
     s += mouth(lk.mouth, face[0], eyeY + 17 * eyeSz);
     if (lk.crown) s += crown(lk.crown, hx, (hr ? hy - hr : face[1] - 50) - 2, C);
+    // gemma al pit (darrera forma)
+    if (lk.gem) { const g = bd.belly ? [bd.belly[0], bd.belly[1] - 4] : [100, 150]; s += `<path d="M${g[0]} ${g[1] - 11} L${g[0] + 9} ${g[1]} L${g[0]} ${g[1] + 11} L${g[0] - 9} ${g[1]} Z" ${st(ty.c2)}/><path d="M${g[0]} ${g[1] - 11} L${g[0]} ${g[1] + 11} M${g[0] - 9} ${g[1]} H${g[0] + 9}" stroke="#fff" stroke-opacity=".7" stroke-width="1.6"/>`; }
     if (lk.acc) {
       const ap = { octo: [150, 124], crab: [100, 160], crystal: [146, 150], whale: [118, 156], snail: [150, 168], jelly: [100, 82], cart: [104, 120], bulb: [146, 150] }[lk.body] || [140, 146];
       s += acc(lk.acc, ap[0], ap[1]);

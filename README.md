@@ -71,6 +71,10 @@ Els errors econòmics costen diners: treballar gratis, acceptar feines sense cap
 - Si un alumne oblida la contrasenya, el professor li'n posa una de nova des del mateix panell (les sessions obertes es tanquen).
 - Contrasenyes desades amb scrypt; sessions signades amb HMAC (variable `SESSION_SECRET` opcional; si no hi és, es deriva de `TEACHER_PASSWORD`). Funció: `netlify/functions/joc-compte.js`, magatzems Blobs `joc-comptes` i `joc-partides`.
 
+## Evolucions ampliades
+
+Cada Comerçmon té dues evolucions més que a la versió inicial: la majoria tenen **5 formes**, les espècies que en tenien 2 en tenen 4 i els llegendaris en tenen 3 (168 formes en total). Els nivells d'evolució es reparteixen fins al 50; cada forma nova aporta un atac propi i es dibuixa amb capa, corona i una aura cada cop més intensa. Les estadístiques sempre arriben al mateix màxim a la forma final (×1,8) i l'habilitat passiva creix de ×1 a ×2 al llarg de les formes. Els Comerçmons que ja tenien els alumnes evolucionen sols quan arriben al nivell nou.
+
 ## Món ampliat, combats i agències rivals
 
 - **Món més gran:** a més de Vic, Tona, Gurb i el recinte firal, hi ha el **Parc de la Devesa** (caminant pel passeig del riu cap a l'oest), el **Montseny** (bus, etapa 2), **Barcelona · districte digital** (tren des de l'estació de Vic, etapa 4) i el **Port de Barcelona** (caminant des de Barcelona, etapa 6).
