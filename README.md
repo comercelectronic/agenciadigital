@@ -119,7 +119,15 @@ Pestanya 📋 **Projectes**: 17 lliuraments de feina real repartits per tota la 
 - **Professorat:** al panell apareix «Projectes per revisar». Cada revisió mostra l'enllaç, el resum, els criteris d'avaluació (els que no es marquen s'afegeixen als comentaris), comentaris i nota opcional de 0 a 10. Es pot aprovar o demanar canvis; l'alumne ho veu al joc i ho pot tornar a entregar. Els estats i les notes surten al CSV.
 - Contingut a `js/data-projects.js`; revisions a Netlify Blobs (`joc-revisions`).
 
-## Taller web (opcional)
+## Dates d'entrega per grup
+
+`js/data-entregues.js` té el calendari de cada grup (CM10-2B els dimarts, CM10-2A els dimecres, CM20-2 els dijous): una data per projecte i per web del Taller, fins a les 23:59 d'aquell dia. Per canviar una data o afegir un grup, edita aquest fitxer.
+
+- L'alumne veu les dates a Campanya, Projectes i Taller, amb avisos quan falten pocs dies.
+- Si passa la data sense entrega, el client reclama el 20 % del pagament màxim (com a mínim 100 €), baixa la confiança amb el client (−2) i la reputació (−2), i surt un avís del client enfadat. Si l'entrega més tard, només cobra el 50 % del que toca per la nota. Les xifres són a `GD.ENTREGA`.
+- Al panell del professor hi ha el calendari de tots els grups i cada entrega marca si ha arribat a temps.
+
+## Taller web (amb dates per als grups que en tenen)
 
 Pestanya 🛠️ **Taller**: un curs a part on l'alumne aprèn a crear webs professionals per als clients de l'agència. No és obligatori: la campanya avança igual sense fer-lo, però cada web entregada dona EXP, diners, reputació i confiança.
 

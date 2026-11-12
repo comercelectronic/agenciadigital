@@ -734,3 +734,21 @@ button { font-family: inherit; font-size: inherit; color: inherit; cursor: point
 .btn.ghost-dark { background: transparent; border-color: transparent; box-shadow: none; color: var(--ink); text-decoration: underline; }
 .title-content .langs { margin-top: 12px; justify-content: center; }
 .acc-line { margin: 0; font-size: .9em; background: rgba(43,29,34,.55); border-radius: 12px; padding: 6px 10px; }
+
+/* Dates d'entrega del grup */
+.due { display: inline-block; margin: 4px 0 0 6px; font-style: normal; font-size: .76em; font-weight: 800; border-radius: 999px; padding: 2px 9px; background: #e6f0ff; color: #2c56b0; }
+.due.soon { background: #fff3d1; color: #8a6200; }
+.due.late { background: #ffe1dc; color: #a2321f; }
+.due.ok { background: #dcf5ea; color: #1d7a52; }
+.due-line { margin: 6px 0; }
+.due-line .due { margin-left: 0; font-size: .85em; }
+.due-card { border-left: 6px solid #ffb43c; }
+.due-list { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 6px; }
+.due-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 12px; background: #f6f2fc; font-size: .9em; }
+.due-list li.soon { background: #fff6dc; }
+.due-list li.late { background: #ffe8e3; }
+.due-list li .btn { margin-left: auto; }
+.late-row { display: flex; gap: 12px; align-items: flex-start; margin: 10px 0; }
+.late-ava { flex: none; width: 64px; height: 64px; border-radius: 50%; overflow: hidden; background: #ffe1dc; border: 2px solid var(--ink); }
+.late-ava svg { width: 100%; height: 100%; }
+.late-row p { margin: 4px 0; }

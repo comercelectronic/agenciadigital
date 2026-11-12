@@ -67,10 +67,30 @@
   const link = (u) => u ? `<a href="${/^https?:\/\//i.test(u) ? esc(u) : '#'}" target="_blank" rel="noopener">${esc(u)}</a>` : '';
   const AUTO_ERR = () => ({ private: T('document privat'), folder: T('és una carpeta'), ai: T('servei d\'IA no disponible'), unreadable: T('no s\'ha pogut llegir'), empty: T('document buit') });
 
+  /* ===== Dates d'entrega (js/data-entregues.js) ===== */
+  const dayTxt = (d) => d.toLocaleDateString(LOCALE, { weekday: 'short', day: 'numeric', month: 'numeric' });
+  // Data límit i estat del termini d'una tasca per a un alumne
+  function dueTag(r, id) {
+    const due = GD.dueDate(normClass(r.classe), id); if (!due) return '';
+    const sub = (r.projectes || {})[id], at = sub && new Date(sub.primer || sub.at);
+    const st = at ? (at > due ? ['late', T('⏰ fora de termini')] : ['ok', T('a temps')]) : Date.now() > due ? ['late', T('⏰ no entregat')] : ['', ''];
+    return `<br><small class="due-t ${st[0]}">📅 ${dayTxt(due)}${st[1] ? ' · ' + st[1] : ''}${r.retards && r.retards[id] ? ' · −' + r.retards[id].fine + ' €' : ''}</small>`;
+  }
+  function renderCalendar() {
+    const G = Object.keys(GD.entregues || {}); if (!G.length) return;
+    const ids = GD.gradable.map(p => p.id).filter(id => G.some(g => GD.entregues[g][id]));
+    ids.sort((a, b) => String(GD.entregues[G[0]][a] || '9').localeCompare(String(GD.entregues[G[0]][b] || '9')));
+    const now = Date.now();
+    $('#cal').innerHTML = `<div class="table-wrap"><table class="tbl"><thead><tr><th>${T('Tasca')}</th>${G.map(g => `<th>${esc(g)}</th>`).join('')}</tr></thead><tbody>
+      ${ids.map(id => { const p = GD.gradableById(id); return `<tr><td>${esc(p.title)}<br><small class="muted">${esc(p.kind)}</small></td>${G.map(g => { const d = GD.dueDate(g, id); return `<td class="${d && d < now ? 'muted' : ''}">${d ? dayTxt(d) : '—'}</td>`; }).join('')}</tr>`; }).join('')}
+      </tbody></table></div>
+      <p class="muted small">${T('Si un alumne no entrega a temps, el client li reclama el {0} % del pagament màxim (com a mínim {1} €), perd {2} punts de confiança amb el client i {3} de reputació, i si l\'entrega més tard només cobra el {4} %. Les dates es canvien al fitxer js/data-entregues.js.', [GD.ENTREGA.finePct, GD.ENTREGA.fineMin, -GD.ENTREGA.trust, -GD.ENTREGA.rep, GD.ENTREGA.latePayPct])}</p>`;
+  }
+
   function pendingTable(items, withGrade) {
     return `<div class="table-wrap"><table class="tbl"><thead><tr><th>${T('Alumne')}</th><th>${T('Projecte')}</th><th>${T('Versió')}</th><th>${T('Entregat')}</th>${withGrade ? `<th>${T('Nota')}</th>` : ''}<th></th></tr></thead><tbody>
       ${items.map(({ r, k, p, sub }) => { const rv = (r.revisions || {})[p.id] || {}; return `<tr><td><span class="ava-s">${avatar(r)}</span><b>${esc(fullName(r))}</b> <small class="muted">${esc(r.classe || '')}</small></td>
-        <td>${esc(p.title)}<br><small class="muted">${esc(p.kind)} · ${p.web ? T('nivell {0}', [p.web]) : T('cap. {0}', [p.after])}${!withGrade && rv.autoError && rv.autoError.v >= sub.v ? ` · 🤖 ${esc((AUTO_ERR()[rv.autoError.reason] || rv.autoError.reason))}` : ''}</small></td><td>${sub.v}</td><td><small>${dateTxt(sub.at)}</small></td>
+        <td>${esc(p.title)}<br><small class="muted">${esc(p.kind)} · ${p.web ? T('nivell {0}', [p.web]) : T('cap. {0}', [p.after])}${!withGrade && rv.autoError && rv.autoError.v >= sub.v ? ` · 🤖 ${esc((AUTO_ERR()[rv.autoError.reason] || rv.autoError.reason))}` : ''}</small></td><td>${sub.v}</td><td><small>${dateTxt(sub.at)}</small>${dueTag(r, p.id)}</td>
         ${withGrade ? `<td><b>${rv.grade != null ? rv.grade : '—'}</b> ${rv.status === 'approved' ? '✅' : '✏️'}</td>` : ''}
         <td>${r._font === 'servidor' ? `<button class="btn small ${withGrade ? '' : 'primary'}" data-review="${esc(k)}|${p.id}">${withGrade ? T('Validar') : T('Revisar')}</button>` : T('<small class="muted">només del servidor</small>')}</td></tr>`; }).join('')}
       </tbody></table></div>`;
@@ -209,12 +229,12 @@
       </tbody></table>
       <h4>${T('📋 Projectes reals')}</h4>
       <table class="tbl"><thead><tr><th>${T('Projecte')}</th><th>${T('Estat')}</th><th>${T('Enllaç')}</th><th>${T('Nota')}</th><th></th></tr></thead><tbody>
-        ${GD.projects.map(p => { const st = projState(r, p), sub = (r.projectes || {})[p.id], rv = (r.revisions || {})[p.id]; return `<tr><td>${esc(p.title)}<br><small class="muted">${T('cap. {0}', [p.after])}</small></td><td>${PLB()[st].join(' ')}${sub ? `<br><small class="muted">v${sub.v} · ${dateTxt(sub.at)}</small>` : ''}</td><td>${sub ? link(sub.url) : '—'}</td><td>${rv && rv.grade != null ? rv.grade : '—'}</td><td>${sub && r._font === 'servidor' ? `<button class="btn small" data-review="${esc(k)}|${p.id}">${T('Revisar')}</button>` : ''}</td></tr>`; }).join('')}
+        ${GD.projects.map(p => { const st = projState(r, p), sub = (r.projectes || {})[p.id], rv = (r.revisions || {})[p.id]; return `<tr><td>${esc(p.title)}<br><small class="muted">${T('cap. {0}', [p.after])}</small></td><td>${PLB()[st].join(' ')}${sub ? `<br><small class="muted">v${sub.v} · ${dateTxt(sub.at)}</small>` : ''}${dueTag(r, p.id)}</td><td>${sub ? link(sub.url) : '—'}</td><td>${rv && rv.grade != null ? rv.grade : '—'}</td><td>${sub && r._font === 'servidor' ? `<button class="btn small" data-review="${esc(k)}|${p.id}">${T('Revisar')}</button>` : ''}</td></tr>`; }).join('')}
       </tbody></table>
       <h4>${T('🛠️ Taller web')}</h4>
       ${(r.webPlataformes || []).length ? `<p class="small">${T('Plataformes triades:')} ${r.webPlataformes.map(k => esc(GD.webPlatforms[k] ? GD.webPlatforms[k].n : k)).join(', ')}</p>` : ''}
       <table class="tbl"><thead><tr><th>${T('Nivell')}</th><th>${T('Encàrrec')}</th><th>${T('Plataforma')}</th><th>${T('Enllaç')}</th><th>${T('Nota')}</th></tr></thead><tbody>
-        ${GD.webLevels.map(L => { const w = (r.webs || {})[L.n]; return `<tr><td>${L.n}</td><td>${esc(L.title)}${w && w.reflection ? `<br><small class="muted">${esc(w.reflection)}</small>` : ''}${w && w.note ? `<br><small>📝 ${esc(w.note)}</small>` : ''}</td><td>${w ? esc(GD.webPlatforms[w.platform] ? GD.webPlatforms[w.platform].n : w.platform) : '—'}</td><td>${w ? `<a href="${/^https?:\/\//i.test(w.url) ? esc(w.url) : '#'}" target="_blank" rel="noopener">${esc(w.url)}</a>${w.reachable === false ? ' ⚠️' : ''}` : '—'}</td><td>${(() => { const rv = (r.revisions || {})['web-' + L.n]; return rv && rv.status ? `<b>${rv.grade != null ? rv.grade : '—'}</b> ${rv.status === 'approved' ? '✅' : '✏️'}${rv.by === 'auto' ? ' 🤖' : ''}` : w && w.v ? '⏳' : '—'; })()}</td></tr>`; }).join('')}
+        ${GD.webLevels.map(L => { const w = (r.webs || {})[L.n]; return `<tr><td>${L.n}</td><td>${esc(L.title)}${w && w.reflection ? `<br><small class="muted">${esc(w.reflection)}</small>` : ''}${w && w.note ? `<br><small>📝 ${esc(w.note)}</small>` : ''}${dueTag(r, 'web-' + L.n)}</td><td>${w ? esc(GD.webPlatforms[w.platform] ? GD.webPlatforms[w.platform].n : w.platform) : '—'}</td><td>${w ? `<a href="${/^https?:\/\//i.test(w.url) ? esc(w.url) : '#'}" target="_blank" rel="noopener">${esc(w.url)}</a>${w.reachable === false ? ' ⚠️' : ''}` : '—'}</td><td>${(() => { const rv = (r.revisions || {})['web-' + L.n]; return rv && rv.status ? `<b>${rv.grade != null ? rv.grade : '—'}</b> ${rv.status === 'approved' ? '✅' : '✏️'}${rv.by === 'auto' ? ' 🤖' : ''}` : w && w.v ? '⏳' : '—'; })()}</td></tr>`; }).join('')}
       </tbody></table>
       <h4>${T("🛒 Millores de l'agència")}</h4>
       <p class="small">${(r.millores || []).map(id => { const u = GD.upgradeById(id); return u ? `${u.i} ${esc(u.n)}` : esc(id); }).join(' · ') || '—'}</p>
@@ -536,6 +556,7 @@
 
   try { const s = JSON.parse(sessionStorage.getItem(PKEY) || 'null'); if (s) { $('#pw').value = s.pw; $('#cls').value = s.classe || ''; load(); } } catch (e) { }
   translateDom();
+  renderCalendar();
   document.title = T('Panell del professor') + ' · Agència Digital';
   $('#langs').innerHTML = LANGS.map(([k, n]) => `<button class="${k === LANG ? 'on' : ''}" data-lang="${k}">${n}</button>`).join('');
   $('#langs').onclick = (e) => { const b = e.target.closest('[data-lang]'); if (b && b.dataset.lang !== LANG) setLang(b.dataset.lang); };

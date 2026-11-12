@@ -453,7 +453,10 @@
   let hubTab = 'campanya';
   function hubScreen(tab) {
     if (tab) hubTab = tab;
-    S.cur = null; save();
+    S.cur = null;
+    const lateNow = checkDeadlines();
+    save();
+    if (lateNow.length) setTimeout(() => lateModal(lateNow), 300);
     app().innerHTML = `
       <header id="hud"></header>
       <main class="hub">
@@ -488,6 +491,7 @@
     el.innerHTML = `
       ${S.ending ? `<div class="card ending-mini"><b>${T("Has arribat a un final:")} ${esc(GD.endings[S.ending].title)}</b><p>${T("Pots continuar explorant el món, fent projectes i entrenant els Comerçmons, o començar una partida nova amb una altra estratègia.")}</p><button class="btn" data-act="showEnding">${T("Tornar a veure el final")}</button></div>` : ''}
       ${fixesCard()}
+      ${dueCard()}
       ${next ? `<button class="next-mission" data-ch="${next}">
           <span class="nm-ava">${ART.portrait(GD.chapters[next].who || 'pau', 'n', { rank: rank() })}</span>
           <span class="nm-txt"><small>${T("Següent missió · Capítol")} ${next}</small><b>${txt(GD.chapters[next].title)}</b><i>${txt(GD.chapters[next].blurb || '')}</i></span>
@@ -1375,7 +1379,8 @@
     if (r.review && r.review.status === 'changes' && r.review.v >= r.v) return 'changes';
     return r.v ? 'sent' : 'legacy';
   }
-  function webOpen(n) { return n === 1 || !!webState().levels[n - 1]; }
+  // Un nivell s'obre quan s'ha entregat l'anterior o quan el grup ja en té data d'entrega
+  function webOpen(n) { return n === 1 || !!webState().levels[n - 1] || !!dueOf('web-' + n); }
   const safeUrl = (u) => /^https?:\/\//i.test(u || '') ? esc(u) : '#';
 
   function tabTaller(el) {
@@ -1385,16 +1390,17 @@
     el.innerHTML = `
       <div class="card web-head">
         <h3>${T('🛠️ Taller web')}</h3>
-        <p>${T('Aprèn a crear webs professionals per als clients de l\'agència. Cada nivell és un encàrrec real: el construeixes amb la plataforma que vulguis i n\'entregues l\'enllaç. És opcional: pots avançar en la campanya igualment.')}</p>
+        <p>${T('Aprèn a crear webs professionals per als clients de l\'agència. Cada nivell és un encàrrec real: el construeixes amb la plataforma que vulguis i n\'entregues l\'enllaç.')} ${dueOf('web-1') ? T('El teu grup té una data d\'entrega per a cada web.') : T('És opcional: pots avançar en la campanya igualment.')}</p>
         <div class="web-plats">${W.platforms.map(k => `<span class="plat-chip">${WP()[k].i} ${esc(WP()[k].n)}</span>`).join('')}
           <button class="btn small" data-act="webPlatforms">${T('Canviar plataformes')}</button></div>
         <p class="muted small">${T('Webs entregades: {0} de {1}', [done, GD.webLevels.length])}</p>
       </div>
+      ${dueCard()}
       <div class="web-levels">${GD.webLevels.map(L => {
         const d = W.levels[L.n], open = webOpen(L.n), p = d && WP()[d.platform];
         return `<div class="web-level card ${d ? 'done' : open ? 'open' : 'locked'}">
           <span class="wl-ava">${ART.portrait(L.who, d ? 'h' : 'n')}</span>
-          <div class="wl-txt"><small>${T('Nivell {0}', [L.n])} · ${txt(L.sub)} · 💶 ${GD.webMax(L) ? (d && d.paid > 0 && webStatus(L) === 'approved' ? T('Cobrat: {0}', [eur(d.paid)]) : T('fins a {0}', [eur(GD.webMax(L))])) : T('sense pagament')}</small><b>${txt(L.title)}</b>
+          <div class="wl-txt"><small>${T('Nivell {0}', [L.n])} · ${txt(L.sub)} · 💶 ${GD.webMax(L) ? (d && d.paid > 0 && webStatus(L) === 'approved' ? T('Cobrat: {0}', [eur(d.paid)]) : T('fins a {0}', [eur(payMax('web-' + L.n, GD.webMax(L)))])) : T('sense pagament')}</small><b>${txt(L.title)}</b>${dueBadge('web-' + L.n)}
             ${d ? `<em class="pstat ${webStatus(L)}">${webStatus(L) === 'legacy' ? T('📤 Entregada (sense nota)') : PST()[webStatus(L)].join(' ')}${d.review && d.review.status === 'approved' && d.review.grade != null ? ' · ' + T('Nota: {0}', [d.review.grade]) : ''}</em><br><a href="${safeUrl(d.url)}" target="_blank" rel="noopener">${esc(d.url)}</a>${p ? ` <em class="plat-chip">${p.i} ${esc(p.n)}</em>` : ''}` : ''}
           </div>
           ${open ? `<button class="btn ${d ? 'small' : 'primary'}" data-web="${L.n}">${d ? (webStatus(L) === 'changes' ? T('Corregir') : T('Revisar')) : T('Començar')}</button>` : '<span class="ch-s">🔒</span>'}
@@ -1447,7 +1453,8 @@
     const brief = () => panel(`<div class="pn-h"><b>🧾 ${txt(L.title)}</b><small>${T('Taller web · Nivell {0}', [n])} · ${txt(L.sub)}</small></div>
       <h4>${T('Què demana el client')}</h4>
       <ul class="req-list">${L.reqs.map(r => `<li>${txt(r)}</li>`).join('')}</ul>
-      ${GD.webMax(L) ? payBox(GD.webMax(L), prev && prev.paid) : `<div class="pay-box">💶 <b>${T('Sense pagament: és la teva pròpia web, però la nota compta igualment.')}</b></div>`}
+      ${dueOf('web-' + n) ? `<p class="due-line">${dueBadge('web-' + n)}</p>` : ''}
+      ${GD.webMax(L) ? payBox(payMax('web-' + n, GD.webMax(L)), prev && prev.paid) + (isLate('web-' + n) ? `<p class="small neg">${T('⏰ Fora de termini: el client només paga el {0} % del que toca segons la nota.', [ENT().latePayPct])}</p>` : '') : `<div class="pay-box">💶 <b>${T('Sense pagament: és la teva pròpia web, però la nota compta igualment.')}</b></div>`}
       ${prev ? `<div class="info">${T('Ja has entregat aquest nivell:')} <a href="${safeUrl(prev.url)}" target="_blank" rel="noopener">${esc(prev.url)}</a></div>` : ''}
       ${webFeedback(L, prev)}
       <div class="row-btns"><button class="btn primary" id="learn">${T('📚 Aprèn a fer-la')}</button>${webStatus(L) === 'approved' ? '' : `<button class="btn" id="deliver">${prev ? T('📤 Tornar a entregar') : T('📤 Entregar')}</button>`}<button class="btn ghost" id="back">${T('Tornar al taller')}</button></div>`, (p) => {
@@ -1511,6 +1518,7 @@
     const old = webState().levels[L.n], R = L.reward;
     // Les entregues anteriors al pagament per nota ja van cobrar l'import antic: només es cobra el que falti
     rec.v = old ? (old.v || 0) + 1 : 1;
+    rec.first = old ? (old.first || old.at || rec.at) : rec.at; // el termini es compta amb la primera entrega
     rec.paid = old ? (old.paid != null ? old.paid : (old.v ? 0 : (R.money || 0))) : 0;
     webState().levels[L.n] = rec;
     if (first) {
@@ -1526,7 +1534,7 @@
         <p><a href="${safeUrl(rec.url)}" target="_blank" rel="noopener">${esc(rec.url)}</a></p>
         ${first ? `<div class="metrics"><div class="metric good"><small>${T('Experiència')}</small><b>+${R.xp}</b></div>
           <div class="metric good"><small>${T('Reputació')}</small><b>+${R.rep}</b></div></div>` : `<p class="muted">${T('Entrega actualitzada. L\'experiència i la reputació només es donen la primera vegada.')}</p>`}
-        ${GD.webMax(L) ? payBox(GD.webMax(L), rec.paid) : ''}
+        ${GD.webMax(L) ? payBox(payMax('web-' + L.n, GD.webMax(L)), rec.paid) : ''}${dueBadge('web-' + L.n)}
         <p class="small">${T('La correcció automàtica puntuarà la web en pocs minuts i el professor en pot modificar la nota. El que cobres depèn de la nota.')}</p>
         ${next ? `<div class="stage-clear" style="--sc:#38d1c4"><b>🔓 ${T('Nou encàrrec desbloquejat:')}</b><p>${txt(next.title)}</p></div>` : `<div class="stage-clear" style="--sc:#ffd24a"><b>🏆 ${T('Has completat el Taller web!')}</b></div>`}
         <button class="btn primary big" data-act="hubTaller">${T('Tornar al taller')}</button></div>`);
@@ -1550,6 +1558,82 @@
     return delta;
   }
   function projRec(id) { if (!S.proj) S.proj = {}; return S.proj[id] || null; }
+
+  /* ================= Dates d'entrega del grup (js/data-entregues.js) ================= */
+  const ENT = () => GD.ENTREGA;
+  const dueOf = (id) => S && S.classe && GD.dueDate ? GD.dueDate(S.classe, id) : null;
+  const webOfTask = (id) => GD.webLevels.find(L => 'web-' + L.n === id);
+  const taskMax = (id) => id.startsWith('web-') ? GD.webMax(webOfTask(id)) : GD.projMax(GD.projectById(id));
+  // Moment de la primera entrega (les entregues següents no compten per al termini)
+  function deliveredAt(id) {
+    if (id.startsWith('web-')) { const r = webState().levels[+id.slice(4)]; return r ? new Date(r.first || r.at || 0) : null; }
+    const r = projRec(id); return r && r.v ? new Date(r.first || r.at) : null;
+  }
+  function isLate(id) { const due = dueOf(id); if (!due) return false; const at = deliveredAt(id); return at ? at > due : Date.now() > due; }
+  // Si s'entrega tard, el client només paga una part del que toca segons la nota
+  const payMax = (id, max) => isLate(id) ? Math.round(max * ENT().latePayPct / 100) : max;
+  const WDAYS = () => [T('diumenge'), T('dilluns'), T('dimarts'), T('dimecres'), T('dijous'), T('divendres'), T('dissabte')];
+  const dueTxt = (d) => `${WDAYS()[d.getDay()]} ${d.getDate()}/${d.getMonth() + 1}`;
+  const dayDiff = (d) => { const n = new Date(); return Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(n.getFullYear(), n.getMonth(), n.getDate())) / 864e5); };
+  function dueBadge(id) {
+    const due = dueOf(id); if (!due) return '';
+    const at = deliveredAt(id);
+    if (at) return at > due ? `<em class="due late">⏰ ${T('Entregat fora de termini (era el {0})', [dueTxt(due)])}</em>` : `<em class="due ok">📅 ${T('Entregat a temps ({0})', [dueTxt(due)])}</em>`;
+    if (Date.now() > due) return `<em class="due late">⏰ ${T('Fora de termini: s\'havia d\'entregar el {0}', [dueTxt(due)])}</em>`;
+    const dd = dayDiff(due);
+    return dd === 0 ? `<em class="due soon">🔥 ${T('S\'entrega avui, fins a les 23:59')}</em>`
+      : dd === 1 ? `<em class="due soon">⚠️ ${T('S\'entrega demà, {0}', [dueTxt(due)])}</em>`
+      : `<em class="due ${dd <= 7 ? 'soon' : ''}">📅 ${T('Entrega: {0}', [dueTxt(due)])}${dd <= 7 ? ' · ' + T('queden {0} dies', [dd]) : ''}</em>`;
+  }
+  // Tasques del grup pendents d'entregar, ordenades per data (les endarrerides primer)
+  function dueList() {
+    const g = S && S.classe && GD.entregues && GD.entregues[S.classe]; if (!g) return [];
+    return Object.keys(g).filter(id => GD.gradableById(id) && !deliveredAt(id)).map(id => ({ id, due: dueOf(id) })).sort((a, b) => a.due - b.due);
+  }
+  function dueCard() {
+    const L = dueList(); if (!L.length) return '';
+    const now = Date.now(), late = L.filter(x => x.due < now), next = L.filter(x => x.due >= now).slice(0, 3);
+    const row = (x) => { const t = GD.gradableById(x.id), web = x.id.startsWith('web-'), locked = !web && projStatus(t) === 'locked';
+      return `<li class="${x.due < now ? 'late' : dayDiff(x.due) <= 7 ? 'soon' : ''}"><b>${x.due < now ? '⏰' : '📅'} ${dueTxt(x.due)}${x.due >= now && dayDiff(x.due) === 0 ? ' · ' + T('avui!') : x.due >= now && dayDiff(x.due) === 1 ? ' · ' + T('demà') : ''}</b> · ${txt(t.title)}${web ? ` <small class="muted">(${T('Taller web')})</small>` : ''}${locked ? ` <small class="muted">· ${T('primer has d\'arribar al capítol {0}', [t.after])}</small>` : ''}
+        <button class="btn small" ${web ? `data-web="${t.web}"` : `data-proj="${t.id}"`}>${T('Obrir')}</button></li>`; };
+    return `<div class="card due-card"><b>📅 ${T('Dates d\'entrega del grup {0}', [esc(S.classe)])}</b>
+      <ul class="due-list">${late.map(row).join('')}${next.map(row).join('')}</ul>
+      <p class="muted small">${T('Es pot entregar fins a les 23:59 del dia indicat. Si no arriba a temps, el client et reclamarà el {0} % del pagament, hi perdràs confiança i reputació, i si l\'entregues més tard només et pagarà el {1} %.', [ENT().finePct, ENT().latePayPct])}</p></div>`;
+  }
+  // Quan passa una data sense entrega, el client reclama diners i perd la confiança (un sol cop per tasca)
+  const LATE_LINES = () => [
+    T('{nom}, havíem quedat que el {0} tindria «{1}». No he rebut res i ni tan sols m\'has avisat. Així no puc confiar en la teva agència.'),
+    T('El {0} s\'acabava el termini de «{1}» i encara l\'espero. M\'has fet quedar malament i això té un cost: et descomptaré la indemnització.'),
+    T('{nom}, el {0} era la data d\'entrega de «{1}». Si no compleixes els terminis, buscaré una altra agència.')
+  ];
+  function checkDeadlines() {
+    const g = S && S.classe && GD.entregues && GD.entregues[S.classe]; if (!g) return [];
+    if (!S.late) S.late = {};
+    const now = Date.now(), out = [];
+    Object.keys(g).forEach((id, i) => {
+      const t = GD.gradableById(id), due = dueOf(id);
+      if (!t || !due || S.late[id] || now <= due) return;
+      const at = deliveredAt(id); if (at && at <= due) return;
+      const fine = Math.max(ENT().fineMin, Math.round(taskMax(id) * ENT().finePct / 1000) * 10);
+      S.late[id] = { at: new Date().toISOString(), fine, classe: S.classe };
+      const keep = RUN; RUN = null;
+      applyFx({ money: -fine, src: 'termini', ref: id, rep: ENT().rep, trust: t.who ? { [t.who]: ENT().trust } : null, log: T('No va entregar a temps «{0}»: el client va reclamar {1} i va perdre la confiança.', [txt(t.title), eur(fine)]), key: true }, true);
+      RUN = keep;
+      out.push({ who: t.who, title: txt(t.title), fine, line: txt(LATE_LINES()[i % 3]).replace('{0}', dueTxt(due)).replace('{1}', txt(t.title)) });
+    });
+    if (out.length) { save(); queueSync(); }
+    return out;
+  }
+  function lateModal(list) {
+    if (!list.length || $('.late-modal')) return;
+    const d = document.createElement('div'); d.className = 'modal late-modal';
+    d.innerHTML = `<div class="modal-box"><h3>⏰ ${list.length > 1 ? T('Entregues fora de termini') : T('Entrega fora de termini')}</h3>
+      ${list.map(x => `<div class="late-row"><span class="late-ava">${ART.portrait(x.who, 'a')}</span><div><b>${esc(GD.names[x.who] || '')}</b><p>«${esc(x.line)}»</p>
+        <small class="neg">−${eur(x.fine)} · ${esc(GD.names[x.who] || '')} 💔${ENT().trust} · ${ENT().rep} ${T('reputació')}</small></div></div>`).join('')}
+      <p class="muted small">${T('Encara ho pots entregar, però el client només et pagarà el {0} % del que toqui segons la nota.', [ENT().latePayPct])}</p>
+      <div class="row-btns"><button class="btn primary" id="n">${T('Entesos')}</button></div></div>`;
+    document.body.appendChild(d); d.querySelector('#n').onclick = () => d.remove();
+  }
   function projStatus(p) {
     const r = projRec(p.id);
     if (r && r.review && r.review.status === 'approved') return 'approved';
@@ -1593,13 +1677,14 @@
         <p class="muted small">${T('Aprovats: {0} de {1}', [n('approved'), GD.projects.length])} · ${T('En revisió: {0}', [n('sent')])} · ${T('Per millorar: {0}', [n('changes')])}</p>
         ${S.classe ? '' : `<div class="warn small">${T('⚠️ Per entregar projectes necessites el codi de classe del professor.')} <button class="btn small" data-act="setClass">${T('🏷️ Posar codi de classe')}</button></div>`}
       </div>
+      ${dueCard()}
       <div class="web-levels">${GD.projects.map((p, i) => {
         const s = st[i], r = projRec(p.id), [ic, lb] = PST()[s];
         const rv = r && r.review;
         return `<div class="web-level card proj ${s}">
           <span class="wl-ava">${ART.portrait(p.who, s === 'approved' ? 'h' : s === 'changes' ? 't' : 'n')}</span>
-          <div class="wl-txt"><small>${T('Capítol {0}', [p.after])} · ${txt(p.kind)} · 💶 ${s === 'approved' && r && r.paid > 0 ? T('Cobrat: {0}', [eur(r.paid)]) : T('fins a {0}', [eur(GD.projMax(p))])}</small><b>${txt(p.title)}</b>
-            <em class="pstat ${s}">${ic} ${lb}${rv && rv.grade != null && s === 'approved' ? ' · ' + T('Nota: {0}', [rv.grade]) : ''}</em></div>
+          <div class="wl-txt"><small>${T('Capítol {0}', [p.after])} · ${txt(p.kind)} · 💶 ${s === 'approved' && r && r.paid > 0 ? T('Cobrat: {0}', [eur(r.paid)]) : T('fins a {0}', [eur(payMax(p.id, GD.projMax(p)))])}</small><b>${txt(p.title)}</b>
+            <em class="pstat ${s}">${ic} ${lb}${rv && rv.grade != null && s === 'approved' ? ' · ' + T('Nota: {0}', [rv.grade]) : ''}</em>${dueBadge(p.id)}</div>
           ${s === 'locked' ? `<span class="ch-s small">${T('Cap. {0}', [p.after])}</span>` : `<button class="btn ${s === 'todo' || s === 'changes' ? 'primary' : 'small'}" data-proj="${p.id}">${s === 'todo' ? T('Començar') : s === 'changes' ? T('Corregir') : T('Veure')}</button>`}
         </div>`;
       }).join('')}</div>`;
@@ -1618,7 +1703,8 @@
       : s === 'sent' ? `<div class="warn small">${ae ? `<b>${T('🤖 No s\'ha pogut fer la correcció automàtica.')}</b> ${autoErrorText(ae.reason)} ${T('El professor el revisarà igualment.')}` : T('⏳ Correcció automàtica en curs: pot trigar uns minuts. Després, el professor la pot revisar.')}</div>` : '';
     const brief = () => panel(`<div class="pn-h"><b>📋 ${txt(p.title)}</b><small>${txt(p.kind)} · ${T('Capítol {0}', [p.after])} · ${PST()[s].join(' ')}</small></div>
       ${fb}
-      ${payBox(GD.projMax(p), r.paid)}
+      ${dueOf(p.id) ? `<p class="due-line">${dueBadge(p.id)}${s === 'locked' ? ` <small class="muted">${T('Per poder-lo entregar has d\'acabar el capítol {0}.', [p.after])}</small>` : ''}</p>` : ''}
+      ${payBox(payMax(p.id, GD.projMax(p)), r.paid)}${isLate(p.id) ? `<p class="small neg">${T('⏰ Fora de termini: el client només paga el {0} % del que toca segons la nota.', [ENT().latePayPct])}</p>` : ''}
       <p><b>${T('Objectiu:')}</b> ${txt(p.goal)}</p>
       <p><b>${T('Format:')}</b> ${txt(p.format)}</p>
       <h4>${T('Què ha de contenir')}</h4>
@@ -1681,7 +1767,7 @@
           playLines([[p.who + '.h', T('Rebut! Ho miraré amb calma, {nom}. T\'ho tornaré revisat.')]], () => {
             panel(`<div class="reward"><div class="rw-h"><small>${txt(p.kind)}</small><h2>📤 ${T('Projecte entregat!')}</h2></div>
               <p><a href="${safeUrl(url)}" target="_blank" rel="noopener">${esc(url)}</a></p>
-              ${payBox(GD.projMax(p))}
+              ${payBox(payMax(p.id, GD.projMax(p)))}${dueBadge(p.id)}
               <p>${ok ? T('Ja pots continuar la campanya. La correcció automàtica el puntuarà en pocs minuts i el professor en revisarà la nota. Si cal millorar alguna cosa, rebràs un avís; la recompensa arriba quan s\'aprova.') : T('No s\'ha pogut enviar ara (sense connexió?). S\'enviarà automàticament quan tornis a tenir connexió; també ho pots fer des d\'Empresa → Enviar resultats ara.')}</p>
               <button class="btn primary big" data-act="hubProj">${T('Tornar als projectes')}</button></div>`);
           });
@@ -1739,7 +1825,7 @@
           applyFx({ xp: R.xp, rep: R.rep, trust: R.trust ? { [R.trust]: 1 } : null, log: T('Projecte aprovat: «{0}».', [txt(p.title)]), key: true }, true);
           RUN = keep;
         }
-        const got = settlePay(r, GD.projMax(p), rv, txt(p.title), p.id);
+        const got = settlePay(r, payMax(p.id, GD.projMax(p)), rv, txt(p.title), p.id);
         toast(got ? T('✅ Projecte aprovat: {0} · nota {1} · +{2}', [txt(p.title), rv.grade != null ? rv.grade : GD.PASS_GRADE, eur(got)]) : T('✅ Projecte aprovat: {0} (+{1} EXP)', [txt(p.title), p.reward.xp]), 'good');
       } else if (rv.status === 'changes' && rv.v >= r.v) toast((rv.by === 'teacher' ? T('✏️ El professor demana canvis a «{0}» (nota {1}).', [txt(p.title), rv.grade != null ? rv.grade : '—']) : T('✏️ Cal millorar «{0}» (nota {1}).', [txt(p.title), rv.grade != null ? rv.grade : '—'])) + ' ' + T('Pots continuar jugant: corregeix-lo a 📋 Projectes.'), 'bad');
       else if (rv.autoError && rv.autoError.v >= r.v) toast(T('🤖 No s\'ha pogut corregir automàticament «{0}». Obre el projecte per veure-ne el motiu.', [txt(p.title)]), 'bad');
@@ -1753,7 +1839,7 @@
       r.review = rv; changed = true;
       if (r.paid == null) r.paid = r.v ? 0 : ((L.reward && L.reward.money) || 0);
       if (rv.status === 'approved') {
-        const got = settlePay(r, GD.webMax(L), rv, title, 'web-' + L.n);
+        const got = settlePay(r, payMax('web-' + L.n, GD.webMax(L)), rv, title, 'web-' + L.n);
         toast(got ? T('✅ Web aprovada: {0} · nota {1} · +{2}', [title, rv.grade != null ? rv.grade : GD.PASS_GRADE, eur(got)]) : T('✅ Web aprovada: {0} · nota {1}', [title, rv.grade != null ? rv.grade : GD.PASS_GRADE]), 'good');
       } else if (rv.status === 'changes' && rv.v >= r.v) toast(T('✏️ Cal millorar la web «{0}» (nota {1}).', [title, rv.grade != null ? rv.grade : '—']));
       else if (rv.autoError && rv.autoError.v >= r.v) toast(T('🤖 No s\'ha pogut corregir automàticament «{0}». Obre el projecte per veure-ne el motiu.', [title]), 'bad');
@@ -2501,8 +2587,9 @@
       websEntregades: Object.keys((S.web && S.web.levels) || {}).length,
       projectes: Object.assign(Object.fromEntries(Object.entries(S.proj || {}).filter(([, r]) => r && r.v).map(([k, r]) => [k, { url: r.url, url2: r.url2 || '', resum: r.summary, ia: r.ai, canvis: r.changes || '', at: r.at, primer: r.first || r.at, v: r.v }])),
         // Les webs del taller es corregeixen com els projectes, amb la clau «web-N»
-        Object.fromEntries(Object.entries((S.web && S.web.levels) || {}).filter(([, v]) => v && v.v).map(([k, v]) => ['web-' + k, { url: v.url, url2: '', resum: v.reflection || '', nota: v.note || '', ia: '', canvis: '', at: v.at, primer: v.at, v: v.v }]))),
+        Object.fromEntries(Object.entries((S.web && S.web.levels) || {}).filter(([, v]) => v && v.v).map(([k, v]) => ['web-' + k, { url: v.url, url2: '', resum: v.reflection || '', nota: v.note || '', ia: '', canvis: '', at: v.at, primer: v.first || v.at, v: v.v }]))),
       projectesEntregats: Object.values(S.proj || {}).filter(r => r && r.v).length,
+      retards: S.late || {},
       projectesAprovats: GD.projects.filter(p => projStatus(p) === 'approved').length,
       projectesTotal: GD.projects.length,
       decisionsTemari: S.choiceLog || {},
@@ -2548,7 +2635,7 @@
   }
   window.addEventListener('online', () => { if (S && S.syncPending) doSync(false); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden && $('.hub')) checkReviews(false); });
-  setInterval(() => { if (!document.hidden && ($('.hub') || $('.world'))) { checkReviews(false); marketSync(false); } }, 13000);
+  setInterval(() => { if (!document.hidden && ($('.hub') || $('.world'))) { checkReviews(false); marketSync(false); const l = checkDeadlines(); if (l.length) { lateModal(l); if ($('.hub')) hubScreen(); } } }, 13000);
   function projTodo() { return GD.projects.filter(p => ['todo', 'changes'].includes(projStatus(p))).length; }
 
   /* ================= Món explorable ================= */
