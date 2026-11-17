@@ -1368,6 +1368,14 @@
     return c;
   }
   // Ordre aleatori de les opcions d'una pregunta (retorna els índexs originals)
+  // Ordre barrejat però estable (el mateix cada vegada que es dibuixa el mateix pas per al mateix alumne)
+  function stableOrder(n, seed) {
+    let x = 2166136261; for (const ch of String(seed)) x = Math.imul(x ^ ch.charCodeAt(0), 16777619);
+    const rnd = () => { x ^= x << 13; x ^= x >>> 17; x ^= x << 5; return ((x >>> 0) % 10000) / 10000; };
+    const a = [...Array(n).keys()]; for (let i = n - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+  const stepSeed = (st) => `${S.player.id}|${curCh ? curCh.id : ''}|${S.cur ? S.cur.step : ''}|${st.key || st.prompt || ''}`;
   function shuffledIdx(n) { const a = [...Array(n).keys()]; for (let i = n - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
   function curStage() { const st = GD.stages.find(s => s.chapters.some(c => !S.done[c])); return st ? st.id : 8; }
   /* ================= Taller web (curs opcional) ================= */
@@ -2247,8 +2255,8 @@
       if (st.who) showActors(st.who.split('.')[0], st.who.split('.')[1] || 'n');
       panel(`<div class="pn-h"><b>${txt(st.prompt)}</b>${st.sub ? `<small>${txt(st.sub)}</small>` : ''}</div>
         ${st.info ? `<div class="info">${txt(st.info)}</div>` : ''}
-        <div class="opts">${opts.map((o, i) => {
-          const ok = reqOk(o.req);
+        <div class="opts">${(st.order ? opts.map((o, i) => i) : stableOrder(opts.length, stepSeed(st))).map(i => {
+          const o = opts[i], ok = reqOk(o.req);
           return `<button class="opt ${ok ? '' : 'locked'}" data-i="${i}" ${ok ? '' : 'disabled'}><b>${txt(o.t)}</b>${o.d ? `<small>${txt(o.d)}</small>` : ''}${ok ? '' : `<em>🔒 ${reqLabel(o.req)}</em>`}${o.req && ok && o.req.skill ? `<em class="perk">${SKILLS[o.req.skill].i} ${SKILLS[o.req.skill].n}</em>` : ''}</button>`;
         }).join('')}</div>`, (p) => {
         p.querySelectorAll('.opt').forEach(b => b.onclick = () => {
@@ -2309,11 +2317,11 @@
     },
 
     multi(st) {
-      const sel = new Set();
+      const sel = new Set(), ord = stableOrder(st.opts.length, stepSeed(st));
       const draw = (p) => {
         p.innerHTML = `<div class="pn-h"><b>${txt(st.prompt)}</b><small>${T("Tria'n")} ${st.pick} ${T("· Seleccionades:")} ${sel.size}</small></div>
           ${st.info ? `<div class="info">${txt(st.info)}</div>` : ''}
-          <div class="opts multi">${st.opts.map((o, i) => `<button class="opt ${sel.has(i) ? 'sel' : ''}" data-i="${i}"><b>${sel.has(i) ? '☑' : '☐'} ${txt(o.t)}</b></button>`).join('')}</div>
+          <div class="opts multi">${ord.map(i => { const o = st.opts[i]; return `<button class="opt ${sel.has(i) ? 'sel' : ''}" data-i="${i}"><b>${sel.has(i) ? '☑' : '☐'} ${txt(o.t)}</b></button>`; }).join('')}</div>
           <button class="btn primary" id="ok" ${sel.size === st.pick ? '' : 'disabled'}>${T("Confirmar")}</button>`;
         p.querySelectorAll('.opt').forEach(b => b.onclick = () => {
           const i = +b.dataset.i;
@@ -2329,7 +2337,7 @@
           save();
           // Retroacció de cada opció
           p.innerHTML = `<div class="pn-h"><b>${good === maxGood ? T('✨ Perfecte!') : good >= maxGood / 2 ? T('🙂 Força bé') : T('🤔 Cal repassar-ho')}</b><small>${good} de ${maxGood} encerts</small></div>
-            <ul class="feedback">${st.opts.map((o, i) => `<li class="${o.ok ? 'ok' : 'ko'} ${sel.has(i) ? 'picked' : ''}"><b>${sel.has(i) ? '☑' : '☐'} ${txt(o.t)}</b><small>${o.ok ? '✔' : '✘'} ${txt(o.why || '')}</small></li>`).join('')}</ul>
+            <ul class="feedback">${ord.map(i => [st.opts[i], i]).map(([o, i]) => `<li class="${o.ok ? 'ok' : 'ko'} ${sel.has(i) ? 'picked' : ''}"><b>${sel.has(i) ? '☑' : '☐'} ${txt(o.t)}</b><small>${o.ok ? '✔' : '✘'} ${txt(o.why || '')}</small></li>`).join('')}</ul>
             <button class="btn primary" id="cont">${T("Continuar")}</button>`;
           p.querySelector('#cont').onclick = () => nextStep();
         };

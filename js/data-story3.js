@@ -19,7 +19,7 @@
         ['berta.h', T('I els projectes de marca i botiga en línia són els que ens fan més feliços... i els que guanyen premis!')],
         ['pau.t', T("Ingressos recurrents: {0} €/mes. Equip: {1} persones. Ara toca triar.", [recurring(S).toLocaleString(LOCALE), S.team.length + 1])]
       ] },
-      { t: 'choice', key: 'path', prompt: T('Quina línia principal tries per a l\'agència?'), sub: T('Pots combinar especialitats més endavant, però cada línia requereix recursos.'), opts: [
+      { t: 'choice', key: 'path', order: true, prompt: T('Quina línia principal tries per a l\'agència?'), sub: T('Pots combinar especialitats més endavant, però cada línia requereix recursos.'), opts: [
         { t: T('🏘️ Camí A — Especialista en negocis locals'), d: T('Comerços, restaurants, serveis i empreses de proximitat. Relació personal i reputació local.'), v: 'A', fx: { know: { seo: 1, mercat: 1 }, trust: { carme: 1 }, rep: 3, log: T('Va triar el camí A: especialista en negocis locals.'), key: true } },
         { t: T('📈 Camí B — Agència de rendiment'), d: T('Publicitat, analítica, conversió i creixement mesurable. Informes rigorosos.'), v: 'B', fx: { know: { ads: 1, analitica: 1 }, trust: { julia: 1 }, rep: 3, log: T('Va triar el camí B: agència de rendiment.'), key: true } },
         { t: T('🛍️ Camí C — Estudi de marca i comerç electrònic'), d: T('Identitat, continguts, experiència de compra i llançaments.'), v: 'C', fx: { know: { marca: 1, web: 1 }, trust: { berta: 1 }, rep: 3, log: T('Va triar el camí C: estudi de marca i comerç electrònic.'), key: true } }
@@ -44,8 +44,8 @@
         ['pau.t', T('(És més del doble del que factura qualsevol altre client. Podem assumir-ho sense descuidar la resta?)')]
       ] },
       { t: 'choice', key: 'gran62', prompt: T('Com respons a la Marta?'), opts: [
-        { t: T('Acceptar i adaptar l\'agència: responsable de compte, una persona de suport, KPI pactats i calendari d\'aprovacions'), v: 'preparat', req: { money: 4000 }, fx: { client: { id: 'marta', name: T('Làctics de la Plana'), fee: 6000 }, hire: { id: 'suport', name: T('Arnau (suport de comptes)'), salary: 2200 }, rep: 6, xp: 50, log: T('Va guanyar el primer client gran amb un pla de recursos.'), key: true }, say: [['marta.h', T('Això és professionalitat. Signem.')]] },
-        { t: T('Acceptar sense canviar res: ja ens en sortirem'), v: 'sensepla', fx: { client: { id: 'marta', name: T('Làctics de la Plana'), fee: 6000 }, trust: { carme: -1, miquel: -1, julia: -1 }, money: -2500, rep: -2, flags: { sobrecarrega: 2 }, log: T('Va acceptar un client gran sense capacitat i va pagar 2.500 € en hores externes d\'urgència.'), key: true }, say: [['', T('Dos mesos després: la Carme espera una resposta des de fa tres setmanes i Miquel ha rebut un informe amb errors.')], ['julia.a', T('{nom}, no arribem. Els altres clients ho noten.')]] },
+        { t: T('Acceptar i adaptar-nos: responsable de compte, suport i KPI pactats'), v: 'preparat', req: { money: 4000 }, fx: { client: { id: 'marta', name: T('Làctics de la Plana'), fee: 6000 }, hire: { id: 'suport', name: T('Arnau (suport de comptes)'), salary: 2200 }, rep: 6, xp: 50, log: T('Va guanyar el primer client gran amb un pla de recursos.'), key: true }, say: [['marta.h', T('Això és professionalitat. Signem.')]] },
+        { t: T('Acceptar sense canviar res: l\'equip ja té experiència i amb aquests ingressos podrem contractar més endavant'), v: 'sensepla', fx: { client: { id: 'marta', name: T('Làctics de la Plana'), fee: 6000 }, trust: { carme: -1, miquel: -1, julia: -1 }, money: -2500, rep: -2, flags: { sobrecarrega: 2 }, log: T('Va acceptar un client gran sense capacitat i va pagar 2.500 € en hores externes d\'urgència.'), key: true }, say: [['', T('Dos mesos després: la Carme espera una resposta des de fa tres setmanes i Miquel ha rebut un informe amb errors.')], ['julia.a', T('{nom}, no arribem. Els altres clients ho noten.')]] },
         { t: T('Proposar una fase pilot de 3 mesos per demostrar valor i ajustar recursos'), v: 'pilot', fx: { client: { id: 'marta', name: T('Làctics de la Plana (pilot)'), fee: 3000 }, rep: 4, xp: 40, flags: { martaPilot: true }, log: T('Va proposar una fase pilot al client gran.') }, say: [['marta.t', T('Prudent. M\'agrada. Si el pilot funciona, ampliem.')]] },
         { t: T('Declinar: ara no tenim capacitat'), v: 'no', say: [['marta.n', T('Ho entenc. Potser més endavant.')]] }
       ] }
@@ -63,8 +63,8 @@
       ] },
       { t: 'lesson', id: 'L_financament' },
       { t: 'choice', key: 'inv63', prompt: T('Què fas amb l\'oferta de Ramon?'), opts: [
-        { t: T('Acceptar: 80.000 € pel 30 %'), v: 'acceptar', fx: (S) => ({ money: 80000, hire: { id: 'nous', name: T('Equip nou (4 persones)'), salary: 9600 }, rent: Math.max(S.rent, 1600), flags: { creixementRapid: true, inversor: true }, log: T('Va acceptar 80.000 € d\'un inversor pel 30 % de l\'agència.'), key: true }), say: [['ramon.h', T('Excel·lent. Ara, a créixer!')], ['julia.w', T('{nom}... amb cinc persones més, les despeses fixes es tripliquen.')]] },
-        { t: T('Negociar: 50.000 € pel 15 %, sense seient al consell i amb objectius realistes'), v: 'negociar', req: { skill: 'comercial', min: 3 }, fx: { money: 50000, hire: { id: 'nous', name: T('Equip nou (2 persones)'), salary: 4800 }, flags: { inversor: true }, xp: 60, log: T('Va negociar una entrada d\'inversor moderada i amb control.'), key: true }, say: [['ramon.t', T('Negocies bé. D\'acord.')]] },
+        { t: T('Acceptar: 80.000 € pel 30 %, ara que és el moment de créixer'), v: 'acceptar', fx: (S) => ({ money: 80000, hire: { id: 'nous', name: T('Equip nou (4 persones)'), salary: 9600 }, rent: Math.max(S.rent, 1600), flags: { creixementRapid: true, inversor: true }, log: T('Va acceptar 80.000 € d\'un inversor pel 30 % de l\'agència.'), key: true }), say: [['ramon.h', T('Excel·lent. Ara, a créixer!')], ['julia.w', T('{nom}... amb cinc persones més, les despeses fixes es tripliquen.')]] },
+        { t: T('Negociar: 50.000 € pel 15 % i objectius realistes'), v: 'negociar', req: { skill: 'comercial', min: 3 }, fx: { money: 50000, hire: { id: 'nous', name: T('Equip nou (2 persones)'), salary: 4800 }, flags: { inversor: true }, xp: 60, log: T('Va negociar una entrada d\'inversor moderada i amb control.'), key: true }, say: [['ramon.t', T('Negocies bé. D\'acord.')]] },
         { t: T('Rebutjar l\'oferta'), v: 'rebutjar', fx: { log: T('Va rebutjar l\'oferta de l\'inversor.') }, say: [['ramon.n', T('Respecto la decisió. Si canvies d\'opinió, ja saps on sóc.')]] },
         { t: T('Créixer amb beneficis propis, pas a pas'), v: 'propis', fx: { rep: 1, flags: { autofinancat: true, equilibri: 2 }, log: T('Va decidir créixer amb beneficis propis.'), key: true }, say: [['pau.h', T('Més lent, però l\'empresa continua sent nostra.')]] }
       ] }
@@ -78,7 +78,7 @@
       { t: 'dlg', lines: [['berta.h', T('{nom}, és hora que l\'agència tingui una marca pròpia de veritat. Una promesa. Quina és la nostra?')]] },
       { t: 'lesson', id: 'L_marca' },
       { t: 'choice', key: 'marca64', prompt: T('Quina promesa farà l\'agència?'), opts: (S) => [
-        { t: ({ A: T('«Fem créixer els negocis d\'Osona amb dades i proximitat.»'), B: T('«Creixement mesurable: si no es pot demostrar, no ho venem.»'), C: T('«Marques amb ànima que venen.»') })[S.f.path || 'A'], v: 'coherent', d: T('Coherent amb el camí triat.'), fx: { rep: 5, xp: 40, log: T('Va definir una promesa de marca coherent amb la seva especialitat.') } },
+        { t: ({ A: T('«Negocis d\'Osona que creixen, amb dades i proximitat.»'), B: T('«Creixement mesurable: si no es pot demostrar, no ho venem.»'), C: T('«Marques amb ànima que venen.»') })[S.f.path || 'A'], v: 'coherent', d: T('Coherent amb el camí triat.'), fx: { rep: 5, xp: 40, log: T('Va definir una promesa de marca coherent amb la seva especialitat.') } },
         { t: T('«Fem tot el que necessitis, quan ho necessitis.»'), v: 'generic', d: T('Agrada a tothom... i a ningú.'), fx: { rep: -1 } },
         { t: T('«Resultats garantits o et tornem els diners.»'), v: 'promesa', d: T('Impactant, però arriscada.'), fx: { rep: 2, flags: { garantia: true } } }
       ] },
@@ -101,9 +101,9 @@
       { t: 'lesson', id: 'L_ltv' },
       { t: 'choice', key: 'ret65', prompt: T('Com respons a Miquel?'), opts: [
         { t: T('Analitzar resultats, escoltar les objeccions i presentar un pla de millora amb objectius nous'), v: 'pla', fx: { trust: { miquel: 2 }, rep: 2, xp: 40 }, say: [['miquel.n', T('Això ja és una altra cosa. Tens tres mesos.')]] },
-        { t: T('Rebaixar la quota un 30 % perquè no marxi'), v: 'rebaixa', fx: { clientFee: { miquel: -270 }, trust: { miquel: 0 } }, say: [['miquel.t', T('Més barat... però el problema no era el preu.')]] },
+        { t: T('Rebaixar la quota un 30 % perquè no marxi: és un client important i perdre\'l seria pitjor'), v: 'rebaixa', fx: { clientFee: { miquel: -270 }, trust: { miquel: 0 } }, say: [['miquel.t', T('Més barat... però el problema no era el preu.')]] },
         { t: T('Deixar-lo marxar'), v: 'marxa', fx: { dropClient: 'miquel', trust: { miquel: -2 }, log: T('Va perdre Miquel com a client.'), key: true }, say: [['miquel.n', T('Una llàstima. Hem fet coses bones junts.')]] },
-        { t: T('Presentar el valor de vida dels clients que l\'agència li ha portat i proposar una nova fase centrada en exportació'), v: 'ltv', req: (S, H) => GD.sk('analitica') >= 3 || H.teamHas('julia'), fx: { trust: { miquel: 3 }, rep: 4, xp: 60, clientFee: { miquel: 400 }, log: T('Va retenir Miquel demostrant el valor de vida dels clients aconseguits.'), key: true }, say: [['', T('Els 9 clients que l\'agència ha portat a Mecanitzats Bellmunt sumen 210.000 € de marge previst. El CAC mitjà ha estat de 1.300 €.')], ['miquel.h', T('Mai no ho havia vist així. Fem l\'exportació. I amplia el contracte.')]] }
+        { t: T('Mostrar-li el valor dels clients que li hem portat i proposar-li exportar'), v: 'ltv', req: (S, H) => GD.sk('analitica') >= 3 || H.teamHas('julia'), fx: { trust: { miquel: 3 }, rep: 4, xp: 60, clientFee: { miquel: 400 }, log: T('Va retenir Miquel demostrant el valor de vida dels clients aconseguits.'), key: true }, say: [['', T('Els 9 clients que l\'agència ha portat a Mecanitzats Bellmunt sumen 210.000 € de marge previst. El CAC mitjà ha estat de 1.300 €.')], ['miquel.h', T('Mai no ho havia vist així. Fem l\'exportació. I amplia el contracte.')]] }
       ] }
     ]
   });
@@ -128,9 +128,9 @@
         { t: T('Què valoren culturalment?'), flag: 'fr_cult', note: T('Certificacions i ingredients, més que l\'origen.'), a: [['amelie.n', T('Valoren molt les certificacions i la llista d\'ingredients. Que siguem del Montseny els importa menys.')]] }
       ] },
       { t: 'choice', key: 'fr71', prompt: T('Quina estratègia proposes?'), opts: [
-        { t: T('Traduir automàticament la web i els anuncis'), v: 'traduir' },
-        { t: T('Copiar la campanya que funciona a Catalunya'), v: 'copiar' },
-        { t: T('Localitzar: paraules clau franceses, missatge centrat en la certificació, preus adaptats i logística de 72 h amb un operador local'), v: 'localitzar', fx: { xp: 40 } }
+        { t: T('Traduir automàticament la web i els anuncis amb una bona eina d\'IA, que avui tradueix gairebé perfecte'), v: 'traduir' },
+        { t: T('Copiar la campanya que funciona a Catalunya: si aquí ven, el producte i el missatge ja estan provats'), v: 'copiar' },
+        { t: T('Localitzar: paraules clau franceses, certificació, preus i entrega en 72 h'), v: 'localitzar', fx: { xp: 40 } }
       ] },
       { t: 'fx', silent: true, fx: (S) => ({ flags: { franca: true, frQual: (S.f.fr71 === 'localitzar' ? 0.5 : 0.15) + ['fr_kw', 'fr_comp', 'fr_log', 'fr_cult'].filter(k => S.f[k]).length * 0.1 }, know: { avancat: 1 } }) },
       { t: 'dlg', lines: (S) => S.f.fr71 === 'localitzar' ? [['amelie.h', T('Parfait! La direcció volia anar de pressa, però això té molt més sentit.')]] : [['amelie.w', T('D\'acord... però tinc dubtes que funcioni.')]] }
@@ -143,8 +143,8 @@
     steps: [
       { t: 'lesson', id: 'L_experiments' },
       { t: 'choice', key: 'test72', prompt: T('Com llances la campanya?'), opts: (S) => [
-        { t: T('Prova petita: 3.000 € entre França i Bèlgica amb criteri d\'èxit definit'), v: 'prova', fx: { xp: 30 } },
-        { t: T('Campanya completa: 25.000 € a tot França'), v: 'completa' },
+        { t: T('Prova petita: 3.000 € a França i Bèlgica'), v: 'prova', fx: { xp: 30 } },
+        { t: T('Campanya completa: 25.000 € a tot França per arribar amb força'), v: 'completa' },
         { t: S.f.laiaAliada || S.trust.laia >= 2 ? T('Soci local: la Laia et presenta una agència de Lió amb qui col·labora') : T('Buscar un soci local a França'), v: 'soci', fx: { trust: { laia: S.f.laiaAliada ? 1 : 0 } } }
       ] },
       { t: 'sim', calc: (S, H) => {
@@ -169,8 +169,8 @@
         };
       } },
       { t: 'choice', key: 'interp72', prompt: (S) => T("L'Amélie pregunta: «Bèlgica té {0} vendes amb molt menys pressupost. Hi posem tots els diners?»", [S.f.frBe || 4]), opts: [
-        { t: T('Sí: Bèlgica és millor perquè té un CPA més baix.'), v: 'precipitat', fx: { rep: -1 }, say: [['julia.a', T('Amb tan poques vendes, la diferència pot ser atzar. No és una conclusió fiable.')]] },
-        { t: T('No hi ha prou dades: ampliem la prova a Bèlgica amb el mateix criteri i continuem a França.'), v: 'prudent', fx: { xp: 40, trust: { julia: 1 } }, say: [['amelie.h', T('Té sentit. Prudència i dades.')]] }
+        { t: T('Sí: Bèlgica té un CPA més baix, i els diners han d\'anar on cada venda costa menys.'), v: 'precipitat', fx: { rep: -1 }, say: [['julia.a', T('Amb tan poques vendes, la diferència pot ser atzar. No és una conclusió fiable.')]] },
+        { t: T('No hi ha prou dades: ampliem la prova i continuem a França.'), v: 'prudent', fx: { xp: 40, trust: { julia: 1 } }, say: [['amelie.h', T('Té sentit. Prudència i dades.')]] }
       ] }
     ]
   });
@@ -202,7 +202,7 @@
       ] },
       { t: 'choice', key: 'seu74', prompt: T('Què decideixes?'), opts: [
         { t: T('Obrir oficina a Barcelona (+1.800 €/mes)'), v: 'bcn', fx: (S) => ({ rent: S.rent + 1800, rep: 4, flags: { bcn: true }, money: 3000, log: T('Va obrir una segona oficina a Barcelona.'), key: true }), say: [['', T('Tres clients nous de Barcelona en el primer trimestre. També el doble de reunions de coordinació.')]] },
-        { t: T('Mantenir tota l\'activitat a Osona amb equips distribuïts i visites als clients'), v: 'osona', fx: { rep: 2, flags: { equilibri: 3 }, log: T('Va mantenir l\'agència a Osona amb treball distribuït.'), key: true }, say: [['julia.h', T('L\'equip ho agraeix: menys desplaçaments i més concentració.')]] },
+        { t: T('Quedar-nos a Osona i visitar els clients'), v: 'osona', fx: { rep: 2, flags: { equilibri: 3 }, log: T('Va mantenir l\'agència a Osona amb treball distribuït.'), key: true }, say: [['julia.h', T('L\'equip ho agraeix: menys desplaçaments i més concentració.')]] },
         { t: T('Coworking a Barcelona dos dies per setmana (+400 €/mes)'), v: 'cowork', fx: (S) => ({ rent: S.rent + 400, rep: 3, money: 1500, log: T('Va optar per un coworking a Barcelona dos dies per setmana.') }), say: [['pau.h', T('Presència a Barcelona sense un gran cost fix. Equilibri.')]] }
       ] }
     ]
@@ -218,17 +218,17 @@
       ] },
       { t: 'lesson', id: 'L_ia' },
       { t: 'multi', key: 'ia75', pick: 3, prompt: T('Tria 3 usos de la IA que l\'agència adoptarà'), opts: [
-        { t: T('Generar variants de títols i anuncis que una persona revisa abans de provar-les'), ok: true, why: T('Accelera la creativitat amb control humà.') },
-        { t: T('Resumir informes de dades, comprovant les xifres amb la font'), ok: true, why: T('Estalvia temps sense renunciar al rigor.') },
+        { t: T('Variants de títols i anuncis que una persona revisa'), ok: true, why: T('Accelera la creativitat amb control humà.') },
+        { t: T('Resumir informes, comprovant les xifres'), ok: true, why: T('Estalvia temps sense renunciar al rigor.') },
         { t: T('Classificar per temes milers de comentaris de clients'), ok: true, why: T('Escolta social a escala.') },
-        { t: T('Publicar automàticament contingut sense revisió'), ok: false, why: T('Errors, to inadequat i promeses falses.') },
+        { t: T('Publicar automàticament contingut sense revisió per guanyar temps'), ok: false, why: T('Errors, to inadequat i promeses falses.') },
         { t: T('Generar ressenyes positives per als clients'), ok: false, why: T('Enganyós i il·legal.') },
         { t: T('Pujar la base de dades de clients a una eina pública'), ok: false, why: T('Vulnera la protecció de dades.') },
         { t: T('Clonar la veu d\'un actor per a un anunci sense permís'), ok: false, why: T('Vulnera drets d\'imatge i de veu.') }
       ], fx: (S, g) => ({ xp: g * 15, know: { avancat: 1 } }) },
       { t: 'choice', key: 'iapol', prompt: T('Quina política d\'IA adopta l\'agència?'), opts: [
-        { t: T('IA com a eina amb supervisió humana, transparència amb els clients i cap dada personal en eines sense garanties'), v: 'responsable', fx: { rep: 5, xp: 40, log: T('Va adoptar una política d\'ús responsable de la IA.'), key: true }, say: [['julia.h', T('Ràpids i fiables. Aquesta és la nostra diferència.')]] },
-        { t: T('Rebaixar preus un 40 % i automatitzar-ho tot'), v: 'barata', fx: (S) => ({ rep: -4, clientFee: Object.fromEntries(S.clients.map(c => [c.id, -Math.round(c.fee * 0.2)])), log: T('Va automatitzar-ho tot i va rebaixar preus.') }), say: [['berta.a', T('Ara competim amb els que fan 100 publicacions per 300 €. I perdrem.')]] },
+        { t: T('IA amb supervisió humana, transparència i sense dades personals'), v: 'responsable', fx: { rep: 5, xp: 40, log: T('Va adoptar una política d\'ús responsable de la IA.'), key: true }, say: [['julia.h', T('Ràpids i fiables. Aquesta és la nostra diferència.')]] },
+        { t: T('Rebaixar preus un 40 % i automatitzar-ho tot per competir amb les agències que ja ho fan'), v: 'barata', fx: (S) => ({ rep: -4, clientFee: Object.fromEntries(S.clients.map(c => [c.id, -Math.round(c.fee * 0.2)])), log: T('Va automatitzar-ho tot i va rebaixar preus.') }), say: [['berta.a', T('Ara competim amb els que fan 100 publicacions per 300 €. I perdrem.')]] },
         { t: T('No fer servir IA en cap cas'), v: 'res', fx: { rep: -1 }, say: [['julia.t', T('Respectable, però anirem més lents que la competència.')]] }
       ] },
       { t: 'dlg', lines: [['pau.t', T('L\'agència ja té una dimensió considerable. El repte ja no és el pròxim client, sinó quina empresa volem ser.')]] }
@@ -268,7 +268,7 @@
         ['julia.n', T('I l\'opció de consolidar-nos a Catalunya: créixer amb calma, ser referents aquí.')],
         ['pau.t', T('Quin futur vull per a l\'empresa que hem construït?')]
       ] },
-      { t: 'choice', key: 'final', prompt: T('La decisió final'), opts: [
+      { t: 'choice', key: 'final', order: true, prompt: T('La decisió final'), opts: [
         { t: T('🤝 Vendre l\'agència'), d: T('Una nova etapa per a {en}, amb l\'equip protegit.'), v: 'vendre' },
         { t: T('🌍 Expandir-la internacionalment'), d: T('França, Portugal i més enllà.'), v: 'expandir', req: (S) => S.f.franca && S.rep >= 50, },
         { t: T('🏔️ Consolidar-la a Catalunya'), d: T('Créixer amb calma i ser referents aquí.'), v: 'consolidar' },

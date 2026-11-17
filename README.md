@@ -119,6 +119,14 @@ Pestanya 📋 **Projectes**: 17 lliuraments de feina real repartits per tota la 
 - **Professorat:** al panell apareix «Projectes per revisar». Cada revisió mostra l'enllaç, el resum, els criteris d'avaluació (els que no es marquen s'afegeixen als comentaris), comentaris i nota opcional de 0 a 10. Es pot aprovar o demanar canvis; l'alumne ho veu al joc i ho pot tornar a entregar. Els estats i les notes surten al CSV.
 - Contingut a `js/data-projects.js`; revisions a Netlify Blobs (`joc-revisions`).
 
+## Llibreta de clients
+
+`js/data-llibreta.js` recull, per a cada client, el que explica a les converses (el negoci, les dades de l'entrevista i les xifres) i el que cal per a cada projecte i web. Cada part s'apunta quan s'acaba el capítol corresponent o quan s'obre l'encàrrec de la web. Es consulta des de Campanya, Projectes, cada encàrrec i la llibreta del món (tecla L).
+
+## Preguntes i decisions
+
+Les opcions de les decisions dels capítols i de les preguntes de «tria'n…» surten barrejades (en un ordre estable per a cada alumne), excepte les que tenen un ordre natural (`order: true`). Les opcions s'han escrit perquè la correcta no sigui sistemàticament la més llarga.
+
 ## Dates d'entrega per grup
 
 `js/data-entregues.js` té el calendari de cada grup (CM10-2B els dimarts, CM10-2A els dimecres, CM20-2 els dijous): una data per projecte i per web del Taller, fins a les 23:59 d'aquell dia. Per canviar una data o afegir un grup, edita aquest fitxer.
