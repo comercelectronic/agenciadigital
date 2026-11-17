@@ -6862,4 +6862,8 @@ Object.assign(I18N, {
 "bn1csk": "Variantes de títulos y anuncios que una persona revisa",
 "12wnpp5": "Resumir informes, comprobando las cifras",
 "1p33mvr": "Publicar automáticamente contenido sin revisión para ganar tiempo",
+"196bsq": "Volver a la agencia",
+"124g64p": "Ya estás en la agencia.",
+"1bkbh25": "🏢 Vuelves a la agencia",
+"1ani734": "Muévete con las flechas (o tocando el mapa) · A / Espacio: hablar y mirar · B: libreta · 🏢 o H: volver a la agencia · Esc: menú",
 });

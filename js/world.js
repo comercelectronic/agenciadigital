@@ -1207,6 +1207,14 @@
     el.querySelector('#wnClose').onclick = () => { el.hidden = true; busy = false; };
     el.querySelectorAll('[data-nbc]').forEach(b => b.onclick = () => { el.hidden = true; API.clientNotebook(b.dataset.nbc, { onClose: () => { busy = false; }, leave: () => close() }); });
   }
+  // Tornar a l'agència des de qualsevol lloc del món
+  function goHome() {
+    if (busy || minigame) return;
+    releasePad();
+    if (map.id === 'oficina') { API.toast(T_('Ja ets a l\'agència.')); return; }
+    API.toast(T_('🏢 Tornes a l\'agència'));
+    go('oficina', 6, 8, 'up');
+  }
   function placeName(m) { return MAPS[m] ? MAPS[m].name() : m; }
   function openHub(tab) { close(); API.hubScreen(tab); }
 
@@ -1410,6 +1418,7 @@
     const ob = objective();
     h.innerHTML = `<button class="w-btn" data-w="menu" aria-label="${T_('Menú')}">☰</button>
       <div class="w-stats"><span class="chip ${S.money < 0 ? 'neg' : ''}">💶 ${API.eur(S.money)}</span><span class="chip">⭐ ${S.rep}</span><span class="chip">${T_('Nv')} ${S.level}</span></div>
+      <button class="w-btn" data-w="home" aria-label="${T_('Tornar a l\'agència')}" title="${T_('Tornar a l\'agència')}">🏢</button>
       <button class="w-btn" data-w="note" aria-label="${T_('Llibreta')}">📒</button>
       ${ob ? `<div class="w-obj">🎯 ${API.esc(ob.text)}${ob.map && ob.map !== map.id ? ` · 📍 ${API.esc(placeName(ob.map))}` : ''}</div>` : ''}`;
   }
@@ -1434,6 +1443,7 @@
     if (['Enter', ' ', 'z', 'Z'].includes(e.key)) { interact(); e.preventDefault(); }
     if (['Escape', 'x', 'X', 'm', 'M'].includes(e.key)) { openHub(); e.preventDefault(); }
     if (['l', 'L'].includes(e.key) && !busy) { notebook(); e.preventDefault(); }
+    if (['h', 'H'].includes(e.key) && !busy) { goHome(); e.preventDefault(); }
   }
   function onKeyUp(e) { const d = KEYMAP[e.key]; if (d) { keysDown.delete(d); held = keysDown.size ? [...keysDown].pop() : null; } }
   function releasePad() { held = null; path = []; keysDown.clear(); root.querySelectorAll('[data-pad].on').forEach(b => b.classList.remove('on')); }
@@ -1513,7 +1523,7 @@
         <div class="w-loc"></div>
         <div class="w-pad" aria-hidden="true"><button data-pad="up">▲</button><button data-pad="left">◀</button><button data-pad="right">▶</button><button data-pad="down">▼</button></div>
         <div class="w-ab"><button data-btn="b" aria-label="${T_('Llibreta')}">B</button><button data-btn="a" aria-label="${T_('Parlar o mirar')}">A</button></div>
-        <div class="w-help">${T_('Mou-te amb les fletxes (o tocant el mapa) · A / Espai: parlar i mirar · B: llibreta · Esc: menú')}</div>
+        <div class="w-help">${T_('Mou-te amb les fletxes (o tocant el mapa) · A / Espai: parlar i mirar · B: llibreta · 🏢 o H: tornar a l\'agència · Esc: menú')}</div>
         <div class="w-dlg" hidden><div class="w-ava"></div><div class="w-body"><div class="w-name"></div><div class="w-text"></div></div><div class="w-next">▼</div></div>
         <div class="w-menu" hidden></div>
         <div class="w-note" hidden></div>
@@ -1523,7 +1533,7 @@
       resize();
       window.addEventListener('resize', resize); window.addEventListener('keydown', onKey); window.addEventListener('keyup', onKeyUp);
       bindPad();
-      root.querySelector('.w-hud').addEventListener('click', (e) => { const b = e.target.closest('[data-w]'); if (!b || busy) return; if (b.dataset.w === 'menu') openHub(); else notebook(); });
+      root.querySelector('.w-hud').addEventListener('click', (e) => { const b = e.target.closest('[data-w]'); if (!b || busy) return; if (b.dataset.w === 'menu') openHub(); else if (b.dataset.w === 'home') goHome(); else notebook(); });
       player = { x: S.world.x, y: S.world.y, dir: S.world.dir || 'down', frame: 0, mv: 0 };
       if (!MAPS[S.world.map]) S.world.map = 'oficina';
       loadMap(S.world.map);

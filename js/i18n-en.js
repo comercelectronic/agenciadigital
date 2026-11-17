@@ -6949,4 +6949,8 @@ Object.assign(I18N, {
 "bn1csk": "Headline and ad variants that a person reviews",
 "12wnpp5": "Summarising reports, checking the figures",
 "1p33mvr": "Auto-publishing unreviewed content to save time",
+"196bsq": "Back to the agency",
+"124g64p": "You're already at the agency.",
+"1bkbh25": "🏢 Heading back to the agency",
+"1ani734": "Move with the arrows (or by tapping the map) · A / Space: talk and look · B: notebook · 🏢 or H: back to the agency · Esc: menu",
 });
