@@ -1196,6 +1196,7 @@
     el.innerHTML = `<div class="w-note-box">
       <h3>${T_('📒 Llibreta')}</h3>
       <h4>${T_('🎯 Objectiu')}</h4><p>${obj ? API.esc(obj.text) + (obj.map ? `<br><small>📍 ${API.esc(placeName(obj.map))}</small>` : '') : T_('Explora Vic, ajuda els botiguers i troba Comerçmons.')}</p>
+      ${API.nbClients ? `<h4>${T_('👥 Clients')}</h4>${API.nbClients().length ? `<div class="w-nb">${API.nbClients().map(c => `<button class="w-nb-c" data-nbc="${c.id}"><span>${API.portrait(c.who)}</span>${API.esc(API.txt(c.name))}${API.nbNew(c) ? ' •' : ''}</button>`).join('')}</div><p class="muted small">${T_('Toca un client per veure tot el que t\'ha explicat i el que necessites per als seus projectes.')}</p>` : `<p class="muted">${T_('Encara no has parlat amb cap client. Quan acabis la primera conversa, les notes apareixeran aquí.')}</p>`}` : ''}
       <h4>${T_('🔍 Pistes trobades ({0}/{1})', [found.length, Object.keys(C).length])}</h4>
       ${found.length ? `<ul>${found.map(([, c]) => `<li><b>${API.esc(GD.names[c.who] || '')}:</b> ${API.esc(c.t)}</li>`).join('')}</ul>` : `<p class="muted">${T_('Encara cap. Mira les coses dels negocis i parla amb la gent: les pistes t\'ajudaran a les missions.')}</p>`}
       <h4>${T_('🏪 Botiguers que has ajudat')}</h4>
@@ -1204,6 +1205,7 @@
       <ul>${[['fitxa', T_('Fitxa de Google del forn')], ['fotos', T_('Fotos de producte del forn')], ['cupons', T_('Cupons a la sortida de l\'escola')], ['ressenyes', T_('Ressenyes a Can Jordi')], ['cartell', T_('Cartell de la Cansaladeria Núria')]].map(([id, n]) => { const a = st().actions[id]; return `<li>${a ? '✅' : '⬜'} ${n}${a ? ` <small>(${a.score}/${a.max})</small>` : ''}</li>`; }).join('')}</ul>
       <div class="row-btns"><button class="btn primary" id="wnClose">${T_('Tancar')}</button></div></div>`;
     el.querySelector('#wnClose').onclick = () => { el.hidden = true; busy = false; };
+    el.querySelectorAll('[data-nbc]').forEach(b => b.onclick = () => { el.hidden = true; API.clientNotebook(b.dataset.nbc, { onClose: () => { busy = false; }, leave: () => close() }); });
   }
   function placeName(m) { return MAPS[m] ? MAPS[m].name() : m; }
   function openHub(tab) { close(); API.hubScreen(tab); }
@@ -1224,7 +1226,8 @@
     player.dir = dir;
     const nx = player.x + dx, ny = player.y + dy;
     const w = warpAt(nx, ny);
-    if (w && (w.closed || (w.to && unlock[w.to] && !unlock[w.to]()))) { warpBlocked(w); return false; }
+    // Entrada tancada: es deixa anar la direcció; si no, en tancar el missatge el jugador hi tornaria a topar sense parar
+    if (w && (w.closed || (w.to && unlock[w.to] && !unlock[w.to]()))) { releasePad(); warpBlocked(w); return false; }
     if (!walkable(nx, ny, player)) {
       // sortir per la vora del mapa
       return false;
@@ -1416,6 +1419,7 @@
   function onKey(e) {
     if (!root || !root.isConnected) return;
     if (e.target && /input|textarea|select/i.test(e.target.tagName)) return;
+    if (document.querySelector('.nb-modal')) return; // llibreta de clients oberta per sobre del món
     const d = KEYMAP[e.key];
     const note = root.querySelector('.w-note');
     if (!note.hidden) { if (['Escape', 'Enter', ' ', 'x', 'X'].includes(e.key)) { note.hidden = true; busy = false; e.preventDefault(); } return; }
@@ -1429,8 +1433,10 @@
     if (d) { keysDown.add(d); held = d; path = []; e.preventDefault(); return; }
     if (['Enter', ' ', 'z', 'Z'].includes(e.key)) { interact(); e.preventDefault(); }
     if (['Escape', 'x', 'X', 'm', 'M'].includes(e.key)) { openHub(); e.preventDefault(); }
+    if (['l', 'L'].includes(e.key) && !busy) { notebook(); e.preventDefault(); }
   }
   function onKeyUp(e) { const d = KEYMAP[e.key]; if (d) { keysDown.delete(d); held = keysDown.size ? [...keysDown].pop() : null; } }
+  function releasePad() { held = null; path = []; keysDown.clear(); root.querySelectorAll('[data-pad].on').forEach(b => b.classList.remove('on')); }
   function bindPad() {
     root.querySelectorAll('[data-pad]').forEach(b => {
       const d = b.dataset.pad;

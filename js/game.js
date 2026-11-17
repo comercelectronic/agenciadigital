@@ -457,6 +457,7 @@
     const lateNow = checkDeadlines();
     save();
     if (lateNow.length) setTimeout(() => lateModal(lateNow), 300);
+    setTimeout(nbAnnounce, 600);
     app().innerHTML = `
       <header id="hud"></header>
       <main class="hub">
@@ -492,6 +493,7 @@
       ${S.ending ? `<div class="card ending-mini"><b>${T("Has arribat a un final:")} ${esc(GD.endings[S.ending].title)}</b><p>${T("Pots continuar explorant el món, fent projectes i entrenant els Comerçmons, o començar una partida nova amb una altra estratègia.")}</p><button class="btn" data-act="showEnding">${T("Tornar a veure el final")}</button></div>` : ''}
       ${fixesCard()}
       ${dueCard()}
+      ${nbCard()}
       ${next ? `<button class="next-mission" data-ch="${next}">
           <span class="nm-ava">${ART.portrait(GD.chapters[next].who || 'pau', 'n', { rank: rank() })}</span>
           <span class="nm-txt"><small>${T("Següent missió · Capítol")} ${next}</small><b>${txt(GD.chapters[next].title)}</b><i>${txt(GD.chapters[next].blurb || '')}</i></span>
@@ -1445,6 +1447,7 @@
 
   function webLevel(n) {
     const L = GD.webLevels.find(x => x.n === n); const W = webState();
+    if (!S.nbWeb) S.nbWeb = {}; S.nbWeb[n] = 1; // la llibreta apunta el que demana el client d'aquesta web
     const prev = W.levels[n];
     let plat = prev && W.platforms.includes(prev.platform) ? prev.platform : W.platforms[0];
     rightActor = null;
@@ -1457,7 +1460,7 @@
       ${GD.webMax(L) ? payBox(payMax('web-' + n, GD.webMax(L)), prev && prev.paid) + (isLate('web-' + n) ? `<p class="small neg">${T('⏰ Fora de termini: el client només paga el {0} % del que toca segons la nota.', [ENT().latePayPct])}</p>` : '') : `<div class="pay-box">💶 <b>${T('Sense pagament: és la teva pròpia web, però la nota compta igualment.')}</b></div>`}
       ${prev ? `<div class="info">${T('Ja has entregat aquest nivell:')} <a href="${safeUrl(prev.url)}" target="_blank" rel="noopener">${esc(prev.url)}</a></div>` : ''}
       ${webFeedback(L, prev)}
-      <div class="row-btns"><button class="btn primary" id="learn">${T('📚 Aprèn a fer-la')}</button>${webStatus(L) === 'approved' ? '' : `<button class="btn" id="deliver">${prev ? T('📤 Tornar a entregar') : T('📤 Entregar')}</button>`}<button class="btn ghost" id="back">${T('Tornar al taller')}</button></div>`, (p) => {
+      <div class="row-btns"><button class="btn primary" id="learn">${T('📚 Aprèn a fer-la')}</button>${nbOf(L.who) && nbOf(L.who).sec.some(nbSecOpen) ? `<button class="btn" data-act="nb" data-id="${nbOf(L.who).id}">${T('📒 Notes del client')}</button>` : ''}${webStatus(L) === 'approved' ? '' : `<button class="btn" id="deliver">${prev ? T('📤 Tornar a entregar') : T('📤 Entregar')}</button>`}<button class="btn ghost" id="back">${T('Tornar al taller')}</button></div>`, (p) => {
       p.querySelector('#learn').onclick = learn; const dl = p.querySelector('#deliver'); if (dl) dl.onclick = deliver; p.querySelector('#back').onclick = back;
     });
     const learn = () => panel(`<div class="lesson"><div class="ls-h"><small>${T('🛠️ Taller web · Nivell {0}', [n])}</small><h2>${txt(L.title)}</h2></div>
@@ -1659,6 +1662,81 @@
     return F.length ? `<div class="card warn fixes"><b>${T('✏️ Projectes per millorar ({0})', [F.length])}</b><p class="small">${T('Pots continuar jugant, però corregeix-los i torna\'ls a entregar: la recompensa del client només arriba quan s\'aproven.')}</p>
       <div class="row-btns">${F.map(p => `<button class="btn small" data-proj="${p.id}">${txt(p.title)}</button>`).join('')}</div></div>` : '';
   }
+
+  /* ================= Llibreta de clients (js/data-llibreta.js) ================= */
+  // Cada secció s'apunta quan s'acaba el capítol (c) o s'obre el nivell del Taller web (w)
+  // La part de la web s'apunta quan el nivell és obert i ja coneixes el client o n'has obert l'encàrrec
+  (GD.llibreta || []).forEach(c => c.sec.forEach(x => { x.cl = c; }));
+  const nbSecOpen = (x) => x.c ? !!S.done[x.c] : x.w ? webOpen(+x.w) && (!!(S.nbWeb || {})[x.w] || !!S.done[x.cl.ch[0]]) : false;
+  const nbKey = (c, i) => c.id + ':' + i;
+  const nbClients = () => (GD.llibreta || []).filter(c => c.sec.some(nbSecOpen));
+  const nbNew = (c) => c.sec.filter((x, i) => nbSecOpen(x) && !(S.nbSeen || {})[nbKey(c, i)]).length;
+  const nbOf = (who) => GD.llibretaOf ? GD.llibretaOf(who) : null;
+  function nbTaskState(id) {
+    if (id.startsWith('web-')) { const L = webOfTask(id), d = L && webState().levels[L.n]; return d ? (webStatus(L) === 'legacy' ? ['📤', T('Entregada (sense nota)')] : PST()[webStatus(L)]) : PST().todo; }
+    const p = GD.projectById(id); return p ? PST()[projStatus(p)] : ['', ''];
+  }
+  function nbPlain(c) {
+    const L = [txt(c.name) + ' — ' + txt(c.place), ''];
+    c.sec.filter(nbSecOpen).forEach(x => { L.push(txt(x.h).toUpperCase()); x.items.forEach(i => L.push('- ' + txt(i))); L.push(''); });
+    return L.join('\n').trim();
+  }
+  // Llibreta: opts.leave() es crida abans d'obrir un projecte (per tancar el món); opts.onClose(), en tancar-la
+  function clientNotebook(openId, opts) {
+    opts = opts || {};
+    const list = nbClients();
+    let cur = list.find(c => c.id === openId) || list[0];
+    const d = document.createElement('div'); d.className = 'modal nb-modal';
+    const close = () => { d.remove(); if (opts.onClose) opts.onClose(); };
+    const draw = () => {
+      d.innerHTML = `<div class="modal-box nb-box">
+        <div class="nb-h"><h3>${T('📒 Llibreta de clients')}</h3><button class="btn small ghost" id="nbX" aria-label="${T('Tancar')}">✕</button></div>
+        ${!cur ? `<p class="muted">${T('Encara no has parlat amb cap client. Quan acabis la primera conversa, les notes apareixeran aquí.')}</p>` : `
+        <p class="muted small">${T('Tot el que t\'expliquen els clients queda apuntat aquí: el negoci, les dades de l\'entrevista i el que necessites per a cada projecte i cada web.')}</p>
+        <div class="nb-tabs">${list.map(c => `<button class="nb-tab ${c === cur ? 'on' : ''}" data-nb="${c.id}"><span class="nb-ava">${ART.portrait(c.who, 'n')}</span><span>${txt(c.name)}</span>${c !== cur && nbNew(c) ? `<em class="nb-new">${T('nou')}</em>` : ''}</button>`).join('')}</div>
+        <div class="nb-page">
+          <div class="nb-client"><span class="nb-ava big">${ART.portrait(cur.who, 'h')}</span><div><h2>${txt(cur.name)}</h2><small class="muted">${txt(cur.place)}</small></div></div>
+          ${cur.sec.map((x, i) => `<div class="nb-sec ${nbSecOpen(x) ? '' : 'locked'}"><h4>${txt(x.h)}${nbSecOpen(x) && !(S.nbSeen || {})[nbKey(cur, i)] ? ` <em class="nb-new">${T('nou')}</em>` : ''}</h4>
+            ${nbSecOpen(x) ? `<ul>${x.items.map(it => `<li>${txt(it)}</li>`).join('')}</ul>` : `<p class="muted small">${x.c ? T('🔒 S\'apuntarà quan acabis el capítol {0}.', [x.c]) : T('🔒 S\'apuntarà quan s\'obri el nivell {0} del Taller web.', [x.w])}</p>`}</div>`).join('')}
+          ${cur.tasks.length ? `<h4>${T('Feines per a aquest client')}</h4><div class="nb-tasks">${cur.tasks.map(id => { const t = GD.gradableById(id); if (!t) return ''; const [ic, lb] = nbTaskState(id), web = id.startsWith('web-');
+            const lock = !web && projStatus(t) === 'locked';
+            return `<div class="nb-task"><div><small class="muted">${web ? T('Taller web · nivell {0}', [t.web]) : T('Capítol {0}', [t.after])}</small><b>${txt(t.title)}</b><span class="small">${ic} ${lb}</span>${dueBadge(id)}</div>${lock ? '' : `<button class="btn small" data-nbt="${id}">${T('Obrir')}</button>`}</div>`; }).join('')}</div>` : ''}
+          ${(() => { const H = (S.history || []).filter(h => h.key && cur.ch.includes(h.ch)); return H.length ? `<h4>${T('Les teves decisions')}</h4><ul class="nb-dec">${H.map(h => `<li><small class="muted">${T('Capítol {0}', [h.ch])}</small> ${esc(h.t)}</li>`).join('')}</ul>` : ''; })()}
+        </div>
+        <div class="row-btns"><button class="btn" id="nbCopy">${T('📋 Copiar les notes')}</button><button class="btn primary" id="nbClose">${T('Tancar')}</button></div>`}
+      </div>`;
+      if (cur) { if (!S.nbSeen) S.nbSeen = {}; cur.sec.forEach((x, i) => { if (nbSecOpen(x)) S.nbSeen[nbKey(cur, i)] = 1; }); save(); }
+      d.querySelector('#nbX').onclick = close;
+      const cl = d.querySelector('#nbClose'); if (cl) cl.onclick = close;
+      d.querySelectorAll('[data-nb]').forEach(b => b.onclick = () => { cur = list.find(c => c.id === b.dataset.nb); draw(); d.querySelector('.nb-page').scrollTop = 0; });
+      d.querySelectorAll('[data-nbt]').forEach(b => b.onclick = () => {
+        const id = b.dataset.nbt; d.remove(); if (opts.leave) opts.leave();
+        if (!id.startsWith('web-')) return projectScreen(id);
+        if (!webState().platforms.length) return hubScreen('taller');
+        webLevel(+id.slice(4));
+      });
+      const cp = d.querySelector('#nbCopy');
+      if (cp) cp.onclick = () => { const t = nbPlain(cur);
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(() => toast(T('Notes copiades: enganxa-les al teu document.'), 'good'), () => textBox(T('Copia aquestes notes al teu document:'), t));
+        else textBox(T('Copia aquestes notes al teu document:'), t); };
+    };
+    d.onclick = (e) => { if (e.target === d) close(); };
+    draw();
+    document.body.appendChild(d);
+  }
+  function nbCard() {
+    const L = nbClients(); if (!L.length) return '';
+    const n = L.reduce((a, c) => a + nbNew(c), 0);
+    return `<div class="card nb-card"><b>${T('📒 Llibreta de clients')}${n ? ` <em class="nb-new">${T('nou')}</em>` : ''}</b>
+      <div class="nb-chips">${L.map(c => `<button class="nb-chip" data-act="nb" data-id="${c.id}"><span class="nb-ava">${ART.portrait(c.who, 'n')}</span>${txt(c.name)}${nbNew(c) ? ' •' : ''}</button>`).join('')}</div></div>`;
+  }
+  // Avís quan s'apunta informació nova (un sol cop per secció)
+  function nbAnnounce() {
+    if (!S.nbToast) S.nbToast = {};
+    const fresh = [];
+    nbClients().forEach(c => c.sec.forEach((x, i) => { const k = nbKey(c, i); if (nbSecOpen(x) && !(S.nbSeen || {})[k] && !S.nbToast[k]) { S.nbToast[k] = 1; if (!fresh.includes(c)) fresh.push(c); } }));
+    if (fresh.length) { save(); toast(T('📒 Nova informació a la llibreta: {0}', [fresh.map(c => txt(c.name)).join(', ')]), 'good'); }
+  }
   const PST = () => ({
     locked: ['🔒', T('Bloquejat')], todo: ['📝', T('Per fer')], sent: ['⏳', T('En revisió')],
     changes: ['✏️', T('Cal millorar-lo')], approved: ['✅', T('Aprovat')]
@@ -1673,6 +1751,7 @@
         <h3>${T('📋 Projectes reals')}</h3>
         <p>${T('Els clients et demanen feines de veritat: plans, campanyes, anuncis, informes... Les has de fer tu (amb Google Docs, Canva, les eines d\'anuncis...), entregar-ne l\'enllaç i continuar la campanya. La IA els corregeix en pocs minuts i el professor en revisa la nota. Si cal millorar-ne algun, rebràs un avís.')}</p>
         <div class="row-btns"><a class="btn small primary" href="${guideUrl()}" target="_blank" rel="noopener">${T('📘 Guia dels projectes')}</a>
+          ${nbClients().length ? `<button class="btn small" data-act="nb">${T('📒 Llibreta de clients')}</button>` : ''}
           ${S.classe ? `<button class="btn small" data-act="checkReviews">${T('🔄 Comprovar revisions')}</button>` : ''}</div>
         <p class="muted small">${T('Aprovats: {0} de {1}', [n('approved'), GD.projects.length])} · ${T('En revisió: {0}', [n('sent')])} · ${T('Per millorar: {0}', [n('changes')])}</p>
         ${S.classe ? '' : `<div class="warn small">${T('⚠️ Per entregar projectes necessites el codi de classe del professor.')} <button class="btn small" data-act="setClass">${T('🏷️ Posar codi de classe')}</button></div>`}
@@ -1715,6 +1794,7 @@
       <div class="row-btns">
         <a class="btn primary" href="${guideUrl(p)}" target="_blank" rel="noopener">${T('📘 Guia pas a pas')}</a>
         <button class="btn" id="tpl">${T('📄 Copiar la plantilla')}</button>
+        ${nbOf(p.who) && nbOf(p.who).sec.some(nbSecOpen) ? `<button class="btn" data-act="nb" data-id="${nbOf(p.who).id}">${T('📒 Notes del client')}</button>` : ''}
         ${s === 'approved' ? '' : `<button class="btn ${s === 'sent' ? '' : 'primary'}" id="deliver">${s === 'sent' ? T('📤 Tornar a entregar') : T('📤 Entregar')}</button>`}
         ${s === 'sent' && S.classe ? `<button class="btn" id="chk">${T('🔄 Comprovar revisió')}</button>` : ''}
         <button class="btn ghost" id="back">${T('Tornar als projectes')}</button></div>`, (pn) => {
@@ -2647,7 +2727,8 @@
       S: () => S, save, toast, txt, esc, eur, applyFx, rank, bankrupt, payStudy, startChapter, projectScreen,
       hubScreen: (tab) => hubScreen(tab), chapterState, projGate, projStatus,
       speed: () => settings.speed, hudRefresh: () => WORLD.refresh(),
-      cmReady: () => !!cmState().starter, cmVisible, cmCatchable, cmWildForm, cmWild, cmTrainer, cmTrainerFresh, cmGym
+      cmReady: () => !!cmState().starter, cmVisible, cmCatchable, cmWildForm, cmWild, cmTrainer, cmTrainerFresh, cmGym,
+      nbClients, nbNew, clientNotebook, portrait: (who) => ART.portrait(who, 'n')
     });
     const F = projFixes();
     if (F.length) toast(T('✏️ Tens projectes per millorar ({0}): {1}. Els trobaràs a 📋 Projectes.', [F.length, F.map(p => txt(p.title)).join(', ')]), 'bad');
@@ -2763,6 +2844,7 @@
       case 'guardiola': guardiolaModal(); break;
       case 'hubTaller': hubScreen('taller'); break;
       case 'hubProj': hubScreen('projectes'); break;
+      case 'nb': clientNotebook(b.dataset.id, { onClose: () => { if ($('.hub')) hubScreen(); } }); break;
       case 'checkReviews': checkReviews(true); break;
       case 'webPlatforms': webPicker($('#hubBody')); break;
       case 'title': titleScreen(); break;
