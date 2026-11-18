@@ -48,7 +48,7 @@ GD.llibreta = [
       T("Lliçó: abans de muntar una campanya, cal definir l'objectiu i com es mesuraran les conversions.")
     ] }
   ] },
-  { id: "jordi", who: "jordi", name: T("Can Jordi"), place: T("Jordi · restaurant a Tona"), ch: ["2.1", "5.2"], tasks: ["local-jordi", "web-2", "crisi-jordi"], sec: [
+  { id: "jordi", who: "jordi", name: T("Can Jordi"), place: T("Jordi · restaurant a Tona"), ch: ["2.1", "5.2"], tasks: ["local-jordi", "web-2"], sec: [
     { c: "2.1", h: T("El negoci"), items: [
       T("Restaurant a Tona. El cap de setmana s'omple amb famílies que pugen de Barcelona."),
       T("Fitxa de Google: 4,6 estrelles i 210 ressenyes."),
@@ -100,7 +100,7 @@ GD.llibreta = [
       T("L'agència li ha portat 9 clients, amb 210.000 € de marge previst i un CAC mitjà d'1.300 €.")
     ] }
   ] },
-  { id: "nuria", who: "nuria", name: T("Cansaladeria Núria"), place: T("Núria · cansaladeria al Mercadal de Vic"), ch: ["2.3", "5.1"], tasks: ["ecommerce-nuria", "web-4", "auditoria-nuria"], sec: [
+  { id: "nuria", who: "nuria", name: T("Cansaladeria Núria"), place: T("Núria · cansaladeria al Mercadal de Vic"), ch: ["2.3", "5.1"], tasks: ["web-4"], sec: [
     { c: "2.3", h: T("El negoci"), items: [
       T("Cansaladeria al Mercadal de Vic: el fuet de Vic de tota la vida."),
       T("Els clients que s'han mudat a Barcelona o a Girona el troben a faltar: vol vendre per internet."),
@@ -124,7 +124,7 @@ GD.llibreta = [
       T("La segmentació (Catalunya, gastronomia) és correcta i els anuncis tenen un CTR del 2,8 %, que és bo.")
     ] }
   ] },
-  { id: "sergi", who: "sergi", name: T("Cim Trail"), place: T("Sergi · roba de muntanya feta a Osona"), ch: ["2.4", "4.4", "5.3"], tasks: ["kpi-sergi", "web-5"], sec: [
+  { id: "sergi", who: "sergi", name: T("Cim Trail"), place: T("Sergi · roba de muntanya feta a Osona"), ch: ["2.4", "4.4", "5.3"], tasks: ["web-5"], sec: [
     { c: "2.4", h: T("La campanya dels seguidors"), items: [
       T("Marca de roba de muntanya feta a Osona, amb botiga en línia."),
       T("L'última campanya: 8.000 seguidors nous en un mes. En Sergi la considerava un èxit."),
@@ -144,7 +144,7 @@ GD.llibreta = [
       T("En Sergi vol retallar el canal que funcioni pitjor. Les vendes reals de la botiga són la referència.")
     ] }
   ] },
-  { id: "laia", who: "laia", name: T("Vidal & Co. (competència)"), place: T("Laia Vidal · agència de Barcelona"), ch: ["3.1", "3.2"], tasks: ["pitch-coop"], sec: [
+  { id: "laia", who: "laia", name: T("Vidal & Co. (competència)"), place: T("Laia Vidal · agència de Barcelona"), ch: ["3.1", "3.2"], tasks: [], sec: [
     { c: "3.2", h: T("La competència i el concurs"), items: [
       T("Vidal & Co. és una agència de Barcelona amb un equip de cinc especialistes (SEO, publicitat, vídeo i comerç electrònic) i clients a tot l'Estat."),
       T("Al concurs de la cooperativa agrícola va presentar quaranta diapositives i vídeos."),
@@ -153,7 +153,7 @@ GD.llibreta = [
       T("Per al pitch has d'analitzar agències competidores reals i explicar en 10 minuts on ets diferent.")
     ] }
   ] },
-  { id: "quim", who: "quim", name: T("Soler Motor"), place: T("Quim Soler · cotxes de segona mà i recanvis a Manlleu"), ch: ["3.3", "5.4"], tasks: ["proposta-quim"], sec: [
+  { id: "quim", who: "quim", name: T("Soler Motor"), place: T("Quim Soler · cotxes de segona mà i recanvis a Manlleu"), ch: ["3.3", "5.4"], tasks: [], sec: [
     { c: "3.3", h: T("La petició"), items: [
       T("Cotxes de segona mà i recanvis, amb tres naus a Manlleu."),
       T("Vol «tot el digital»: web, xarxes, anuncis, vídeos, correus… i «alguna coseta més» que ja anirà dient."),
@@ -168,7 +168,7 @@ GD.llibreta = [
       T("Va deixar de pagar dues quotes: 3.000 €. Cal un calendari de pagament i aturar la feina nova fins que es compleixi.")
     ] }
   ] },
-  { id: "agencia", who: "julia", name: T("La teva agència"), place: T("Júlia i Berta · l'equip de l'agència"), ch: ["4.1", "4.2", "4.3", "4.4", "4.5", "6.4", "7.3", "7.5"], tasks: ["continguts-berta", "processos-julia", "marca-agencia", "ia-berta", "portafoli-final", "web-6"], sec: [
+  { id: "agencia", who: "julia", name: T("La teva agència"), place: T("Júlia i Berta · l'equip de l'agència"), ch: ["4.1", "4.2", "4.3", "4.4", "4.5", "6.4", "7.3", "7.5"], tasks: ["continguts-berta", "web-6"], sec: [
     { c: "4.2", h: T("L'equip"), items: [
       T("Júlia Serra: analista de dades, cinc anys en una consultora de Barcelona."),
       T("Berta Puig: directora creativa, venia d'una agència de publicitat de Barcelona."),
@@ -205,7 +205,7 @@ GD.llibreta = [
       T("Cada cas: repte, què vas fer, resultat i què vas aprendre. Les xifres de cada client són en aquesta llibreta.")
     ] }
   ] },
-  { id: "marta", who: "marta", name: T("Làctics de la Plana"), place: T("Marta Coll · directora de màrqueting"), ch: ["6.2"], tasks: ["informe-marta", "web-8"], sec: [
+  { id: "marta", who: "marta", name: T("Làctics de la Plana"), place: T("Marta Coll · directora de màrqueting"), ch: ["6.2"], tasks: ["web-8"], sec: [
     { c: "6.2", h: T("El client gran"), items: [
       T("Volen una agència per a tot l'any: llançament de iogurts, botiga en línia i campanyes. Uns 6.000 € al mes d'honoraris."),
       T("Exigeixen informes mensuals al comitè, tres nivells d'aprovació i coordinació amb els equips de vendes i de qualitat."),

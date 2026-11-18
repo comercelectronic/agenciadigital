@@ -341,7 +341,7 @@ GD.cmRegister([
       { name: 'Estrategó', lvl: 1, desc: T('Un cavall d\'escacs de llum amb capa de director.'),
         look: { body: 'horse', head: 'horse', ears: 'pointy', tail: 'mane', acc: 'chess', eyes: 'sharp', mouth: 'smile', pattern: 'belly', crown: 'crown' },
         attacks: [A(T('Pla mestre'), 'estrategic', 25, 0, 100, 3, T('+20 % a totes les estadístiques pròpies.')), A(T('Escac empresarial'), 'estrategic', 25, 0, 95, 2, T('Debilita el rival: −20 % d\'atac i defensa.')), A(T('Dominació del mercat'), 'especial', 55, 100, 90, 4, T('Atac llegendari a tots els rivals.'))] },
-      { name: 'Imperator', lvl: 30, cond: { proj: 8 }, desc: T('Ara dirigeix un exèrcit de consultors de llum.'),
+      { name: 'Imperator', lvl: 30, cond: { proj: 5 }, desc: T('Ara dirigeix un exèrcit de consultors de llum.'),
         look: { body: 'horse', head: 'horse', ears: 'pointy', tail: 'mane', wings: 'feather', acc: 'chess', eyes: 'sharp', mouth: 'smile', pattern: 'belly', crown: 'crown', aura: 1 },
         attacks: [A(T('Visió a cinc anys'), 'estrategic', 35, 0, 100, 5, T('L\'equip coneix el pròxim atac del rival i el pot esquivar.'))] },
       { name: 'Megaconsultor', lvl: 45, cond: { days: 40 }, desc: T('L\'estratègia feta criatura. Només apareix a qui ha demostrat constància durant mesos.'),
@@ -778,7 +778,7 @@ GD.cmRegister([
     personality: T('Inspiradora, exigent i justa. Lidera amb l\'exemple.'),
     utility: T('Fa créixer la reputació que guanyes.'),
     passive: { name: T('Quota de mercat'), combat: T('Cada aliat guanya un 5 % d\'atac per cada rival derrotat.'), kind: 'rep', v: 10 },
-    capture: { cond: { stage: 8, proj: 15, days: 30 }, text: T('Completa tota la campanya, aconsegueix 15 projectes aprovats i juga 30 dies diferents.') },
+    capture: { cond: { stage: 8, proj: 6, days: 30 }, text: T('Completa tota la campanya, aconsegueix 6 projectes aprovats i juga 30 dies diferents.') },
     forms: [
       { name: 'Líderax', lvl: 1, desc: T('Una àguila de llum amb corona de llorer.'),
         look: { body: 'bird', head: 'eagle', ears: 'crest', wings: 'feather', acc: 'trophy', eyes: 'sharp', mouth: 'beak', pattern: 'belly', crown: 'laurel', aura: 2 },

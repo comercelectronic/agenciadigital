@@ -119,10 +119,15 @@ Quan l'alumne entrega un projecte, la funció `netlify/functions/joc-correccio-b
 
 ## Projectes reals (obligatoris, revisats pel professorat)
 
-Pestanya 📋 **Projectes**: 17 lliuraments de feina real repartits per tota la campanya (pla de màrqueting i campanya amb anuncis del forn, SEO local, campanya B2B, botiga en línia i correus, quadre de comandament, pitch, proposta comercial, calendari de continguts, sistema de treball, auditoria, gestió de crisi, informe executiu, manual de marca, llançament a França, pla d'IA i portafoli final).
+Pestanya 📋 **Projectes**: 6 lliuraments de feina real, tots fets a **Canva** i entregats com un PDF a Google Drive (enllaç públic):
+
+- **Plans de màrqueting curts** (presentació de 2 a 4 pàgines): pla del forn de la Carme i pla de SEO local de Can Jordi.
+- **Campanyes: només les peces**, sense textos explicatius: «Berenar de tarda» (Instagram, Facebook, Google i cartell), campanya B2B de Mecanitzats Bellmunt (LinkedIn, Google i correu), una setmana de publicacions per a un client i anuncis en francès per a Cosmètica del Montseny.
+- Les 8 webs del Taller web es mantenen igual.
+- El temari se centra en els RA1 (pla de màrqueting digital), RA2 (vendes en línia), RA3 (web) i RA4 (xarxes socials); no es treballen la web 2.0 (bloc 5) ni els xats, la missatgeria, els fòrums i els blogs (`GD.temariFora` a `js/data-temari.js`).
 
 - Cada projecte s'activa en acabar un capítol i **cal entregar-lo per jugar el capítol següent**, però no cal esperar la revisió: la IA el corregeix en pocs minuts i el professor en valida o canvia la nota quan vol. Si la IA o el professor demanen canvis, l'alumne rep un avís (al món, a la campanya i a la pestanya Projectes) i el torna a entregar sense quedar-se aturat. La recompensa del client arriba quan el projecte s'aprova. Si el servei d'IA falla, el joc torna a demanar la correcció automàticament.
-- L'alumne fa el document de veritat (Google Docs, Slides, Canva, eines d'anuncis...), l'entrega amb l'enllaç, marca les seccions, escriu un resum i indica l'ús d'IA. Cal el codi de classe.
+- L'alumne fa les pàgines o les peces a Canva, en descarrega el PDF, el puja a Google Drive i n'entrega l'enllaç marcant les pàgines o peces que inclou (sense resum ni explicacions). Cal el codi de classe.
 - **Guia completa** a `/guia.html` (també imprimible): què ha de contenir cada projecte, passos, eines, criteris d'avaluació, consells i plantilla per copiar.
 - **Professorat:** al panell apareix «Projectes per revisar». Cada revisió mostra l'enllaç, el resum, els criteris d'avaluació (els que no es marquen s'afegeixen als comentaris), comentaris i nota opcional de 0 a 10. Es pot aprovar o demanar canvis; l'alumne ho veu al joc i ho pot tornar a entregar. Els estats i les notes surten al CSV.
 - Contingut a `js/data-projects.js`; revisions a Netlify Blobs (`joc-revisions`).

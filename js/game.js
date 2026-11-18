@@ -1757,7 +1757,7 @@
     el.innerHTML = `
       <div class="card web-head">
         <h3>${T('📋 Projectes reals')}</h3>
-        <p>${T('Els clients et demanen feines de veritat: plans, campanyes, anuncis, informes... Les has de fer tu (amb Google Docs, Canva, les eines d\'anuncis...), entregar-ne l\'enllaç i continuar la campanya. La IA els corregeix en pocs minuts i el professor en revisa la nota. Si cal millorar-ne algun, rebràs un avís.')}</p>
+        <p>${T('Alguns clients et demanen feines de veritat: un pla curt (2 a 4 pàgines de Canva) o les peces d\'una campanya (publicacions, històries, anuncis, cartells). Les fas a Canva, en descarregues el PDF, el puges a Google Drive i n\'entregues l\'enllaç. La IA les corregeix en pocs minuts i el professor en revisa la nota.')}</p>
         <div class="row-btns"><a class="btn small primary" href="${guideUrl()}" target="_blank" rel="noopener">${T('📘 Guia dels projectes')}</a>
           ${nbClients().length ? `<button class="btn small" data-act="nb">${T('📒 Llibreta de clients')}</button>` : ''}
           ${S.classe ? `<button class="btn small" data-act="checkReviews">${T('🔄 Comprovar revisions')}</button>` : ''}</div>
@@ -1801,13 +1801,13 @@
       ${r.url ? `<p class="small">${T('La teva entrega (versió {0}):', [r.v])} <a href="${safeUrl(r.url)}" target="_blank" rel="noopener">${esc(r.url)}</a></p>` : ''}
       <div class="row-btns">
         <a class="btn primary" href="${guideUrl(p)}" target="_blank" rel="noopener">${T('📘 Guia pas a pas')}</a>
-        <button class="btn" id="tpl">${T('📄 Copiar la plantilla')}</button>
+        <button class="btn" id="tpl">${T('📄 Llista del que cal fer')}</button>
         ${nbOf(p.who) && nbOf(p.who).sec.some(nbSecOpen) ? `<button class="btn" data-act="nb" data-id="${nbOf(p.who).id}">${T('📒 Notes del client')}</button>` : ''}
         ${s === 'approved' ? '' : `<button class="btn ${s === 'sent' ? '' : 'primary'}" id="deliver">${s === 'sent' ? T('📤 Tornar a entregar') : T('📤 Entregar')}</button>`}
         ${s === 'sent' && S.classe ? `<button class="btn" id="chk">${T('🔄 Comprovar revisió')}</button>` : ''}
         <button class="btn ghost" id="back">${T('Tornar als projectes')}</button></div>`, (pn) => {
       pn.querySelector('#back').onclick = back;
-      pn.querySelector('#tpl').onclick = () => textBox(T('Copia aquesta plantilla al teu document (Google Docs, Word...) i omple cada apartat:'), GD.projectTemplate(p, txt(S.agency)));
+      pn.querySelector('#tpl').onclick = () => textBox(T('Llista de pàgines o peces que ha d\'incloure el teu PDF de Canva:'), GD.projectTemplate(p, txt(S.agency)));
       const d = pn.querySelector('#deliver'); if (d) d.onclick = deliver;
       const c = pn.querySelector('#chk'); if (c) c.onclick = () => checkReviews(true).then(() => projectScreen(id, true));
     });
@@ -1819,29 +1819,20 @@
         return;
       }
       panel(`<div class="pn-h"><b>📤 ${T('Entrega del projecte')}</b><small>${txt(p.title)}</small></div>
-        <label class="fld">${T('Enllaç al projecte (Google Docs, Slides, Canva, Drive...)')}<input class="inp" id="pUrl" type="url" inputmode="url" placeholder="https://..." value="${esc(r.url || '')}"></label>
-        <label class="fld">${T('Enllaç addicional (opcional): carpeta de peces, panell, vídeo...')}<input class="inp" id="pUrl2" type="url" inputmode="url" placeholder="https://..." value="${esc(r.url2 || '')}"></label>
+        <label class="fld">${T('Enllaç al PDF de Canva a Google Drive')}<input class="inp" id="pUrl" type="url" inputmode="url" placeholder="https://..." value="${esc(r.url || '')}"></label>
         <label class="chk"><input type="checkbox" id="pShare"><span>${T('He comprovat que l\'enllaç s\'obre sense iniciar sessió («Qualsevol persona que tingui l\'enllaç pot veure»).')}</span></label>
-        <p class="lbl">${T('Marca les seccions que inclou el teu projecte (han de ser-hi totes):')}</p>
+        <p class="lbl">${T('Marca les pàgines o peces que inclou el PDF (han de ser-hi totes):')}</p>
         <div class="checks">${p.sections.map((x, i) => `<label class="chk"><input type="checkbox" data-sec="${i}" ${r.v ? 'checked' : ''}><span>${txt(x.h)}</span></label>`).join('')}</div>
-        <label class="fld">${T('Resum de la teva proposta per al client (mínim 150 caràcters)')}<textarea class="inp" id="pSum" rows="5" maxlength="2000">${esc(r.summary || '')}</textarea></label>
-        <p class="muted small" id="pCount"></p>
         ${rv && rv.status === 'changes' ? `<label class="fld">${T('Què has canviat respecte a la versió anterior?')}<textarea class="inp" id="pChg" rows="3" maxlength="1000"></textarea></label>` : ''}
-        <label class="fld">${T('Eines d\'IA que has fet servir i per a què (si no n\'has fet servir, escriu «cap»)')}<input class="inp" id="pAi" maxlength="500" value="${esc(r.ai || '')}"></label>
         <div class="row-btns"><button class="btn primary" id="send">${T('Entregar al professor')}</button><button class="btn ghost" id="b">${T('Tornar a l\'encàrrec')}</button></div>`, (pn) => {
         pn.querySelector('#b').onclick = brief;
-        const sum = pn.querySelector('#pSum'), cnt = () => { pn.querySelector('#pCount').textContent = T('{0} caràcters', [sum.value.trim().length]); };
-        sum.oninput = cnt; cnt();
         pn.querySelector('#send').onclick = async () => {
           const norm = (u) => { u = (u || '').trim(); if (!u) return ''; if (!/^https?:\/\//i.test(u)) u = 'https://' + u; try { const x = new URL(u); return /^https?:$/.test(x.protocol) && x.hostname.includes('.') ? x.href : null; } catch (e) { return null; } };
-          const url = norm(pn.querySelector('#pUrl').value), url2 = norm(pn.querySelector('#pUrl2').value);
-          if (!url || url2 === null) { toast(T('Escriu un enllaç vàlid al projecte (per exemple, https://docs.google.com/...).'), 'bad'); return; }
+          const url = norm(pn.querySelector('#pUrl').value), url2 = '';
+          if (!url || url2 === null) { toast(T('Escriu un enllaç vàlid al PDF (per exemple, https://drive.google.com/...).'), 'bad'); return; }
           if (!pn.querySelector('#pShare').checked) { toast(T('Comprova que l\'enllaç és públic i marca la casella.'), 'bad'); return; }
           if ([...pn.querySelectorAll('[data-sec]')].some(c => !c.checked)) { toast(T('Al projecte hi han de ser totes les seccions. Completa\'l abans d\'entregar.'), 'bad'); return; }
-          const summary = sum.value.trim();
-          if (summary.length < 150) { toast(T('El resum ha de tenir almenys 150 caràcters.'), 'bad'); sum.focus(); return; }
-          const ai = pn.querySelector('#pAi').value.trim();
-          if (!ai) { toast(T('Indica si has fet servir eines d\'IA (o escriu «cap»).'), 'bad'); return; }
+          const summary = '', ai = '';
           const chg = pn.querySelector('#pChg');
           if (chg && chg.value.trim().length < 20) { toast(T('Explica què has canviat després dels comentaris del professor.'), 'bad'); chg.focus(); return; }
           const rec = Object.assign({}, r, { url, url2, summary, ai, changes: chg ? chg.value.trim() : '', at: new Date().toISOString(), v: (r.v || 0) + 1 });
@@ -1869,7 +1860,7 @@
     return reason === 'private' ? T('El document és privat: obre «Compartir», tria «Qualsevol persona que tingui l\'enllaç pot veure» i torna\'l a entregar.')
       : reason === 'folder' ? T('Has entregat una carpeta: entrega l\'enllaç del document principal i posa la carpeta a l\'enllaç addicional.')
       : reason === 'ai' ? T('El servei de correcció no està disponible ara mateix.')
-      : T('No se n\'ha pogut llegir el contingut (Canva, vídeo o format no compatible). Entrega també un Google Docs o un PDF.');
+      : T('No se n\'ha pogut llegir el contingut. Descarrega el disseny de Canva en PDF, puja\'l a Google Drive amb enllaç públic i torna a entregar.');
   }
   // Taula de la rúbrica; si hi ha revisió, marca el nivell de cada criteri i el comentari
   function rubricTable(p, rv) {

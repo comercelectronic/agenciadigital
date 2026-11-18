@@ -263,24 +263,6 @@ L('L_mobil', {
     { q: T("Cas real · Bizum. El van crear els bancs espanyols el 2016 i ja el fan servir més de 25 milions de persones. Què permet a un comerç?"), o: [T("Acceptar pagaments amb criptomonedes"), T("Cobrar amb el número de mòbil del client"), T("Donar crèdit als clients"), T("Cobrar sense cap comissió, perquè la llei ho prohibeix als bancs")], c: 1, why: T("És un mitjà de pagament mòbil molt estès a Espanya: oferir-lo redueix fricció al pagament.") }
   ]
 });
-L('L_blog', {
-  area: 'xarxes', codes: ['1.5', '4.7'], title: T("Blogs corporatius: modalitats i objectius"),
-  goal: T("Decidir quin tipus de blog necessita una empresa i per a què."),
-  body: [
-    T("Un <b>blog corporatiu</b> és la secció de continguts d'una empresa. Modalitats: <b>institucional</b> (notícies de l'empresa), <b>de producte o servei</b> (guies i usos), <b>d'experts</b> (articles d'especialistes de l'empresa), <b>de comunitat</b> (hi escriuen clients o col·laboradors) i <b>intern</b> (per a l'equip)."),
-    T("Objectius possibles: atraure trànsit des dels cercadors (SEO), demostrar coneixement i generar confiança, fidelitzar, captar contactes (amb descàrregues o subscripció) i donar contingut per a les xarxes i els butlletins."),
-    T("Funciona amb un <b>calendari editorial</b>, temes que responen preguntes reals del públic, títols clars, imatges, enllaços interns i una crida a l'acció. Altres eines de comunicació semblants: videoblogs, podcasts i newsletters.")
-  ],
-  example: T("La llibreria fa un blog de comunitat on els clubs de lectura recomanen llibres, i cada article acaba amb un enllaç per reservar-los."),
-  errors: [T("Publicar només notícies de l'empresa que no interessen a ningú."), T("Començar amb força i abandonar el blog al cap d'un mes."), T("No incloure cap crida a l'acció.")],
-  quiz: [
-    { q: T("Quin tipus de blog fa servir articles escrits pels clients?"), o: [T("Blog de comunitat"), T("Blog d'experts"), T("Blog de producte"), T("Blog institucional")], c: 0, why: T("El blog de comunitat dona veu als clients i col·laboradors; el d'experts el fan especialistes de l'empresa.") },
-    { q: T("Quin és un objectiu habitual d'un blog corporatiu?"), o: [T("Atraure trànsit orgànic i generar confiança"), T("Publicar les ofertes i promocions de la setmana"), T("Substituir les xarxes socials de l'empresa"), T("Explicar la història i els valors de l'empresa")], c: 0, why: T("El contingut útil posiciona i demostra coneixement.") },
-    { q: T("Què cal per mantenir un blog viu?"), o: [T("Un calendari editorial realista"), T("Publicar cada dia, encara que siguin textos curts"), T("Fer articles molt llargs per posicionar millor"), T("Un dissenyador que renovi el blog cada any")], c: 0, why: T("La constància importa més que el volum inicial.") },
-    { q: T("Cas real · Red Bull. Té la seva pròpia productora (Red Bull Media House) i va retransmetre el salt de Felix Baumgartner des de l'estratosfera el 2012. Quin tipus d'estratègia és?"), o: [T("Publicitat tradicional"), T("Màrqueting de continguts"), T("Patrocini esportiu d'esdeveniments extrems"), T("Màrqueting d'afiliació")], c: 1, why: T("Red Bull actua com un mitjà: atrau l'atenció amb contingut, no amb anuncis. És la idea de fons d'un bon blog corporatiu.") },
-    { q: T("Cas real · Buffer. Aquesta empresa de programari va publicar al seu blog els sous de tot l'equip i com els calcula. Quin objectiu del blog treballa?"), o: [T("Atraure trànsit amb paraules clau"), T("Vendre directament el producte"), T("Generar confiança amb transparència"), T("Captar contactes amb descàrregues")], c: 2, why: T("Un blog institucional pot reforçar valors de marca i atraure clients i talent que hi connecten.") }
-  ]
-});
 L('L_newsletter', {
   area: 'email', codes: ['1.4', '1.7'], title: T("Butlletins electrònics i e-mail màrqueting"),
   goal: T("Planificar, enviar i mesurar un butlletí electrònic legal i eficaç."),
@@ -426,24 +408,6 @@ L('L_viral', {
     { q: T("Cas real · Dropbox. Regalava espai d'emmagatzematge extra tant a qui convidava un amic com a l'amic. Va passar de 100.000 a 4 milions d'usuaris en uns 15 mesos. Quina tècnica és?"), o: [T("Un programa de referits"), T("Afiliació amb comissió per venda"), T("Remàrqueting"), T("Cross màrqueting")], c: 0, why: T("Si tots dos hi guanyen, convidar és natural i la difusió s'accelera.") }
   ]
 });
-L('L_comunitats', {
-  area: 'xarxes', codes: ['4.1', '4.2', '4.3', '4.4', '4.5', '4.12', '4.13'], title: T("Xats, missatgeria, comunitats i grups"),
-  goal: T("Fer servir els canals de conversa en línia per relacionar-se amb clients i contactes."),
-  body: [
-    T("Els <b>xats</b> d'avui són el xat de la web amb un <b>chatbot d'IA</b> que respon les preguntes freqüents i passa a una persona quan cal (Intercom, Tidio, Zendesk) i les comunitats en temps real com <b>Discord</b>; abans es feia amb l'IRC i els webxats. La <b>missatgeria instantània</b> (WhatsApp Business, Instagram Direct, Telegram) permet catàlegs, respostes ràpides, missatges automàtics, canals de difusió i fins i tot cobrar. La <b>telefonia per internet</b> és avui la <b>centraleta al núvol</b> i les videotrucades (Teams, Meet, Zoom), integrades amb el CRM en una atenció <b>omnicanal</b>: web, WhatsApp, xarxes, correu i telèfon en una sola safata."),
-    T("Els <b>fòrums</b> i <b>grups de discussió</b> viuen a Reddit, als grups de LinkedIn i Facebook, a les comunitats de WhatsApp i als servidors de Discord o Slack de cada sector. S'hi llegeix abans d'escriure, es respecten les normes i la <b>netiqueta</b>, s'aporta valor i no es fa spam. Per <b>buscar un grup interessant</b>: cercar per paraules clau del sector, mirar l'activitat, el nombre de membres actius i les normes."),
-    T("Per <b>crear una xarxa de contactes influents</b>: identificar persones clau del sector (clients, periodistes, creadors, associacions), seguir-les i interactuar amb aportacions útils, presentar-se amb un missatge personalitzat i mantenir el contacte donant abans de demanar.")
-  ],
-  example: T("L'associació de comerciants crea una comunitat de WhatsApp amb canals per temes, un servidor de Discord per a dubtes de digitalització i videotrucades mensuals. A la web, un xat amb IA respon horaris i aparcament i passa els casos complexos a una persona."),
-  errors: [T("Entrar en un fòrum només per fer publicitat."), T("Deixar el chatbot sol, sense opció de parlar amb una persona."), T("Demanar favors a contactes influents sense haver aportat res abans.")],
-  quiz: [
-    { q: T("Què ha de fer un bon chatbot d'atenció al client?"), o: [T("Resoldre els dubtes i passar a una persona"), T("Respondre totes les consultes sense intervenció humana"), T("Respondre només quan l'equip no està disponible"), T("Recollir les dades del client abans de respondre res")], c: 0, why: T("La IA agilitza, però el client ha de saber que parla amb un bot i poder parlar amb una persona.") },
-    { q: T("Què és la netiqueta?"), o: [T("Les normes de comportament en línia"), T("Les normes d'ús d'una xarxa social"), T("Les etiquetes que classifiquen els temes d'un fòrum"), T("La normativa de protecció de dades en línia")], c: 0, why: T("Respecte, aportar valor i no fer spam.") },
-    { q: T("Quina és la millor manera d'entrar en un grup de discussió professional?"), o: [T("Llegir les normes i aportar valor primer"), T("Presentar-se amb un enllaç als serveis de l'agència"), T("Contactar en privat els membres més actius"), T("Publicar un cas d'èxit de l'agència el primer dia")], c: 0, why: T("La confiança es guanya participant.") },
-    { q: T("Cas real · LEGO Ideas. Els fans proposen dissenys a la plataforma de la marca; si una proposta arriba als 10.000 suports, LEGO l'estudia per fabricar-la. Què aconsegueix?"), o: [T("Estalviar-se el departament de disseny"), T("Una comunitat que aporta i valida idees"), T("Vendre més barat els sets nous"), T("Fer publicitat a altres fòrums")], c: 1, why: T("Una comunitat ben gestionada genera relació, idees i proves de mercat alhora.") },
-    { q: T("Cas real · Klarna (2024). El seu assistent d'IA va gestionar dos terços dels xats d'atenció al client el primer mes. Què ha de garantir una empresa que fa servir un assistent així?"), o: [T("Que els clients no sàpiguen que parlen amb una IA"), T("Poder passar a una persona i revisar les respostes"), T("Que la IA respongui només en anglès"), T("Que no hi hagi cap persona a l'equip d'atenció")], c: 1, why: T("La IA agilitza les consultes freqüents, però els casos complexos necessiten persones.") }
-  ]
-});
 L('L_paginaxarxa', {
   area: 'xarxes', codes: ['4.8', '4.9', '4.10', '4.11', '4.14'], title: T("Pàgines d'empresa, creadors i comerç a les xarxes socials"),
   goal: T("Configurar una pàgina d'empresa completa, col·laborar amb creadors i vendre des de les xarxes."),
@@ -460,24 +424,6 @@ L('L_paginaxarxa', {
     { q: T("Què cal fer quan un creador publica contingut pagat per la marca?"), o: [T("Indicar clarament que és publicitat"), T("Etiquetar la marca a la publicació"), T("Indicar-ho només si el creador ha cobrat diners"), T("Posar l'enllaç de la botiga a la bio del creador")], c: 0, why: T("La normativa obliga a identificar la publicitat, i la transparència genera confiança.") },
     { q: T("Cas real · Daniel Wellington. Aquesta marca de rellotges va créixer enviant rellotges a milers de microinfluencers d'Instagram, amb un codi de descompte per a cadascun. Per què funcionava?"), o: [T("Perquè els microinfluencers són més barats que els anuncis"), T("Per la confiança de comunitats petites i el codi mesurable"), T("Perquè Instagram promocionava la marca gratis"), T("Perquè no calia indicar que era publicitat")], c: 1, why: T("Molts creadors propers generen confiança, i el codi propi diu quines col·laboracions venen.") },
     { q: T("Cas real · Instagram Shopping (2018). Instagram va permetre etiquetar productes a les fotos amb el preu i un enllaç per comprar. Què és?"), o: [T("Una aplicació de reserves"), T("Social commerce"), T("Màrqueting d'afiliació"), T("Remàrqueting a la xarxa")], c: 1, why: T("Reduir els passos entre veure un producte i comprar-lo augmenta les vendes des de les xarxes.") }
-  ]
-});
-L('L_web20', {
-  area: 'xarxes', codes: ['5.1', '5.2', '5.4', '5.5', '5.6', '5.7', '5.8'], title: T("Contingut dels usuaris, creadors i webs integrades"),
-  goal: T("Aprofitar la participació dels usuaris i les eines integrades per millorar la reputació i les vendes."),
-  body: [
-    T("La <b>web 2.0</b> va ser el pas a la web participativa. Avui en diem <b>web social</b> i <b>contingut generat pels usuaris</b> (UGC): ressenyes, fotos, vídeos, comentaris i comunitats. A més hi ha l'<b>economia dels creadors</b>: persones que viuen de crear contingut i que les marques contracten. Els <b>objectius</b> d'una empresa: escoltar (escolta social), conversar, generar confiança, millorar productes amb les opinions i convertir clients en prescriptors."),
-    T("Eines: xarxes socials, plataformes de ressenyes, comunitats de marca, eines d'escolta social, programes d'ambaixadors i de referits, newsletters i podcasts. Els <b>webs integrats</b> d'avui connecten serveis per <b>API</b> i amb eines sense codi (Zapier, Make): les ressenyes de Google, el feed d'Instagram, les reserves o el xat a la web, i cada comanda entra sola al CRM i al correu."),
-    T("Els <b>consumidors proactius</b> (prosumidors) opinen, comparen (comparadors de preus, vídeos d'unboxing, TikTok com a cercador), recomanen i fins i tot creen continguts sobre les marques. Les xarxes que els fan <b>prescriptors</b> (Google, TripAdvisor, comunitats de marca, ambaixadors) influeixen més que la publicitat. Cal facilitar opinions, respondre-les totes i aprofitar les ofertes creuades i els comparadors.")
-  ],
-  example: T("Can Jordi mostra a la web les ressenyes de Google i les fotos que els clients etiqueten a Instagram, connecta les reserves amb el CRM amb Make i respon cada opinió. La nota passa de 3,9 a 4,5."),
-  errors: [T("Respondre només les opinions bones."), T("Esborrar comentaris crítics."), T("Comprar ressenyes falses.")],
-  quiz: [
-    { q: T("Què és el contingut generat pels usuaris (UGC)?"), o: [T("Ressenyes, fotos i vídeos que fan els clients sobre la marca"), T("Contingut que fan creadors pagats per la marca"), T("Les preguntes que els usuaris fan al xat de la web"), T("Les dades que deixen els usuaris en navegar per la web")], c: 0, why: T("És la versió actual de la web participativa i genera molta confiança.") },
-    { q: T("Què fa una eina com Zapier o Make en una web integrada?"), o: [T("Connecta serveis automàticament"), T("Crea la web sense haver de programar"), T("Incrusta a la web el contingut de les xarxes socials"), T("Guarda còpies de seguretat de totes les eines")], c: 0, why: T("Integra la web amb el CRM, el correu, les reserves i altres eines sense programar.") },
-    { q: T("Què és un prosumidor?"), o: [T("Un consumidor que també crea, opina i recomana"), T("Un creador que cobra de les marques"), T("Un client que compra sovint i en gran quantitat"), T("Un professional que ven a altres consumidors")], c: 0, why: T("Productor + consumidor.") },
-    { q: T("Cas real · GoPro. Bona part dels vídeos que publica a les seves xarxes els han gravat clients amb les seves càmeres. Què aprofita?"), o: [T("Vídeos de creadors pagats"), T("El contingut generat pels usuaris"), T("Publicitat a la TV connectada"), T("Un programa d'afiliació")], c: 1, why: T("El millor anunci d'una càmera és el que grava un client real: és creïble i barat.") },
-    { q: T("Cas real · Airbnb. Hostes i amfitrions es valoren mútuament després de cada estada, i les ressenyes són públiques. Què resol aquest sistema?"), o: [T("El preu de les estades"), T("La confiança entre desconeguts"), T("La velocitat de la reserva"), T("El posicionament a Google")], c: 1, why: T("Les opinions dels usuaris (consumidors proactius) són el que fa possible el negoci.") }
   ]
 });
 L('L_zones', {
@@ -593,16 +539,10 @@ M('2.6', {
   ]
 });
 M('2.7', {
-  title: T("El blog i el butlletí de la Llibreria Peix"), who: 'pere', bg: 'vic', codes: ['1.5', '4.7', '1.4', '1.7'],
-  blurb: T("Una llibreria de tota la vida vol fer comunitat de lectors a internet."),
+  title: T("El butlletí de la Llibreria Peix"), who: 'pere', bg: 'vic', codes: ['1.4', '1.7'],
+  blurb: T("Una llibreria de tota la vida vol tenir els lectors al dia per correu."),
   steps: [
-    { t: 'dlg', lines: [['pere.n', T("Els clubs de lectura van plens, però a la web no hi ha vida. M'han dit que faci un blog i un butlletí. Per on començo?")]] },
-    { t: 'lesson', id: 'L_blog' },
-    { t: 'choice', key: 'tm_pere1', who: 'pere', prompt: T("Quin blog proposes?"), opts: [
-      { t: T("Un blog amb ressenyes dels clubs de lectura i guies per edats, cada setmana"), q: 1, fx: good(40) },
-      { t: T("Notícies de la llibreria: horaris, festius, novetats i inventari, perquè els clients sàpiguen sempre què hi ha"), q: 0.5, fx: { rep: 0 } },
-      { t: T("Comprar 50 articles genèrics fets amb IA i publicar-los el mateix dia"), q: 0, fx: bad(150, T("Va publicar contingut genèric que va perjudicar el SEO de la llibreria (−150 €).")) }
-    ] },
+    { t: 'dlg', lines: [['pere.n', T("Els clubs de lectura van plens, però els lectors no s'assabenten de les novetats. M'han dit que faci un butlletí. Per on començo?")]] },
     { t: 'lesson', id: 'L_newsletter' },
     { t: 'choice', key: 'tm_pere2', who: 'pere', prompt: T("I el butlletí?"), opts: [
       { t: T("Doble opt-in, butlletí mensual per gèneres i baixa fàcil"), q: 1, fx: good(40, { money: 300, fee: true }) },
@@ -709,25 +649,6 @@ M('5.6', {
     { t: 'reward', money: 500 }
   ]
 });
-M('5.7', {
-  title: T("L'associació de comerciants vol fer comunitat"), who: 'pilar', bg: 'vic', codes: ['4.1', '4.2', '4.3', '4.4', '4.5', '4.12', '4.13'],
-  blurb: T("Seixanta comerços volen comunicar-se millor entre ells i amb els clients."),
-  steps: [
-    { t: 'dlg', lines: [['pilar.n', T("Som seixanta botigues i ens comuniquem per un grup de WhatsApp on hi ha de tot: fotos, queixes, bons dies... Ningú llegeix res.")]] },
-    { t: 'lesson', id: 'L_comunitats' },
-    { t: 'choice', key: 'tm_pilar1', who: 'pilar', prompt: T("Quins canals proposes?"), opts: [
-      { t: T("Comunitat de WhatsApp per temes, Discord per a dubtes i videotrucades mensuals"), q: 1, fx: good(50) },
-      { t: T("Afegir tots els socis i clients al grup de WhatsApp de l'associació perquè tothom rebi la informació alhora"), q: 0, fx: bad(300, T("Afegir clients sense permís va provocar queixes i una advertència de protecció de dades (−300 €).")) },
-      { t: T("Tornar a les circulars en paper"), q: 0.5, fx: { rep: 0 } }
-    ] },
-    { t: 'choice', key: 'tm_pilar2', who: 'pilar', prompt: T("Com ampliareu la xarxa de contactes de l'associació?"), opts: [
-      { t: T("Participar en grups actius del sector aportant valor i convidar creadors locals"), q: 1, fx: good(50, { money: 600, fee: true }) },
-      { t: T("Enviar missatges promocionals a tots els grups de Facebook de la comarca"), q: 0, fx: bad(150, T("Van expulsar l'associació de diversos grups per spam (−150 €).")) },
-      { t: T("Seguir tothom a Instagram i esperar"), q: 0.5, fx: { money: 100, fee: true } }
-    ] },
-    { t: 'reward', money: 500 }
-  ]
-});
 M('6.6', {
   title: T("Cim Trail ven des d'Instagram"), who: 'sergi', bg: 'despatx', codes: ['4.8', '4.9', '4.10', '4.11', '4.14', '4.6'],
   blurb: T("El Sergi vol vendre directament a les xarxes i tenir un perfil d'empresa complet."),
@@ -743,25 +664,6 @@ M('6.6', {
       { t: T("Instagram Shopping i TikTok Shop, directes de venda i condicions clares"), q: 1, fx: good(50, { money: 700, fee: true }) },
       { t: T("Vendre per missatge privat sense condicions ni factures"), q: 0, fx: bad(400, T("Vendes sense factura ni condicions: problemes fiscals i devolucions (−400 €).")) },
       { t: T("Penjar l'enllaç de la web a la bio i fer publicacions diàries perquè la gent hi entri i compri"), q: 0.5, fx: { money: 200, fee: true } }
-    ] },
-    { t: 'reward', money: 600 }
-  ]
-});
-M('6.7', {
-  title: T("Els clients com a prescriptors"), who: 'jordi', bg: 'restaurant', codes: ['5.1', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8'],
-  blurb: T("En Jordi vol que les opinions dels clients treballin a favor seu."),
-  steps: [
-    { t: 'dlg', lines: [['jordi.n', T("Després de la crisi, els clients ens tornen a estimar. Com fem que ho expliquin ells, i no nosaltres?")]] },
-    { t: 'lesson', id: 'L_web20' },
-    { t: 'choice', key: 'tm_jordi1', who: 'jordi', prompt: T("Quina estratègia amb el contingut dels clients proposes?"), opts: [
-      { t: T("Ressenyes i fotos dels clients a la web, respondre-les totes i un club d'ambaixadors"), q: 1, fx: good(50, { money: 700, fee: true }) },
-      { t: T("Comprar 200 ressenyes de cinc estrelles per compensar les dolentes i pujar la nota de cop"), q: 0, fx: bad(800, T("Google va eliminar les ressenyes falses i va penalitzar la fitxa; el client va reclamar (−800 €).")) },
-      { t: T("Respondre només les opinions bones"), q: 0.5, fx: { rep: 0 } }
-    ] },
-    { t: 'choice', key: 'tm_jordi2', who: 'jordi', prompt: T("Un comparador de restaurants proposa una oferta creuada amb un celler. Com ho valores?"), opts: [
-      { t: T("Bé, si comparteixen públic i es mesura amb un codi propi"), q: 1, fx: good(40) },
-      { t: T("Malament: els comparadors s'emporten comissió i acostumen els clients a buscar sempre el preu més baix"), q: 0.5, fx: { rep: 0 } },
-      { t: T("Acceptar-la sense mesurar res"), q: 0, fx: { rep: -1 } }
     ] },
     { t: 'reward', money: 600 }
   ]
@@ -799,3 +701,19 @@ M('7.7', {
     { t: 'reward', money: 700 }
   ]
 });
+
+/* ============================================================
+   CONTINGUTS QUE NO ES TREBALLEN
+   Per centrar el mòdul en el pla de màrqueting digital (RA1), les vendes en línia (RA2), la web (RA3) i les xarxes
+   socials (RA4), no es treballen la web 2.0 (bloc 5) ni els xats, la missatgeria, els fòrums i els blogs del bloc 4.
+   ============================================================ */
+GD.temariFora = ['1.5', '4.1', '4.2', '4.3', '4.4', '4.5', '4.7', '4.11', '4.12', '4.13', '5.1', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8', '5.9'];
+(function () {
+  const fora = new Set(GD.temariFora), net = (a) => (a || []).filter(c => !fora.has(c));
+  delete GD.temariBlocks[5];
+  GD.temari = GD.temari.filter(([c]) => !fora.has(c));
+  Object.keys(GD.temariNow).forEach(c => { if (fora.has(c)) delete GD.temariNow[c]; });
+  ['lessons', 'projects', 'web', 'actions', 'problems'].forEach(g => Object.keys(GD.codes[g] || {}).forEach(k => { GD.codes[g][k] = net(GD.codes[g][k]); }));
+  Object.values(GD.lessons || {}).forEach(l => { if (l.codes) l.codes = net(l.codes); });
+  Object.values(GD.chapters || {}).forEach(c => { if (c.codes) c.codes = net(c.codes); });
+})();

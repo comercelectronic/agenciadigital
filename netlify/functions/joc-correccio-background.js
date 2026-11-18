@@ -153,7 +153,7 @@ ${sub.canvis ? `CHANGES SINCE THE PREVIOUS VERSION (after teacher feedback): ${s
 
 Instructions:
 - Assess only what is actually in the attached document(s), not what the summary promises.
-- Be fair but demanding: level 2 means complete, correct and adapted to this client; level 3 needs data, justification and real insight. Missing sections score 0.
+${p.peces ? '- This delivery is ONLY the finished ad pieces made in Canva (posts, stories, ads, posters...). No written explanation is expected: assess each piece as a real ad (fit with the client, message, call to action, format for its channel, design and spelling). Never penalise the absence of explanations, strategy text or justification. Each piece listed in REQUIRED SECTIONS that is missing scores 0 on the related criteria.\n' : ''}${p.pla ? '- This delivery is a SHORT presentation of 2 to 4 pages made in Canva. Brevity is required: do not ask for more pages or long paragraphs. Value clear, concrete content adapted to the client in tables, short sentences or diagrams.\n' : ''}- Be fair but demanding: level 2 means complete, correct and adapted to this client; level 3 needs real polish and insight. Missing sections score 0.
 - If the document is generic, clearly copied from an AI without adapting it to the client, or about another topic, set matches_project to false and score low.
 - Give one short, specific comment per criterion that explains the level and how to improve it.
 - "feedback" is addressed directly to the student (second person), 80–200 words, encouraging and concrete, ending with the most important next step.
