@@ -35,6 +35,14 @@ Pestanya 🏆 **Classe** (també a la Cambra de Comerç de Vic i a l'ordinador d
 - El professorat veu tots els tractes i recomanacions de la classe al panell (secció «Mercat entre agències»).
 - Funció `netlify/functions/joc-classe.js`; dades a Netlify Blobs (`joc-mercat`). Als companys no se'ls mostra mai l'identificador secret de cada alumne.
 
+## Mercadeja (rànquing dels reptes de classe)
+
+Aquest mateix projecte Netlify fa de servidor del joc **Mercadeja** (ecoynexo.com/jocs/mercadeja/, que reenvia `/.netlify/functions/*` cap aquí).
+
+- Funció `netlify/functions/mercadeja.js`; dades a Netlify Blobs (`mercadeja`, claus `<REPTE>/<equip>`). Contrasenya del professorat: la mateixa `TEACHER_PASSWORD`.
+- Cada equip envia el codi de resultat en acabar cada ronda. El servidor **torna a jugar la partida** amb el motor de `netlify/mercadeja-motor/` i desa només el que en surt (la configuració es reconstrueix a partir del codi del repte), de manera que no es pot enviar un resultat inventat.
+- El motor és una còpia del de econexo: cal tornar-lo a copiar quan canviï (`scripts/sincronitza-motor-mercadeja.sh` del repositori econexo). Proves: `node tests/mercadeja.test.js`.
+
 ## Món explorable (estil RPG)
 
 En sortir d'una missió, l'alumne es mou per **Vic** en vista zenital (fletxes o WASD, tocar el mapa o la creu de control al mòbil; A/Espai per parlar i mirar, B per a la llibreta, Esc per al menú). Pot entrar al despatx, al forn de la Carme, a la cansaladeria, al súper, al bar, a la merceria, a Cim Trail, al recinte firal i, en bus, a Tona (Can Jordi) i al polígon de Gurb (Mecanitzats Bellmunt).
