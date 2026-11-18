@@ -12,7 +12,7 @@ Module._load = function (req, ...a) {
     connectLambda: () => { },
     getStore: (nom) => ({
       get: async (k) => { const v = dades[nom + ':' + k]; return v == null ? null : JSON.parse(v); },
-      setJSON: async (k, v) => { dades[nom + ':' + k] = JSON.stringify(v); },
+      setJSON: async (k, v, o) => { if (o && o.onlyIfNew && (nom + ':' + k) in dades) return { modified: false }; dades[nom + ':' + k] = JSON.stringify(v); return { modified: true }; },
       delete: async (k) => { delete dades[nom + ':' + k]; },
       list: async (o) => ({ blobs: Object.keys(dades).filter(k => k.startsWith(nom + ':' + ((o && o.prefix) || ''))).map(k => ({ key: k.slice(nom.length + 1) })) })
     })
@@ -77,4 +77,37 @@ function jugaRepte(rep, nom, dies) {
   await crida({ action: 'esborrar', password: 'secret', repte: rep.codi, equip: 'Equip Beta' });
   assert.strictEqual((await crida({ action: 'ranking', repte: rep.codi })).files.length, 1);
   console.log('✔ funció de Mercadeja: enviament verificat, rànquing i panell docent');
+
+  // Comptes d'alumne
+  r = await crida({ action: 'registre', usuari: 'Anna.P', contrasenya: 'secreta1', nom: 'Anna P.', classe: 'cm10 2a' });
+  assert.strictEqual(r.st, 200); assert.strictEqual(r.compte.usuari, 'anna.p'); assert.strictEqual(r.compte.classe, 'CM10-2A');
+  const tok = r.token;
+  assert.strictEqual((await crida({ action: 'registre', usuari: 'anna.p', contrasenya: 'altra12', nom: 'X', classe: 'A' })).st, 409, 'usuari repetit');
+  assert.strictEqual((await crida({ action: 'registre', usuari: 'bo', contrasenya: 'secreta1', nom: 'X', classe: 'A' })).st, 400);
+  assert.strictEqual((await crida({ action: 'entrar', usuari: 'anna.p', contrasenya: 'malament' })).st, 401);
+  assert.ok(!('hash' in r.compte) && !('salt' in r.compte));
+  // Partida lliure: el servidor la torna a jugar i en desa el resum; el capital del codi no compta
+  const s = ME.crearPartida({ nom: 'Partida', rondes: 0, dificultat: 'mitja', llavor: 4242, capital: 999999, sector: 'alimentacio', empreses: [{ nom: 'Can Anna', humana: true, membres: [] }] }); s.reg = [];
+  const fa = (x) => { const y = ME.accio(s, x); if (!y.repetida && (y.ok || y.muta)) s.reg.push(Object.assign({}, x)); return y; };
+  s.reg.push({ ia: 'I' }); ME.aplica(s, { ia: 'I' });
+  for (let d = 0; d < 3; d++) {
+    fa({ tipus: 'comanda', prod: 'fruita', caixes: 3 }); fa({ tipus: 'obrir' });
+    const st = Object.assign({}, s.dia.estocInici); fa({ tipus: 'tancar', res: s.dia.clients.map(c => { if (c.motiu) return [c.id, 0, c.motiu]; const v = Math.min(c.qty, st[c.prod] || 0); st[c.prod] -= v; return [c.id, v, v ? 0 : 3]; }) }); fa({ tipus: 'continuar' });
+  }
+  const codiL = 'MJ1Z' + zlib.deflateRawSync(Buffer.from(JSON.stringify({ v: 1, cfg: s.config, reg: ME.compacta(s.reg), refl: { 0: 'Hem après molt' } }))).toString('base64url');
+  r = await crida({ action: 'desar', token: tok, codi: codiL }); assert.ok(r.desat, 'desa la partida');
+  assert.strictEqual((await crida({ action: 'desar', token: 'fals.x', codi: codiL })).st, 401);
+  r = await crida({ action: 'entrar', usuari: 'ANNA.P', contrasenya: 'secreta1' }); assert.strictEqual(r.partida.codi, codiL);
+  r = await crida({ action: 'carregar', token: tok }); assert.strictEqual(r.partida.codi, codiL);
+  // Professorat
+  assert.strictEqual((await crida({ action: 'alumnes', password: 'no' })).st, 401);
+  r = await crida({ action: 'alumnes', password: 'secret', classe: 'CM10-2A' });
+  const al = r.alumnes[0]; assert.strictEqual(al.usuari, 'anna.p'); assert.strictEqual(al.partida.ronda, 4); assert.strictEqual(al.partida.fase, 1); assert.ok(al.partida.verificat);
+  assert.ok(al.partida.valor < 20000, 'el capital manipulat no compta: ' + al.partida.valor);
+  r = await crida({ action: 'alumne', password: 'secret', usuari: 'anna.p' }); assert.strictEqual(r.codi, codiL); assert.strictEqual(r.refl, 'Hem après molt');
+  // El professor canvia la contrasenya: la sessió antiga deixa de valer
+  assert.ok((await crida({ action: 'alumne-contrasenya', password: 'secret', usuari: 'anna.p', nova: 'nova123' })).ok);
+  assert.strictEqual((await crida({ action: 'carregar', token: tok })).st, 401);
+  assert.strictEqual((await crida({ action: 'entrar', usuari: 'anna.p', contrasenya: 'nova123' })).st, 200);
+  console.log('✔ comptes d\'alumne: registre, partida al núvol verificada i seguiment del professor');
 })().catch(e => { console.error('✘', e); process.exit(1); });

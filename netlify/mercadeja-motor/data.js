@@ -38,18 +38,58 @@
     kombutxa: { nom: 'Kombutxa de gerds', cat: 'ampolla', color: '#D14D72', cost: 1.5, ref: 3.4, q: 60, eco: 45, nou: 92, bas: 15, perible: false, desc: 'Beguda fermentada de moda. Feta a Girona.' },
     hummus: { nom: 'Hummus de remolatxa', cat: 'pot', color: '#B83280', cost: 1.3, ref: 3.0, q: 62, eco: 50, nou: 85, bas: 20, perible: true, desc: 'Nou i molt instagramejable.' },
     granel: { nom: 'Llegums a granel', cat: 'sac', color: '#C9A66B', cost: 1.1, ref: 2.4, q: 60, eco: 88, nou: 40, bas: 55, perible: false, desc: 'Sense envàs: portes el teu pot.' },
-    croissant: { nom: 'Croissant de mantega', cat: 'pasta', color: '#E9A23B', cost: 0.45, ref: 1.3, q: 58, eco: 10, nou: 25, bas: 70, perible: true, desc: 'Acabat de fer cada matí.' }
+    croissant: { nom: 'Croissant de mantega', cat: 'pasta', color: '#E9A23B', cost: 0.45, ref: 1.3, q: 58, eco: 10, nou: 25, bas: 70, perible: true, desc: 'Acabat de fer cada matí.' },
+    // Marca pròpia (marca blanca): es fabrica per encàrrec, costa menys i fa conèixer la teva marca
+    mpllet: { nom: 'Llet de la casa', cat: 'ampolla', color: '#FFE08A', cost: 0.42, ref: 1.0, q: 45, eco: 20, nou: 10, bas: 95, perible: false, marca: true, desc: 'Marca pròpia: la llet amb el teu nom, més barata de produir.' },
+    mpgaletes: { nom: 'Galetes de la casa', cat: 'caixa', color: '#FFB86B', cost: 0.6, ref: 1.45, q: 40, eco: 10, nou: 15, bas: 82, perible: false, marca: true, desc: 'Marca pròpia: un clàssic amb el teu logotip.' },
+    mpcistella: { nom: 'Cistella eco de la casa', cat: 'fruita', color: '#7BC67E', cost: 1.6, ref: 3.4, q: 72, eco: 90, nou: 35, bas: 50, perible: true, desc: 'Marca pròpia: fruita i verdura de pagesos del Lluçanès.', marca: true }
   };
   D.PROD = Object.keys(D.productes);
   D.PREU_MIN = 0.5; D.PREU_MAX = 2.2;          // preu permès respecte del de referència
   D.PRESTATGE_MAX = 12;                         // unitats que hi caben a cada prestatgeria
   D.CAIXA = 10;                                 // unitats per caixa del proveïdor
   D.MERMA = 0.5;                                // part del producte perible que es llença en tancar
-  D.PRESTATGES_INICIALS = 4; D.PRESTATGES_MAX = 6; D.PRESTATGE_COST = 250;
+  D.PRESTATGES_INICIALS = 4; D.PRESTATGES_MAX = 10; D.PRESTATGE_COST = 250;
+
+  // Creixement: de rebost a gran empresa. valor: valor de l'empresa necessari · cost: reforma o inversió per fer el pas
+  // slots: prestatgeries que hi caben · caixes: llocs de cobrament · reposadors: personal de reposició possible
+  // transit: gent del carrer que atrau (més espai i més varietat) · qty: compra mitjana (la gent hi fa la compra setmanal)
+  D.FASES = [
+    { n: 1, nom: 'Rebost de barri', icona: 'botiga', valor: 0, cost: 0, slots: 6, caixes: 1, reposadors: 0, transit: 1, qty: 1, cap: 12, fixos: 0, desc: 'Una botiga petita: tu ho fas tot.' },
+    { n: 2, nom: 'Botiga gran', icona: 'edifici', valor: 4300, cost: 1000, slots: 8, caixes: 2, reposadors: 1, transit: 1.25, qty: 1.25, cap: 16, fixos: 35, desc: 'Local més gran: més prestatgeries, dues caixes, personal i nevera de frescos.' },
+    { n: 3, nom: 'Supermercat de proximitat', icona: 'cistella', valor: 5400, cost: 1500, slots: 10, caixes: 2, reposadors: 2, transit: 1.45, qty: 1.7, cap: 22, fixos: 70, desc: 'Autoservei amb seccions: marca pròpia i targeta de fidelització. La gent hi fa la compra de la setmana.' },
+    { n: 4, nom: 'Cadena de botigues', icona: 'equip', valor: 7500, cost: 800, slots: 10, caixes: 2, reposadors: 2, transit: 1.5, qty: 1.75, cap: 22, fixos: 90, desc: 'Obres botigues en altres pobles amb un gerent a cada una. Tu continues a la principal.' },
+    { n: 5, nom: 'Gran empresa', icona: 'fabrica', valor: 10500, cost: 2500, minBotigues: 2, slots: 10, caixes: 2, reposadors: 2, transit: 1.55, qty: 1.85, cap: 22, fixos: 130, desc: 'Magatzem central (compres més barates), botiga en línia gran, venda a altres empreses i campanyes de televisió.' }
+  ];
+  // Personal (cost per dia)
+  D.PERSONAL = {
+    caixera: { nom: 'Caixer o caixera', icona: 'usuari', cost: 45, desc: 'Cobra al taulell. Amb dues caixes, se n\'atenen dues persones alhora.' },
+    reposador: { nom: 'Reposador o reposadora', icona: 'paquet', cost: 40, desc: 'Reposa les prestatgeries des del magatzem sense que l\'hagis d\'avisar.' }
+  };
+  // Millores (inversions). fase: des de quina fase · cost: inversió · dia: cost diari
+  D.MILLORES = {
+    nevera: { nom: 'Nevera de frescos', icona: 'magatzem', fase: 2, cost: 600, dia: 5, desc: 'El producte perible es conserva: se\'n fa malbé molt menys cada nit.' },
+    marca: { nom: 'Marca pròpia', icona: 'etiqueta', fase: 3, cost: 900, dia: 0, desc: 'Productes amb el teu nom fets per encàrrec: més marge i més notorietat.' },
+    targeta: { nom: 'Targeta de fidelització', icona: 'estrella', fase: 3, cost: 300, dia: 15, desc: 'Punts per a cada compra (un 2 % de les vendes). Els clients tornen més sovint.' },
+    online: { nom: 'Botiga en línia gran', icona: 'mobil', fase: 5, cost: 1800, dia: 35, desc: 'Web amb logística pròpia: tres vegades més comandes i les prepara el magatzem central.' }
+  };
+  // Botigues de la cadena (fase 4): trànsit diari, lloguer diari i cost d'obrir-la
+  D.LLOCS = [
+    { id: 'tona', nom: 'Tona', transit: 110, lloguer: 45, obrir: 1500 },
+    { id: 'torello', nom: 'Torelló', transit: 140, lloguer: 55, obrir: 2000 },
+    { id: 'manlleu', nom: 'Manlleu', transit: 170, lloguer: 70, obrir: 2600 },
+    { id: 'centre', nom: 'Vic centre', transit: 230, lloguer: 110, obrir: 3800 }
+  ];
+  D.GERENT = { cost: 70, servei: 0.7 };           // gerent de cada botiga: cost per dia i part dels clients que atén bé
+  D.COMPETENCIA_LOCAL = 60;                        // atractiu dels comerços dels altres pobles
+  D.CENTRAL = 0.9;                                 // amb magatzem central, les compres costen un 10 % menys
+  // Venda a altres empreses (fase 5): restaurants i botigues petites compren a l'engròs
+  D.B2B = { preu: 0.85, volums: [0, 100, 200, 400] };
+  // Préstec bancari per créixer: interès diari i límit segons la fase
+  D.PRESTEC = { interes: 0.01, max: [1000, 2500, 4000, 8000, 15000] };
 
   // Distribució i serveis
   D.serveis = {
-    dependent: { nom: 'Dependenta al taulell', icona: 'usuari', cost: 45, desc: 'Cobra els clients mentre tu reposes. Una mica més lenta que tu.' },
     online: { nom: 'Botiga en línia', icona: 'mobil', activar: 200, cost: 10, perComanda: 1, desc: 'Comandes per internet: les prepares en una caixa i les recull el repartidor. Atreu sobretot moderns i responsables.' },
     horari: { nom: 'Horari ampliat', icona: 'rellotge', cost: 25, desc: 'Obres més hores: passa un 20 % més de gent, però hi ha més despeses.' }
   };
@@ -60,7 +100,8 @@
     xarxes: { nom: 'Publicació a les xarxes', icona: 'mobil', tipus: 'màrqueting en línia', cost: 20, not: 8, seg: ['innovadors', 'qualitat'], desc: 'Fotos i vídeos curts. Arriba als moderns.' },
     radio: { nom: 'Falca a la ràdio local', icona: 'radio', tipus: 'publicitat', cost: 90, not: 14, seg: ['preu', 'qualitat', 'responsables'], desc: 'Molt d\'abast, però cara.' },
     tast: { nom: 'Tast a la botiga', icona: 'festa', tipus: 'promoció de vendes', cost: 30, not: 4, img: 10, rep: 2, seg: ['qualitat', 'responsables'], desc: 'La gent prova el producte: millora la imatge de qualitat.' },
-    descompte: { nom: 'Descompte del 10 %', icona: 'etiqueta', tipus: 'promoció de vendes', cost: 0, not: 3, desc10: true, seg: ['preu'], desc: 'Tot un 10 % més barat avui: atrau estalviadors, però redueix el marge.' }
+    descompte: { nom: 'Descompte del 10 %', icona: 'etiqueta', tipus: 'promoció de vendes', cost: 0, not: 3, desc10: true, seg: ['preu'], desc: 'Tot un 10 % més barat avui: atrau estalviadors, però redueix el marge.' },
+    televisio: { nom: 'Anunci a la televisió', icona: 'tele', tipus: 'publicitat en mitjans massius', cost: 450, not: 22, fase: 5, seg: ['preu', 'qualitat', 'innovadors', 'responsables'], desc: 'Arriba a tota la comarca: més gent a totes les botigues de la cadena.' }
   };
   D.PROMO = Object.keys(D.promos);
   // Aparador (marxandatge): un tema per atraure un tipus de client
@@ -80,7 +121,7 @@
   D.ONLINE_PES = { preu: 0.15, qualitat: 0.2, innovadors: 0.38, responsables: 0.27 };
   D.FORA = 32;                // atractiu de «no comprar a cap botiga del carrer»
   D.NOT_INI = 18; D.OBLIT = 0.85; D.REP_INI = 50;
-  D.VALOR = { estoc: 1, prestatge: 0.6, online: 0.5, marca: 12 };
+  D.VALOR = { estoc: 1, prestatge: 0.85, online: 0.7, marca: 12, inversio: 0.85, millores: 0.75 };
 
   // Botigues rivals (IA). prods: productes que tenen; preu: multiplicador del preu de referència; serv: part dels clients que atenen bé
   D.RIVALS = [
@@ -116,7 +157,9 @@
     clients: { nom: 'Més clients atesos', icona: 'equip' },
     servei: { nom: 'Millor servei', icona: 'estrella' },
     reputacio: { nom: 'Millor reputació', icona: 'escut' },
-    llicons: { nom: 'Lliçons apreses', icona: 'llibre' }
+    llicons: { nom: 'Lliçons apreses', icona: 'llibre' },
+    cadena: { nom: 'Cadena de botigues', icona: 'equip' },
+    gran: { nom: 'Gran empresa', icona: 'fabrica' }
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = D; else root.MD = D;

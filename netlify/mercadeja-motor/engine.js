@@ -26,7 +26,7 @@
 
   /* ---------- Crear partida ---------- */
   E.crearPartida = function (cfg) {
-    const config = Object.assign({ sector: 'alimentacio', rondes: 8, capital: MD.CAPITAL, dificultat: 'mitja', llavor: 12345, nom: 'Partida' }, cfg);
+    const config = Object.assign({ sector: 'alimentacio', rondes: 16, capital: MD.CAPITAL, dificultat: 'mitja', llavor: 12345, nom: 'Partida' }, cfg);
     const h = (config.empreses || [])[0] || { nom: 'La meva botiga' };
     const s = { v: 2, config, ronda: 0, fase: 'inici', empreses: [], esdeveniment: null, log: [], fets: {}, dia: null, llicons: {} };
     const inicials = ['motlle', 'llet', 'fruita', 'fuet'];
@@ -34,10 +34,11 @@
     s.empreses.push({
       id: 0, nom: String(h.nom || 'La meva botiga').slice(0, 30), humana: true, membres: (h.membres || []).slice(0, 4), fitxa: 'coet', color: '#F5C542',
       diners: config.capital, nPrest: MD.PRESTATGES_INICIALS, prestatges: inicials.map(p => ({ prod: p, preu: prod(p).ref })),
-      estoc, serveis: { dependent: false, online: false, horari: false }, onlineActivat: false,
+      estoc, costMig: Object.fromEntries(inicials.map(p => [p, prod(p).cost])), serveis: { online: false, horari: false }, onlineActivat: false,
+      fase: 1, personal: { caixera: 0, reposador: 0 }, millores: {}, botigues: [], b2b: { prod: null, volum: 0 }, deute: 0,
       promosDia: [], aparador: null, enquesta: null, objectiu: 0, imgDia: 0,
       not: MD.NOT_INI, rep: MD.REP_INI, xp: 0, estudis: 0, hist: [], darrer: null,
-      inversio: { prestatges: 0, online: 0, promocio: 0, compres: 0 }, us4P: {}
+      inversio: { prestatges: 0, online: 0, promocio: 0, compres: 0, fases: 0, millores: 0, botigues: 0 }, us4P: {}
     });
     MD.RIVALS.forEach((r, i) => s.empreses.push({
       id: i + 1, nom: r.nom, humana: false, perfil: r.perfil, color: r.color, rival: r.id, diners: config.capital,
@@ -52,8 +53,34 @@
     emp.diners = r2(emp.diners + imp);
     s.log.push({ ronda: s.ronda, fase: s.fase, emp: emp.id, empresa: emp.nom, tipus: tipus || (imp > 0 ? 'ingres' : 'despesa'), concepte, import: r2(imp), saldo: emp.diners });
   }
+  // Partides desades amb la versió anterior (sense fases): hi afegeix els camps nous
+  E.migra = function (s) {
+    if (!s || !Array.isArray(s.empreses)) return s;
+    s.empreses.forEach(e => {
+      if (e.fase == null) e.fase = 1;
+      if (!e.personal) e.personal = { caixera: e.serveis && e.serveis.dependent ? 1 : 0, reposador: 0 };
+      if (e.serveis) delete e.serveis.dependent;
+      e.millores = e.millores || {}; e.botigues = e.botigues || []; e.b2b = e.b2b || { prod: null, volum: 0 }; e.deute = e.deute || 0;
+      e.inversio = Object.assign({ prestatges: 0, online: 0, promocio: 0, compres: 0, fases: 0, millores: 0, botigues: 0 }, e.inversio || {});
+    });
+    return s;
+  };
   const jugador = (s) => s.empreses[0];
   E.jugador = jugador;
+  const faseDe = (e) => MD.FASES[(e.fase || 1) - 1];
+  E.faseDe = faseDe;
+  const costUnit = (e, p) => r2(prod(p).cost * (e.millores && e.millores.central ? MD.CENTRAL : 1));   // preu de compra al proveïdor
+  const costMig = (e, p) => (e.costMig && e.costMig[p] != null ? e.costMig[p] : prod(p).cost);       // cost mitjà de l'estoc
+  E.costUnit = costUnit; E.costMig = costMig;
+  // Què cal per passar a la fase següent
+  E.seguentFase = function (s, e) {
+    const F = MD.FASES[e.fase]; if (!F) return null;
+    const v = E.valorEmpresa(s, e).total, falta = [];
+    if (v < F.valor) falta.push('valor de l\'empresa de ' + eur(F.valor) + ' (ara ' + eur(v) + ')');
+    if (F.minBotigues && (e.botigues || []).length < F.minBotigues) falta.push(F.minBotigues + ' botigues a la cadena (ara ' + (e.botigues || []).length + ')');
+    if (e.diners < F.cost) falta.push(eur(F.cost) + ' per a la inversió (tens ' + eur(e.diners) + ')');
+    return { F, falta, pot: !falta.length };
+  };
 
   /* ---------- Atractiu de cada botiga per a cada tipus de client ---------- */
   function catalegDe(s, e) {
@@ -70,7 +97,8 @@
     const cat = catalegDe(s, e), out = {};
     const ratio = cat.length ? cat.reduce((a, x) => a + x.preu / prod(x.prod).ref, 0) / cat.length : 1.5;
     const Q = clamp((cat.length ? cat.reduce((a, x) => a + prod(x.prod).q, 0) / cat.length : 0) + (e.imgDia || 0), 0, 100);
-    const assort = clamp(cat.length / MD.PRESTATGES_MAX * 100, 0, 100);
+    const assort = clamp(cat.length / 6 * 100, 0, 100);
+    const extra = e.humana ? ((e.fase || 1) - 1) * 3 + (e.millores && e.millores.targeta ? 5 : 0) : 0;
     MD.SEG.forEach(seg => {
       const sg = MD.segments[seg];
       const P = clamp(100 * Math.pow(0.9 / ratio, sg.e), 0, 100);
@@ -79,7 +107,7 @@
       if (e.aparador && MD.aparadors[e.aparador] && MD.aparadors[e.aparador].seg === seg) N += 12;
       N = clamp(N, 0, 100);
       const F = seg === 'preu' ? P : clamp(Math.max(0, ...cat.map(x => encaix(seg, x.prod))) * 100, 0, 100);
-      const A = sg.w.P * P + sg.w.Q * Q + sg.w.N * N + sg.w.F * F + sg.w.A * assort + sg.w.R * e.rep;
+      const A = sg.w.P * P + sg.w.Q * Q + sg.w.N * N + sg.w.F * F + sg.w.A * assort + sg.w.R * e.rep + extra;
       out[seg] = { A: r2(A), P: r0(P), Q: r0(Q), N: r0(N), F: r0(F), Ast: r0(assort), R: r0(e.rep) };
     });
     return out;
@@ -160,15 +188,16 @@
     const q = quotes(s, atr, false), qOn = quotes(s, atr, true), dem = E.demanda(s, false), demOn = E.demanda(s, true);
     const r = rngDe(s.config.llavor, 'clients-' + s.ronda);
     const clients = []; let id = 0;
-    const mult = e.serveis.horari ? 1.2 : 1;
+    const F = faseDe(e), mult = (e.serveis.horari ? 1.2 : 1) * F.transit * (e.millores.targeta ? 1.08 : 1) * (e.promosDia.includes('televisio') ? 1.12 : 1);
+    const qtyMult = F.qty, onMult = e.millores.online ? 3 : 1;
     MD.SEG.forEach(seg => {
       const n = Math.round(dem[seg] * q[0][seg] * mult), sg = MD.segments[seg];
       for (let k = 0; k < n; k++) {
         const d = decideix(s, e, seg, r);
-        clients.push({ id: 0, seg, t: r2(0.02 + r() * 0.84), qty: sg.qty[0] + Math.floor(r() * (sg.qty[1] - sg.qty[0] + 1)), prod: d.prod, motiu: d.motiu, pac: r0(20 + r() * 14), online: false, look: Math.floor(r() * 1000) });
+        clients.push({ id: 0, seg, t: r2(0.02 + r() * 0.84), qty: Math.max(1, Math.round((sg.qty[0] + Math.floor(r() * (sg.qty[1] - sg.qty[0] + 1))) * qtyMult)), prod: d.prod, motiu: d.motiu, pac: r0(20 + r() * 14), online: false, look: Math.floor(r() * 1000) });
       }
       if (e.serveis.online) {
-        const m = Math.round(demOn[seg] * qOn[0][seg]);
+        const m = Math.round(demOn[seg] * qOn[0][seg] * onMult);
         for (let k = 0; k < m; k++) {
           const d = decideix(s, e, seg, r);
           if (d.motiu) continue; // a la web, qui no hi troba res simplement no fa la comanda
@@ -206,24 +235,37 @@
     MD.SEG.forEach(k => { perSeg[k] = { entren: 0, compren: 0, perduts: { preu: 0, assortiment: 0, esgotat: 0, cua: 0 } }; });
     out.forEach(({ c, v, m }) => {
       perSeg[c.seg].entren++;
-      if (v > 0) { ingressos += v * preuDe[c.prod]; cogs += v * prod(c.prod).cost; unitats += v; servits++; perSeg[c.seg].compren++; if (c.online) onlineN++; e.estoc[c.prod] -= v; }
+      if (v > 0) { ingressos += v * preuDe[c.prod]; cogs += v * costMig(e, c.prod); unitats += v; servits++; perSeg[c.seg].compren++; if (c.online) onlineN++; e.estoc[c.prod] -= v; }
       else { const k = ['', 'preu', 'assortiment', 'esgotat', 'cua'][m]; perduts[k]++; perSeg[c.seg].perduts[k]++; }
     });
     ingressos = r2(ingressos); cogs = r2(cogs);
     // Merma: el producte perible que sobra es fa malbé en part
     let merma = 0, mermaU = 0;
-    Object.keys(e.estoc).forEach(p => { if (prod(p).perible && e.estoc[p] > 0) { const w = Math.floor(e.estoc[p] * MD.MERMA); e.estoc[p] -= w; mermaU += w; merma += w * prod(p).cost; } });
+    const fMerma = MD.MERMA * (e.millores.nevera ? 0.3 : 1);
+    Object.keys(e.estoc).forEach(p => { if (prod(p).perible && e.estoc[p] > 0) { const w = Math.floor(e.estoc[p] * fMerma); e.estoc[p] -= w; mermaU += w; merma += w * costMig(e, p); } });
     merma = r2(merma);
     const sv = MD.serveis;
-    const serveis = (e.serveis.dependent ? sv.dependent.cost : 0) + (e.serveis.online ? sv.online.cost : 0) + (e.serveis.horari ? sv.horari.cost : 0);
+    const serveis = (e.serveis.online ? sv.online.cost : 0) + (e.serveis.horari ? sv.horari.cost : 0);
+    const F = faseDe(e), personal = e.personal.caixera * MD.PERSONAL.caixera.cost + e.personal.reposador * MD.PERSONAL.reposador.cost;
+    const milloresDia = Object.keys(e.millores).filter(k => MD.MILLORES[k]).reduce((a, k) => a + MD.MILLORES[k].dia, 0);
+    const punts = e.millores.targeta ? r2(ingressos * 0.02) : 0, interessos = r2((e.deute || 0) * MD.PRESTEC.interes);
+    const cadena = vendesCadena(s, e, dia.atr[0]), b2b = vendesB2B(e);
     const comissions = r2(onlineN * sv.online.perComanda);
     const promocio = r2(s.log.filter(l => l.ronda === s.ronda && l.emp === 0 && l.tipus === 'promocio').reduce((a, l) => a - l.import, 0));
     const estudi = r2(s.log.filter(l => l.ronda === s.ronda && l.emp === 0 && l.tipus === 'estudi').reduce((a, l) => a - l.import, 0));
     mou(s, e, ingressos, 'Vendes: ' + unitats + ' unitats a ' + servits + ' clients', 'vendes');
-    mou(s, e, -MD.FIXOS, 'Lloguer, llum i assegurances', 'fixos');
+    mou(s, e, -(MD.FIXOS + F.fixos), 'Lloguer, llum i assegurances', 'fixos');
+    if (personal) mou(s, e, -personal, 'Personal: ' + [e.personal.caixera ? e.personal.caixera + ' a caixa' : '', e.personal.reposador ? e.personal.reposador + ' reposant' : ''].filter(Boolean).join(' i '), 'serveis');
+    if (milloresDia) mou(s, e, -milloresDia, 'Manteniment de les millores', 'serveis');
+    if (punts) mou(s, e, -punts, 'Punts de la targeta de fidelització', 'serveis');
+    if (interessos) mou(s, e, -interessos, 'Interessos del préstec', 'financer');
+    cadena.forEach(b => { mou(s, e, b.ingressos, 'Vendes de la botiga de ' + b.nom, 'vendes'); mou(s, e, -(b.cogs + b.merma + b.lloguer + b.gerent), 'Mercaderia, lloguer i gerent de ' + b.nom, 'cadena'); });
+    if (b2b) { mou(s, e, b2b.ingressos, 'Venda a empreses: ' + b2b.volum + ' unitats de ' + prod(b2b.prod).nom.toLowerCase(), 'vendes'); mou(s, e, -b2b.cogs, 'Mercaderia per a la venda a empreses', 'cadena'); }
     if (serveis) mou(s, e, -serveis, 'Serveis: ' + Object.keys(e.serveis).filter(k => e.serveis[k]).map(k => sv[k].nom.toLowerCase()).join(', '), 'serveis');
     if (comissions) mou(s, e, -comissions, 'Embalatge i repartiment de ' + onlineN + ' comandes en línia', 'serveis');
-    const resultat = r2(ingressos - cogs - merma - MD.FIXOS - serveis - comissions - promocio - estudi);
+    const resultatBotiga = r2(ingressos - cogs - merma - MD.FIXOS - F.fixos - serveis - personal - milloresDia - punts - interessos - comissions - promocio - estudi);
+    const resultat = r2(resultatBotiga + cadena.reduce((a, b) => a + b.resultat, 0) + (b2b ? b2b.resultat : 0));
+    const vendesTotal = r2(ingressos + cadena.reduce((a, b) => a + b.ingressos, 0) + (b2b ? b2b.ingressos : 0));
     // Satisfacció i reputació
     const total = cl.length || 1;
     const sat = r0(clamp(100 * (servits + 0.55 * (perduts.preu + perduts.assortiment) + 0.1 * (perduts.esgotat + perduts.cua)) / total, 0, 100));
@@ -234,7 +276,8 @@
     const actius = e.prestatges.slice(0, e.nPrest).filter(x => x && x.prod);
     const h = {
       ronda: s.ronda, esdeveniment: s.esdeveniment, ingressos, unitats, clients: cl.length, servits, online: onlineN, perduts, perSeg,
-      cogs, merma, mermaU, fixos: MD.FIXOS, serveis, comissions, promocio, estudi, resultat,
+      cogs, merma, mermaU, fixos: MD.FIXOS + F.fixos, serveis, personal, milloresDia, punts, interessos, deute: e.deute || 0, comissions, promocio, estudi, resultat, resultatBotiga, vendesTotal,
+      fase: e.fase, cadena, b2b,
       quota: totU ? r2(unitats / totU * 100) : 0, objectiu: e.objectiu || 0, satisfaccio: sat,
       preuMitja: r2(actius.reduce((a, x) => a + x.preu / prod(x.prod).ref, 0) / Math.max(1, actius.length)),
       preus: Object.fromEntries(actius.map(x => [x.prod, x.preu])),
@@ -242,7 +285,8 @@
       us4P: Object.keys(e.us4P), notorietat: r0(e.not), reputacio: e.rep, atractiu: dia.atr[0], quotesCarrer: dia.quotes[0]
     };
     // Boca-orella i oblit
-    e.not = r2(clamp(e.not * MD.OBLIT + servits * 0.12, 0, 100));
+    const uMarca = out.reduce((a, x) => a + (x.v > 0 && prod(x.c.prod).marca ? x.v : 0), 0);
+    e.not = r2(clamp(e.not * MD.OBLIT + servits * 0.12 + uMarca * 0.03 + cadena.length * 1.5, 0, 100));
     let xp = 0; if (resultat > 0) xp += 10; xp += 5 * h.us4P.length; if (!perduts.cua && !perduts.esgotat && servits) xp += 10; if (h.objectiu && ingressos >= h.objectiu) xp += 10;
     e.xp += xp; h.xp = xp;
     h.explicacio = E.explicar(s, e, h, rivals);
@@ -256,6 +300,29 @@
     s.empreses.slice().sort((a, b) => b.darrer.valor - a.darrer.valor).forEach((x, k) => { const ant = x.hist[x.hist.length - 2]; x.darrer.posicio = k + 1; x.darrer.canviPosicio = ant ? ant.posicio - (k + 1) : 0; });
     s.fase = 'resultats';
     return { ok: true, h };
+  }
+  function vendesCadena(s, e, atr0) {
+    const cat = catalegDe(s, e), F = faseDe(e), tv = e.promosDia.includes('televisio') ? 1.2 : 1;
+    if (!cat.length) return [];
+    return (e.botigues || []).map(b => {
+      const L = MD.LLOCS.find(x => x.id === b.lloc); let clients = 0, unitats = 0, ingressos = 0, cogs = 0;
+      MD.SEG.forEach(seg => {
+        const sg = MD.segments[seg], A = atr0[seg].A, C = MD.COMPETENCIA_LOCAL;
+        const n = L.transit * sg.pes * tv * A * A / (A * A + 2 * C * C + MD.FORA * MD.FORA);
+        const bo = cat.filter(c => encaix(seg, c.prod) >= sg.min && c.preu / prod(c.prod).ref <= sg.maxPreu), c = bo.length ? bo : cat;
+        const conv = (bo.length ? 0.9 : 0.2) * MD.GERENT.servei, qty = (sg.qty[0] + sg.qty[1]) / 2 * F.qty;
+        const pm = c.reduce((a, y) => a + y.preu, 0) / c.length, cm = c.reduce((a, y) => a + costUnit(e, y.prod), 0) / c.length;
+        clients += n; unitats += n * conv * qty; ingressos += n * conv * qty * pm; cogs += n * conv * qty * cm;
+      });
+      const merma = r2(ingressos * 0.05);
+      ingressos = r2(ingressos); cogs = r2(cogs);
+      return { lloc: b.lloc, nom: L.nom, clients: r0(clients), unitats: r0(unitats), ingressos, cogs, merma, lloguer: L.lloguer, gerent: MD.GERENT.cost, resultat: r2(ingressos - cogs - merma - L.lloguer - MD.GERENT.cost) };
+    });
+  }
+  function vendesB2B(e) {
+    if (!e.b2b || !e.b2b.prod || !e.b2b.volum || e.fase < 5) return null;
+    const P = prod(e.b2b.prod), v = e.b2b.volum, ingressos = r2(v * P.ref * MD.B2B.preu), cogs = r2(v * costUnit(e, e.b2b.prod));
+    return { prod: e.b2b.prod, volum: v, ingressos, cogs, resultat: r2(ingressos - cogs) };
   }
   function venesRival(s, x) {
     const dia = s.dia, cat = catalegDe(s, x), servei = MD.SERVEI_IA[s.config.dificultat] || 0.84;
@@ -283,12 +350,14 @@
     if (P.preu >= 3) out.push(['−', P.preu + ' clients han marxat perquè els ha semblat massa car (sobretot ' + MD.segments[segMax('preu')].nom.toLowerCase() + '). Revisa el preu o tria productes que ells valorin més.']);
     if (P.assortiment >= 3) { const k = segMax('assortiment'); out.push(['−', P.assortiment + ' clients no han trobat res per a ells (sobretot ' + MD.segments[k].nom.toLowerCase() + ': ' + ({ preu: 'volen producte barat', qualitat: 'volen producte de qualitat', innovadors: 'volen novetats', responsables: 'volen producte ecològic o de proximitat' })[k] + ').']); }
     if (P.esgotat >= 2) out.push(['−', P.esgotat + ' clients han trobat la prestatgeria buida. Reposa abans o demana més estoc.']);
-    if (P.cua >= 2) out.push(['−', P.cua + ' clients s\'han cansat d\'esperar. Atén el taulell o contracta una dependenta.']);
+    if (P.cua >= 2) out.push(['−', P.cua + ' clients s\'han cansat d\'esperar. Atén el taulell o contracta personal de caixa.']);
     if (h.mermaU >= 4) out.push(['=', 'S\'han fet malbé ' + h.mermaU + ' unitats de producte perible (' + eur(h.merma) + '). Ajusta les comandes.']);
     const quotaCarrer = MD.SEG.reduce((a, k) => a + h.quotesCarrer[k] * MD.segments[k].pes, 0);
     const millor = rivals.map((r, i) => ({ r, e: s.empreses[i + 1] })).sort((a, b) => b.r.clients - a.r.clients)[0];
     if (millor && millor.r.clients > h.clients * 1.2) out.push(['=', 'Molta gent ha anat a ' + millor.e.nom + ' (' + Math.round(millor.r.clients) + ' clients). ' + (millor.e.not > e.not + 5 ? 'És més coneguda: notorietat ' + Math.round(millor.e.not) + ' contra ' + Math.round(e.not) + '.' : 'Compara el seu preu i els seus productes amb els teus.')]);
     if (h.servits && !P.cua && !P.esgotat) out.push(['+', 'Cap client s\'ha quedat sense servir per culpa de la cua o l\'estoc: bona organització!']);
+    if (h.cadena && h.cadena.length) { const t = h.cadena.reduce((a, b) => a + b.resultat, 0), pitjor = h.cadena.slice().sort((a, b) => a.resultat - b.resultat)[0]; out.push([t >= 0 ? '+' : '−', 'Les botigues de la cadena han deixat ' + eur(t) + (pitjor.resultat < 0 ? '. La de ' + pitjor.nom + ' perd diners: revisa preus i productes o el seu cost de lloguer.' : '.')]); }
+    if (h.b2b) out.push(['+', 'La venda a empreses ha deixat ' + eur(h.b2b.resultat) + ' (' + h.b2b.volum + ' unitats).']);
     if (h.resultat > 0) out.push(['+', 'Has guanyat ' + eur(h.resultat) + ' avui.']);
     else out.push(['−', 'Avui has perdut ' + eur(-h.resultat) + ': els costos fixos són de ' + eur(MD.FIXOS) + ' al dia i cal vendre prou per cobrir-los.']);
     if (quotaCarrer < 0.12) out.push(['−', 'Només el ' + Math.round(quotaCarrer * 100) + ' % de la gent del carrer ha entrat a la teva botiga. Fes-te conèixer (promoció) i millora l\'aparador.']);
@@ -299,10 +368,11 @@
   E.valorEmpresa = function (s, e) {
     const V = MD.VALOR;
     if (!e.humana) { const marca = (e.not + e.rep) * V.marca; return { tresoreria: r0(e.diners), estoc: 600, actius: 0, marca: r0(marca), total: r0(e.diners + 600 + marca) }; }
-    const estoc = Object.keys(e.estoc).reduce((a, p) => a + Math.max(0, e.estoc[p]) * prod(p).cost, 0);
-    const actius = (e.nPrest - MD.PRESTATGES_INICIALS) * MD.PRESTATGE_COST * V.prestatge + (e.onlineActivat ? MD.serveis.online.activar * V.online : 0);
+    const estoc = Object.keys(e.estoc).reduce((a, p) => a + Math.max(0, e.estoc[p]) * costMig(e, p), 0), inv = e.inversio || {};
+    const actius = (e.nPrest - MD.PRESTATGES_INICIALS) * MD.PRESTATGE_COST * V.prestatge + (e.onlineActivat ? MD.serveis.online.activar * V.online : 0)
+      + ((inv.fases || 0) + (inv.botigues || 0)) * V.inversio + (inv.millores || 0) * V.millores;
     const marca = (e.not + e.rep) * V.marca;
-    return { tresoreria: r0(e.diners), estoc: r0(estoc), actius: r0(actius), marca: r0(marca), total: r0(e.diners + estoc + actius + marca) };
+    return { tresoreria: r0(e.diners), estoc: r0(estoc), actius: r0(actius), marca: r0(marca), deute: r0(e.deute || 0), total: r0(e.diners + estoc + actius + marca - (e.deute || 0)) };
   };
   E.classificacio = (s) => s.empreses.map(e => ({ e, v: E.valorEmpresa(s, e) })).sort((a, b) => b.v.total - a.v.total);
 
@@ -333,6 +403,7 @@
         if (noPlan) return noPlan;
         const k = +a.slot; if (!(k >= 0 && k < e.nPrest)) return err('Prestatgeria no vàlida.');
         if (a.prod && !prod(a.prod)) return err('Producte desconegut.');
+        if (a.prod && prod(a.prod).marca && !e.millores.marca) return err('Primer cal crear la marca pròpia.');
         if (a.prod && e.prestatges.some((x, i) => i !== k && x && x.prod === a.prod)) return err('Aquest producte ja és en una altra prestatgeria.');
         const ant = e.prestatges[k];
         e.prestatges[k] = a.prod ? { prod: a.prod, preu: ant && ant.prod === a.prod ? ant.preu : prod(a.prod).ref } : { prod: null, preu: 0 };
@@ -350,14 +421,17 @@
         if (noPlan) return noPlan;
         const p = prod(a.prod), n = Math.floor(+a.caixes); if (!p) return err('Producte desconegut.');
         if (!(n >= 1 && n <= 20)) return err('Entre 1 i 20 caixes.');
-        const c = r2(n * MD.CAIXA * p.cost); if (e.diners < c) return err('No tens prou diners.');
+        if (p.marca && !e.millores.marca) return err('Primer cal crear la marca pròpia.');
+        const u = costUnit(e, a.prod), c = r2(n * MD.CAIXA * u); if (e.diners < c) return err('No tens prou diners.');
         mou(s, e, -c, 'Compra al proveïdor: ' + n + ' caixes de ' + p.nom.toLowerCase(), 'compres');
-        e.estoc[a.prod] = (e.estoc[a.prod] || 0) + n * MD.CAIXA; e.inversio.compres += c; e.us4P.distribucio = 1;
+        const ant = Math.max(0, e.estoc[a.prod] || 0); e.costMig = e.costMig || {};
+        e.costMig[a.prod] = Math.round((ant * costMig(e, a.prod) + n * MD.CAIXA * u) / (ant + n * MD.CAIXA) * 10000) / 10000;
+        e.estoc[a.prod] = ant + n * MD.CAIXA; e.inversio.compres += c; e.us4P.distribucio = 1;
         return { ok: true };
       }
       case 'prestatge': {
         if (noPlan) return noPlan;
-        if (e.nPrest >= MD.PRESTATGES_MAX) return err('No hi caben més prestatgeries.');
+        if (e.nPrest >= faseDe(e).slots) return err(e.fase < MD.FASES.length ? 'No hi caben més prestatgeries: cal fer créixer la botiga.' : 'No hi caben més prestatgeries.');
         if (e.diners < MD.PRESTATGE_COST) return err('No tens prou diners.');
         mou(s, e, -MD.PRESTATGE_COST, 'Prestatgeria nova', 'inversio'); e.nPrest++; e.inversio.prestatges += MD.PRESTATGE_COST;
         while (e.prestatges.length < e.nPrest) e.prestatges.push({ prod: null, preu: 0 });
@@ -365,6 +439,7 @@
       }
       case 'servei': {
         if (noPlan) return noPlan;
+        if (a.servei === 'dependent') { e.personal.caixera = a.actiu ? 1 : 0; e.us4P.distribucio = 1; return { ok: true }; }  // partides de la versió anterior
         const sv = MD.serveis[a.servei]; if (!sv) return err('Servei desconegut.');
         const on = !!a.actiu;
         if (on && a.servei === 'online' && !e.onlineActivat) {
@@ -376,6 +451,7 @@
       case 'promo': {
         if (noPlan) return noPlan;
         const p = MD.promos[a.promo]; if (!p) return err('Promoció desconeguda.');
+        if (p.fase && e.fase < p.fase) return err('Aquesta promoció és per a empreses més grans.');
         if (e.promosDia.includes(a.promo)) return err('Ja l\'has contractada avui.');
         if (e.diners < p.cost) return err('No tens prou diners.');
         mou(s, e, -p.cost, 'Promoció: ' + p.nom.toLowerCase(), 'promocio');
@@ -384,6 +460,67 @@
         if (p.img) e.imgDia = p.img; if (p.rep) e.rep = clamp(e.rep + p.rep, 0, 100);
         if (p.desc10) e.us4P.preu = 1;
         return { ok: true };
+      }
+      case 'creixer': {
+        if (noPlan) return noPlan;
+        const sf = E.seguentFase(s, e); if (!sf) return err('Ja ets una gran empresa.');
+        if (!sf.pot) return err('Encara no: cal ' + sf.falta.join(', ') + '.');
+        if (sf.F.cost) mou(s, e, -sf.F.cost, 'Inversió per créixer: ' + sf.F.nom.toLowerCase(), 'inversio');
+        e.fase++; e.inversio.fases += sf.F.cost; e.us4P.distribucio = 1;
+        if (e.fase >= 5) e.millores.central = 1;
+        return { ok: true, fase: e.fase };
+      }
+      case 'personal': {
+        if (noPlan) return noPlan;
+        const P = MD.PERSONAL[a.rol]; if (!P) return err('Lloc de feina desconegut.');
+        const F = faseDe(e), max = a.rol === 'caixera' ? F.caixes : F.reposadors, n = Math.floor(+a.n);
+        if (!(n >= 0 && n <= max)) return err(max ? 'Com a molt ' + max + ' persones en aquest lloc.' : 'La botiga encara és massa petita per a aquest lloc.');
+        e.personal[a.rol] = n; e.us4P.distribucio = 1; return { ok: true };
+      }
+      case 'millora': {
+        if (noPlan) return noPlan;
+        const M = MD.MILLORES[a.k]; if (!M) return err('Millora desconeguda.');
+        if (e.fase < M.fase) return err('Aquesta millora és per a una botiga més gran.');
+        if (e.millores[a.k]) return err('Ja la tens.');
+        if (e.diners < M.cost) return err('No tens prou diners.');
+        mou(s, e, -M.cost, 'Inversió: ' + M.nom.toLowerCase(), 'inversio'); e.millores[a.k] = 1; e.inversio.millores += M.cost;
+        e.us4P[{ marca: 'producte', targeta: 'promocio' }[a.k] || 'distribucio'] = 1;
+        return { ok: true };
+      }
+      case 'obrirBotiga': {
+        if (noPlan) return noPlan;
+        const L = MD.LLOCS.find(x => x.id === a.lloc); if (!L) return err('Lloc desconegut.');
+        if (e.fase < 4) return err('Per obrir més botigues cal ser una cadena.');
+        if (e.botigues.some(b => b.lloc === a.lloc)) return err('Ja hi tens una botiga.');
+        if (e.diners < L.obrir) return err('No tens prou diners.');
+        mou(s, e, -L.obrir, 'Obertura de la botiga de ' + L.nom, 'inversio'); e.botigues.push({ lloc: a.lloc, des: s.ronda }); e.inversio.botigues += L.obrir; e.us4P.distribucio = 1;
+        return { ok: true };
+      }
+      case 'b2b': {
+        if (noPlan) return noPlan;
+        if (e.fase < 5) return err('La venda a empreses és per a grans empreses.');
+        const v = Math.floor(+a.volum); if (!MD.B2B.volums.includes(v)) return err('Volum no vàlid.');
+        if (v && (!a.prod || !prod(a.prod) || (prod(a.prod).marca && !e.millores.marca))) return err('Tria un producte.');
+        e.b2b = { prod: v ? a.prod : null, volum: v }; e.us4P.distribucio = 1; return { ok: true };
+      }
+      case 'prestec': {
+        if (noPlan) return noPlan;
+        const v = Math.round(+a.import), max = MD.PRESTEC.max[e.fase - 1];
+        if (!(v > 0)) return err('Import no vàlid.');
+        if ((e.deute || 0) + v > max) return err('El banc et deixa com a molt ' + eur(max) + ' en aquesta fase (en deus ' + eur(e.deute || 0) + ').');
+        e.deute = (e.deute || 0) + v; mou(s, e, v, 'Préstec bancari', 'financer'); return { ok: true };
+      }
+      case 'retornar': {
+        if (noPlan) return noPlan;
+        const v = Math.min(Math.round(+a.import), e.deute || 0);
+        if (!(v > 0)) return err('No tens deute per retornar.');
+        if (e.diners < v) return err('No tens prou diners.');
+        e.deute -= v; mou(s, e, -v, 'Devolució del préstec', 'financer'); return { ok: true };
+      }
+      case 'acabar': { // mode lliure: el jugador decideix quan acaba
+        if (s.config.rondes) return err('Aquesta partida té un nombre de dies fix.');
+        if (!['planificacio', 'resultats'].includes(s.fase)) return err('Acaba primer el dia.');
+        s.fase = 'final'; return { ok: true, final: true };
       }
       case 'aparador': {
         if (noPlan) return noPlan;
@@ -420,7 +557,7 @@
       }
       case 'continuar': {
         if (s.fase !== 'resultats') return err('No es pot continuar ara.');
-        if (s.ronda >= s.config.rondes) { s.fase = 'final'; return { ok: true, final: true }; }
+        if (s.config.rondes && s.ronda >= s.config.rondes) { s.fase = 'final'; return { ok: true, final: true }; }
         E.iniciarDia(s); return { ok: true };
       }
       default: return err('Acció desconeguda: ' + a.tipus);
@@ -436,6 +573,8 @@
     if (cl && perdServ / cl < 0.06) out.push('servei');
     if (e.rep >= 70) out.push('reputacio');
     const ll = Object.values(s.llicons[0] || {}).filter(x => x.ok).length; if (ll >= 10) out.push('llicons');
+    if ((e.botigues || []).length) out.push('cadena');
+    if (e.fase >= 5) out.push('gran');
     return out;
   };
 
@@ -454,9 +593,9 @@
   };
 
   /* ---------- Registre d'accions: reproduir i verificar una partida sense confiar en el client ---------- */
-  const CODI = { producte: 'p', preu: 'r', comanda: 'c', prestatge: 'k', servei: 's', promo: 'm', aparador: 'a', enquesta: 'e', objectiu: 'o', obrir: 'b', tancar: 't', continuar: 'n', llico: 'q' };
+  const CODI = { producte: 'p', preu: 'r', comanda: 'c', prestatge: 'k', servei: 's', promo: 'm', aparador: 'a', enquesta: 'e', objectiu: 'o', obrir: 'b', tancar: 't', continuar: 'n', llico: 'q', creixer: 'g', personal: 'h', millora: 'u', obrirBotiga: 'w', b2b: 'x', acabar: 'z', prestec: 'l', retornar: 'v' };
   const DECODI = Object.fromEntries(Object.entries(CODI).map(([k, v]) => [v, k]));
-  const ARGS = { producte: ['slot', 'prod'], preu: ['slot', 'valor'], comanda: ['prod', 'caixes'], servei: ['servei', 'actiu'], promo: ['promo'], aparador: ['tema'], objectiu: ['valor'], tancar: ['res'], llico: ['llico', 'resposta'] };
+  const ARGS = { producte: ['slot', 'prod'], preu: ['slot', 'valor'], comanda: ['prod', 'caixes'], servei: ['servei', 'actiu'], promo: ['promo'], aparador: ['tema'], objectiu: ['valor'], tancar: ['res'], llico: ['llico', 'resposta'], personal: ['rol', 'n'], millora: ['k'], obrirBotiga: ['lloc'], b2b: ['prod', 'volum'], prestec: ['import'], retornar: ['import'] };
   E.compacta = (reg) => reg.map(r => {
     if (r.ia) return [r.ia];
     return [CODI[r.tipus]].concat((ARGS[r.tipus] || []).map(k => typeof r[k] === 'boolean' ? (r[k] ? 1 : 0) : r[k] == null ? null : r[k]));
@@ -483,10 +622,10 @@
      Codi llegible (per dictar o escriure a la pissarra): A8M-K3X9QZ = sector, dies, dificultat i llavor. */
   const SECT = { alimentacio: 'A' }, SECT_R = { A: 'alimentacio' };
   const DIF = { facil: 'F', mitja: 'M', dificil: 'D' }, DIF_R = Object.fromEntries(Object.entries(DIF).map(([k, v]) => [v, k]));
-  const RONDES = { 4: '4', 8: '8', 12: 'C' }, RONDES_R = { 4: 4, 8: 8, C: 12 };
+  const RONDES = { 4: '4', 8: '8', 12: 'C', 16: 'G', 20: 'K' }, RONDES_R = { 4: 4, 8: 8, C: 12, G: 16, K: 20 };
   E.codiRepte = (sector, rondes, dificultat, llavor) => (SECT[sector] || 'A') + RONDES[rondes] + DIF[dificultat] + '-' + (llavor >>> 0).toString(36).toUpperCase().padStart(6, '0');
   E.llegirRepte = function (codi) {
-    const m = String(codi || '').trim().toUpperCase().replace(/\s/g, '').match(/^([A])([48C])([FMD])-?([0-9A-Z]{1,7})$/);
+    const m = String(codi || '').trim().toUpperCase().replace(/\s/g, '').match(/^([A])([48CGK])([FMD])-?([0-9A-Z]{1,7})$/);
     if (!m) return null;
     const llavor = parseInt(m[4], 36); if (!(llavor > 0)) return null;
     return { codi: m[1] + m[2] + m[3] + '-' + m[4].padStart(6, '0'), sector: SECT_R[m[1]], rondes: RONDES_R[m[2]], dificultat: DIF_R[m[3]], llavor };

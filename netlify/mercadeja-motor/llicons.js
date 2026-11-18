@@ -20,7 +20,7 @@
       quan: (s) => s.ronda >= 1,
       cos: ['El **màrqueting mix** és la combinació dels quatre instruments que l\'empresa controla: **producte** (què vens), **preu** (quant costa al client), **distribució** (com i on arriba) i **promoció** o comunicació (com ho fas saber).',
         'La clau és la **coherència**: un formatge artesà molt bo, venut massa barat, sense que ningú en sàpiga res i amb la prestatgeria sovint buida, desaprofita els seus punts forts.'],
-      exemple: (s, e, ME, MD) => `A ${e.nom} decidiu cada matí les quatre P: què hi ha a les ${e.nPrest} prestatgeries (producte), a quin preu (preu), quant estoc demaneu, si teniu dependenta i botiga en línia (distribució) i quines promocions feu (promoció).`,
+      exemple: (s, e, ME, MD) => `A ${e.nom} decidiu cada matí les quatre P: què hi ha a les ${e.nPrest} prestatgeries (producte), a quin preu (preu), quant estoc demaneu, quin personal teniu i si veneu per internet (distribució) i quines promocions feu (promoció).`,
       pregunta: { p: 'Una botiga ven formatge artesà de molta qualitat a un preu molt baix, sense cap comunicació i amb la prestatgeria sovint buida. Quin és el problema principal?', o: ['Les quatre P no són coherents entre elles', 'Té massa productes a la botiga', 'El preu és massa alt per als clients', 'Hauria de canviar el disseny de l\'envàs'], per: 'El problema no és una P aïllada, sinó que no encaixen: la qualitat demana un preu, una comunicació i una disponibilitat que la facin valer.' }
     },
     {
@@ -36,7 +36,7 @@
       quan: (s, e) => s.ronda >= 1 && (H(e).length >= 1 || !!(e.us4P && e.us4P.preu)),
       cos: ['**Preu de venda = cost + marge.** El marge es pot calcular sobre el cost o sobre el preu de venda, i no dona el mateix percentatge:',
         '**Marge sobre el preu** = (preu − cost) ÷ preu × 100. **Marge sobre el cost** = (preu − cost) ÷ cost × 100.'],
-      exemple: (s, e, ME) => { const x = prods(e)[0]; if (!x) return ''; const p = ME.prod(x.prod), m = x.preu - p.cost; return `${p.nom}: el compreu a ${e2(p.cost)} i el veneu a ${e2(x.preu)} → marge de ${e2(m)} per unitat. Sobre el preu: ${pc(m / x.preu * 100)}. Sobre el cost: ${pc(m / p.cost * 100)}.`; },
+      exemple: (s, e, ME) => { const x = prods(e)[0]; if (!x) return ''; const p = ME.prod(x.prod), c = ME.costUnit(e, x.prod), m = x.preu - c; return `${p.nom}: el compreu a ${e2(c)} i el veneu a ${e2(x.preu)} → marge de ${e2(m)} per unitat. Sobre el preu: ${pc(m / x.preu * 100)}. Sobre el cost: ${pc(m / c * 100)}.`; },
       pregunta: { p: 'Un producte ens costa 6 € i el venem a 10 €. Quin és el marge sobre el preu de venda?', o: ['40 %', '66,7 %', '4 %', '60 %'], per: '(10 − 6) ÷ 10 = 0,40 → 40 %. Sobre el cost seria 4 ÷ 6 = 66,7 %.' }
     },
     {
@@ -165,6 +165,62 @@
         'El **valor de marca** és un actiu **intangible**: si la botiga és coneguda i té bona reputació, val més. Al joc, el valor de la botiga inclou la notorietat i la reputació.'],
       exemple: (s, e, ME) => { const v = ME.valorEmpresa(s, e); return `El valor de marca de ${e.nom} és de ${f(v.marca)} €, un ${pc(v.marca / v.total * 100)} del valor total de la botiga (${f(v.total)} €).`; },
       pregunta: { p: 'Quin d\'aquests és un actiu intangible de la botiga?', o: ['La reputació de la marca', 'Els diners de la caixa', 'Les prestatgeries noves', 'L\'estoc del magatzem'], per: 'La reputació no es pot tocar, però dona valor: és un actiu intangible.' }
+    },
+    {
+      id: 'autoservei', ra: 'RA6 · CA 6.2', titol: 'Formes de venda: del taulell a l\'autoservei',
+      quan: (s, e) => (e.fase || 1) >= 3,
+      cos: ['En la **venda tradicional** el venedor atén el client des del taulell i li dona el producte. En l\'**autoservei** el client agafa ell mateix el producte de les prestatgeries i paga a la **caixa** de sortida.',
+        'L\'autoservei permet atendre molta més gent amb menys personal i exposar més productes, però el **marxandatge** (com col·loques el producte) i la **reposició** passen a ser clau: si la prestatgeria és buida, no hi ha venedor que ho arregli.'],
+      exemple: (s, e, ME) => { const F = ME.faseDe(e), d = darrer(e); return `${e.nom} ja és un ${F.nom.toLowerCase()} amb ${e.nPrest} prestatgeries i ${F.caixes} caixes.` + (d ? ` L'últim dia van entrar ${d.clients} clients i ${d.perduts.esgotat} van marxar perquè la prestatgeria era buida.` : ''); },
+      pregunta: { p: 'En un supermercat el client agafa ell mateix els productes i paga a la caixa. Quina forma de venda és?', o: ['Autoservei', 'Venda tradicional amb taulell', 'Venda sense establiment', 'Venda a domicili'], per: 'El client se serveix sol i només interactua amb el personal a la caixa: és autoservei.' }
+    },
+    {
+      id: 'marcaPropia', ra: 'RA4 · contingut 4.9', titol: 'Marca pròpia i marca de fabricant',
+      quan: (s, e) => !!(e.millores && e.millores.marca),
+      cos: ['La **marca de fabricant** és la de qui fa el producte (la que es veu als anuncis). La **marca pròpia**, **de distribuïdor** o **marca blanca** és la del comerç: un altre fabricant l\'elabora per encàrrec i el comerç hi posa el seu nom.',
+        'Per al comerç, la marca pròpia dona **més marge** (no paga la publicitat del fabricant), **fidelitza** (només es troba a les seves botigues) i reforça la seva imatge. Per al client, sol ser més barata.'],
+      exemple: (s, e, ME, MD) => { const mp = MD.PROD.filter(p => MD.productes[p].marca), x = mp[0], P = MD.productes[x]; return `${P.nom}: costa ${e2(ME.costUnit(e, x))} i es ven a uns ${e2(P.ref)}, un marge del ${pc((P.ref - ME.costUnit(e, x)) / P.ref * 100)} sobre el preu. A ${e.nom} teniu ${mp.length} productes de marca pròpia al catàleg.`; },
+      pregunta: { p: 'Què és una marca de distribuïdor (marca blanca)?', o: ['La marca del comerç, fabricada per encàrrec per un altre', 'La marca d\'un fabricant que fa molta publicitat', 'Un producte sense cap marca ni envàs', 'Una marca que registra l\'Administració'], per: 'El comerç encarrega el producte a un fabricant i el ven amb el seu propi nom.' }
+    },
+    {
+      id: 'fidelitzacio', ra: 'RA7 · CA 7.7', titol: 'Fidelització i màrqueting relacional',
+      quan: (s, e) => !!(e.millores && e.millores.targeta) && H(e).some(h => h.punts > 0),
+      cos: ['Aconseguir un client nou costa molt més que conservar-ne un. El **màrqueting relacional** busca relacions duradores amb els clients: **targetes de fidelització**, punts, ofertes personalitzades, atenció després de la venda…',
+        'La targeta també és una font d\'**informació**: l\'empresa sap què compra cada client i quan, i ho pot fer servir per al **màrqueting directe** (enviar-li ofertes del que li interessa).'],
+      exemple: (s, e) => { const pts = H(e).reduce((a, h) => a + (h.punts || 0), 0); return `${e.nom} ja ha regalat ${f(pts)} € en punts de la targeta. A canvi, més gent hi torna: la botiga és més atractiva per a tots els tipus de client.`; },
+      pregunta: { p: 'Per què una targeta de punts pot ser rendible encara que «regali» diners?', o: ['Perquè fa tornar els clients i dona informació de les seves compres', 'Perquè permet apujar tots els preus', 'Perquè redueix el lloguer de la botiga', 'Perquè elimina la competència del barri'], per: 'El cost dels punts es compensa amb compres repetides i amb el coneixement dels clients.' }
+    },
+    {
+      id: 'cadenes', ra: 'RA6 · CA 6.7 i 6.9', titol: 'Comerç integrat: cadenes i franquícies',
+      quan: (s, e) => (e.botigues || []).length >= 1 && H(e).some(h => h.cadena && h.cadena.length),
+      cos: ['Una **cadena sucursalista** té moltes botigues amb la mateixa marca i el mateix propietari. Compra en gran quantitat i reparteix les despeses de publicitat i gestió entre totes les botigues.',
+        'En una **franquícia**, cada botiga és d\'un empresari diferent (el **franquiciat**) que paga per fer servir la marca i el sistema de l\'empresa (el **franquiciador**). Totes dues són formes de **comerç integrat** o associat.'],
+      exemple: (s, e) => { const d = H(e).filter(h => h.cadena && h.cadena.length).pop(); if (!d) return ''; const t = d.cadena.reduce((a, b) => a + b.resultat, 0); return `El dia ${d.ronda}, les ${d.cadena.length} botigues de la cadena de ${e.nom} (${d.cadena.map(b => b.nom).join(', ')}) van deixar ${f(t)} € de resultat, després de pagar lloguers i gerents.`; },
+      pregunta: { p: 'Quina diferència hi ha entre una cadena sucursalista i una franquícia?', o: ['A la franquícia cada botiga és d\'un empresari diferent que paga per la marca', 'A la cadena cada botiga és d\'un propietari diferent', 'La franquícia només ven per internet', 'Cap: són dues maneres de dir el mateix'], per: 'A la cadena totes les botigues són de la mateixa empresa; a la franquícia, cada franquiciat és el propietari de la seva.' }
+    },
+    {
+      id: 'b2b', ra: 'RA6 · CA 6.3 i 6.4', titol: 'Majoristes i venda a empreses (B2B)',
+      quan: (s, e) => H(e).some(h => h.b2b),
+      cos: ['El **detallista** ven al consumidor final (venda **B2C**). El **majorista** compra en grans quantitats i ven a altres empreses: botigues, bars, restaurants… (venda **B2B**, d\'empresa a empresa).',
+        'A l\'engròs el **preu per unitat és més baix**, però es venen **volums grans** amb poques despeses de venda. Moltes empreses grans fan totes dues coses alhora.'],
+      exemple: (s, e, ME, MD) => { const x = H(e).filter(h => h.b2b).pop(); if (!x) return ''; const d = x.b2b; return `${e.nom} ven cada dia ${d.volum} unitats de ${MD.productes[d.prod].nom.toLowerCase()} a altres empreses: ${f(d.ingressos)} € de vendes i ${f(d.resultat)} € de marge, a un preu més baix que a la botiga.`; },
+      pregunta: { p: 'Un majorista ven sobretot a…', o: ['Altres empreses (detallistes, restaurants…)', 'El consumidor final', 'Els seus propis treballadors', 'Només a l\'Administració pública'], per: 'El majorista és un intermediari entre el fabricant i el detallista: ven a empreses.' }
+    },
+    {
+      id: 'mitjans', ra: 'RA7 · CA 7.3', titol: 'Publicitat en mitjans massius',
+      quan: (s, e) => (e.fase || 1) >= 5 || (s.log || []).some(l => l.emp === 0 && /televisió/.test(l.concepte || '')),
+      cos: ['Els **mitjans massius** (televisió, ràdio, premsa, grans portals) arriben a moltíssima gent alhora. Són cars en total, però el **cost per persona impactada** pot ser baix.',
+        'Per això els fan servir les empreses que poden aprofitar aquesta audiència: una cadena amb botigues a tota la comarca, sí; una botiga de barri, no, perquè la majoria de gent que veuria l\'anunci no hi aniria mai.'],
+      exemple: (s, e) => `${e.nom} té ${1 + (e.botigues || []).length} botigues: un anunci a la televisió porta clients a totes alhora. La notorietat de la marca ja és de ${f(e.not)}/100.`,
+      pregunta: { p: 'Per què una cadena gran pot rendibilitzar un anunci a la televisió i una botiga de barri no?', o: ['Perquè el cost es reparteix entre molts més clients i botigues', 'Perquè la televisió és gratis per a les empreses grans', 'Perquè la botiga de barri no pot fer publicitat', 'Perquè la televisió només arriba a un barri'], per: 'L\'audiència de la televisió és enorme: només surt a compte si una part gran pot comprar-te.' }
+    },
+    {
+      id: 'escala', ra: 'RA5 · CA 5.2', titol: 'Economies d\'escala',
+      quan: (s, e) => !!(e.millores && e.millores.central),
+      cos: ['Hi ha **economies d\'escala** quan el **cost per unitat baixa** perquè l\'empresa és més gran: compra més quantitat i el proveïdor fa millor preu, i les despeses fixes (magatzem, publicitat, gestió) es reparteixen entre més unitats.',
+        'És un dels motius pels quals les grans empreses poden vendre més barat que el petit comerç, que ha de competir amb altres armes: proximitat, tracte, especialització…'],
+      exemple: (s, e, ME) => { const x = prods(e)[0]; if (!x) return ''; const p = ME.prod(x.prod); return `Amb el magatzem central, ${e.nom} compra ${p.nom.toLowerCase()} a ${e2(ME.costUnit(e, x.prod))} en lloc de ${e2(p.cost)}: es guanya més per cada unitat sense apujar el preu.`; },
+      pregunta: { p: 'Què són les economies d\'escala?', o: ['El cost per unitat baixa quan l\'empresa compra o produeix molt més', 'Els preus pugen quan hi ha més demanda', 'Les despeses fixes desapareixen del tot', 'Vendre a un preu diferent a cada client'], per: 'Com més volum, més es reparteixen els costos i millor preu de compra: el cost unitari baixa.' }
     }
   ];
 
