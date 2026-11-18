@@ -739,7 +739,7 @@ GD.cmRegister([
     personality: T('Imponent, poderós i perillós. Recorda per què existeixen les lleis de la competència.'),
     utility: T('Augmenta els ingressos dels clients recurrents, però el seu poder té límits: no es pot combinar amb un altre llegendari a l\'equip.'),
     passive: { name: T('Barreres d\'entrada'), combat: T('Els rivals no poden canviar de Comerçmon mentre ell és al camp.'), kind: 'gig', v: 7 },
-    capture: { cond: { stage: 7, days: 25, dex: 20 }, text: T('Supera l\'etapa 7, juga 25 dies diferents i captura 20 Comerçmons.') },
+    capture: { cond: { stage: 7, days: 18, dex: 20 }, text: T('Supera l\'etapa 7, juga 18 dies diferents i captura 20 Comerçmons.') },
     forms: [
       { name: 'Monopolion', lvl: 1, desc: T('Un lleó negre amb corona de cases i hotels.'),
         look: { body: 'beast', head: 'lion', ears: 'round', tail: 'tuft', acc: 'board', eyes: 'sharp', mouth: 'fang', pattern: 'belly', mane: 1, crown: 'crown', aura: 2 },
@@ -752,7 +752,7 @@ GD.cmRegister([
     personality: T('Rebel, imprevisible i genial. Fa preguntes que ningú no s\'havia atrevit a fer.'),
     utility: T('Augmenta l\'experiència que guanyes.'),
     passive: { name: T('Canvi de paradigma'), combat: T('Inverteix els avantatges de tipus durant el primer torn.'), kind: 'xp', v: 6 },
-    capture: { cond: { stage: 7, web: 6, days: 25 }, text: T('Supera l\'etapa 7, entrega 6 webs al Taller i juga 25 dies diferents.') },
+    capture: { cond: { stage: 7, web: 5, days: 18 }, text: T('Supera l\'etapa 7, entrega 5 webs al Taller i juga 18 dies diferents.') },
     forms: [
       { name: 'Disruptor', lvl: 1, desc: T('Un drac de llamps amb ulls de circuit.'),
         look: { body: 'dragon', head: 'round', ears: 'pointy', tail: 'bolt', wings: 'bat', acc: 'gear', eyes: 'sharp', mouth: 'fang', pattern: 'stripes', horns: 'big', crown: 'bolt', aura: 2 },
@@ -765,7 +765,7 @@ GD.cmRegister([
     personality: T('Serena, generosa i antiquíssima. Ha vist néixer i morir mil imperis comercials.'),
     utility: T('Augmenta els diners de les missions de la campanya.'),
     passive: { name: T('Sense fronteres'), combat: T('L\'equip no té debilitats de tipus.'), kind: 'chapter', v: 7 },
-    capture: { cond: { stage: 8, days: 30, dex: 25 }, text: T('Completa tota la campanya, juga 30 dies diferents i captura 25 Comerçmons.') },
+    capture: { cond: { ch: '8.1', days: 20, dex: 25 }, text: T('Completa el capítol 8.1, juga 20 dies diferents i captura 25 Comerçmons.') },
     forms: [
       { name: 'Globàlia', lvl: 1, desc: T('Una balena de núvols amb un mapamundi a la pell.'),
         look: { body: 'whale', head: 'whale', eyes: 'small', mouth: 'smile', acc: 'globe', pattern: 'map', crown: 'orbit', aura: 2 },
@@ -778,7 +778,7 @@ GD.cmRegister([
     personality: T('Inspiradora, exigent i justa. Lidera amb l\'exemple.'),
     utility: T('Fa créixer la reputació que guanyes.'),
     passive: { name: T('Quota de mercat'), combat: T('Cada aliat guanya un 5 % d\'atac per cada rival derrotat.'), kind: 'rep', v: 10 },
-    capture: { cond: { stage: 8, proj: 6, days: 30 }, text: T('Completa tota la campanya, aconsegueix 6 projectes aprovats i juga 30 dies diferents.') },
+    capture: { cond: { ch: '8.1', proj: 3, days: 20 }, text: T('Completa el capítol 8.1, aconsegueix 3 projectes aprovats i juga 20 dies diferents.') },
     forms: [
       { name: 'Líderax', lvl: 1, desc: T('Una àguila de llum amb corona de llorer.'),
         look: { body: 'bird', head: 'eagle', ears: 'crest', wings: 'feather', acc: 'trophy', eyes: 'sharp', mouth: 'beak', pattern: 'belly', crown: 'laurel', aura: 2 },

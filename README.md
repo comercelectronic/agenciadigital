@@ -132,6 +132,14 @@ Pestanya 📋 **Projectes**: 6 lliuraments de feina real, tots fets a **Canva** 
 - **Professorat:** al panell apareix «Projectes per revisar». Cada revisió mostra l'enllaç, el resum, els criteris d'avaluació (els que no es marquen s'afegeixen als comentaris), comentaris i nota opcional de 0 a 10. Es pot aprovar o demanar canvis; l'alumne ho veu al joc i ho pot tornar a entregar. Els estats i les notes surten al CSV.
 - Contingut a `js/data-projects.js`; revisions a Netlify Blobs (`joc-revisions`).
 
+## Comerçmons obligatoris
+
+Els Comerçmons i les agències rivals formen part de la campanya i s'han de fer gradualment:
+
+- **Per començar una etapa** cal haver guanyat les agències rivals de les etapes anteriors i haver capturat tots els Comerçmons que ja confien en tu (condició complerta) i que viuen en zones obertes.
+- **Per jugar el capítol final (8.2)** calen les 8 agències rivals i els 37 Comerçmons. Els llegendaris Globàlia i Líderax es poden capturar en acabar el capítol 8.1.
+- La pestanya Campanya i l'objectiu del món diuen exactament què falta (`cmPendents` a `js/game.js`; les zones s'obren segons `GD.cmZoneRules` a `js/data-mon-world.js`).
+
 ## Llibreta de clients
 
 `js/data-llibreta.js` recull, per a cada client, el que explica a les converses (el negoci, les dades de l'entrevista i les xifres) i el que cal per a cada projecte i web. Cada part s'apunta quan s'acaba el capítol corresponent o quan s'obre l'encàrrec de la web. Es consulta des de Campanya, Projectes, cada encàrrec i la llibreta del món (tecla L).

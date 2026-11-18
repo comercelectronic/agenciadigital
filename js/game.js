@@ -482,6 +482,7 @@
     if (prevStage && !prevStage.chapters.every(c => S.done[c])) return 'locked';
     if (S.level < st.minLevel && idx === 0) return 'level';
     if (idx > 0 && !S.done[st.chapters[idx - 1]]) return 'locked';
+    if (cmPendents(chId).length) return 'cm';
     if (projGate(chId)) return 'proj';
     if (S.level < st.minLevel) return 'level';
     return 'open';
@@ -499,6 +500,11 @@
           <span class="nm-txt"><small>${T("Següent missió · Capítol")} ${next}</small><b>${txt(GD.chapters[next].title)}</b><i>${txt(GD.chapters[next].blurb || '')}</i></span>
           <span class="nm-go">▶</span></button>` : ''}
       ${!next && !S.ending ? (() => {
+        const cc = Object.keys(GD.chapters).find(c => chapterState(c) === 'cm');
+        if (cc) { const f = cmPendents(cc); return `<div class="card cm-gate"><h3>🐾 ${cc === FINAL_CH ? T('Per jugar el capítol final') : T('Per començar l\'etapa {0}', [GD.chapters[cc].stage])}</h3>
+          <p class="small">${T('Les agències rivals i els Comerçmons formen part de la campanya: no pots avançar deixant-los enrere.')}</p>
+          <ul class="cm-cond">${f.slice(0, 12).map(x => `<li>${x.kind === 'gym' ? '🏅' : x.kind === 'cmLock' ? '🔒' : '🎯'} ${esc(x.text)}</li>`).join('')}${f.length > 12 ? `<li>${T('… i {0} més', [f.length - 12])}</li>` : ''}</ul>
+          <div class="row-btns"><button class="btn primary" data-tab="comercdex">${T('🐾 Obrir la Comerçdex')}</button><button class="btn" data-act="world">${T('🗺️ Sortir al món')}</button></div></div>`; }
         const gc = Object.keys(GD.chapters).find(c => chapterState(c) === 'proj'), gp = gc && projGate(gc);
         if (!gp) return `<div class="card warn">${levelHint()}</div>`;
         const ps = projStatus(gp);
@@ -516,7 +522,7 @@
             <header><span class="st-num">${String(st.id).padStart(2, '0')}</span><div><h3>${txt(st.title)}</h3><p>${esc(st.sub)} ${T("· Nivells")} ${st.levels}</p></div><span class="st-prog">${done}/${st.chapters.length}</span></header>
             ${lock ? T('<p class="lockmsg">🔒 Completa l\'etapa anterior per desbloquejar-la.</p>') : `<ol>${st.chapters.map(c => {
               const s = chapterState(c);
-              return `<li class="ch ${s}"><button ${s === 'open' || s === 'done' ? `data-ch="${c}"` : s === 'proj' ? `data-proj="${projGate(c).id}"` : 'disabled'}><span class="ch-id">${c}</span><span class="ch-t">${GD.chapters[c].temari ? '<em class="tm-badge">📘 ' + T('Temari') + '</em> ' : ''}${txt(GD.chapters[c].title)}</span><span class="ch-s">${s === 'done' ? '✔' : s === 'open' ? '▶' : s === 'proj' ? '📋' : s === 'level' ? T("Nv {0}", [st.minLevel]) : '🔒'}</span></button></li>`;
+              return `<li class="ch ${s}"><button ${s === 'open' || s === 'done' ? `data-ch="${c}"` : s === 'proj' ? `data-proj="${projGate(c).id}"` : s === 'cm' ? 'data-tab="comercdex"' : 'disabled'}><span class="ch-id">${c}</span><span class="ch-t">${GD.chapters[c].temari ? '<em class="tm-badge">📘 ' + T('Temari') + '</em> ' : ''}${txt(GD.chapters[c].title)}</span><span class="ch-s">${s === 'done' ? '✔' : s === 'open' ? '▶' : s === 'proj' ? '📋' : s === 'cm' ? '🐾' : s === 'level' ? T("Nv {0}", [st.minLevel]) : '🔒'}</span></button></li>`;
             }).join('')}</ol>`}
           </section>`;
         }).join('')}
@@ -809,6 +815,25 @@
   const passedLessons = () => Object.keys(S.lessons || {}).filter(lessonPassed);
   const stageDone = (n) => { const st = GD.stages.find(s => s.id === n); return !!st && st.chapters.every(c => S.done[c]); };
 
+  // Comerçmons obligatoris i graduals: per començar una etapa cal haver guanyat les agències rivals de les etapes
+  // anteriors i haver capturat tots els Comerçmons que ja confien en tu. Per jugar el capítol final, totes les
+  // agències i tots els Comerçmons.
+  const FINAL_CH = (() => { const st = GD.stages[GD.stages.length - 1]; return st.chapters[st.chapters.length - 1]; })();
+  function cmPendents(chId) {
+    const ch = GD.chapters[chId]; if (!ch) return [];
+    const st = GD.stages.find(x => x.id === ch.stage), primer = st.chapters[0] === chId, final = chId === FINAL_CH;
+    if (!(primer && ch.stage > 1) && !final) return [];
+    const out = [], B = cmBadges();
+    if (!cmState().starter) out.push({ kind: 'starter', text: T('Tria el teu primer Comerçmon a la 🐾 Comerçdex.') });
+    GD.cmGyms.filter(g => final || g.stage < ch.stage).forEach(g => { if (!B[g.id]) out.push({ kind: 'gym', text: T('Guanya l\'agència rival {0} {1} ({2}).', [g.i, g.n, GD.cmZones[g.map] ? GD.cmZones[g.map].n : '']) }); });
+    GD.cmSpecies.forEach(sp => {
+      if (cmOwned(sp.id)) return;
+      const obert = GD.cmZonesOf(sp.id).some(z => GD.cmZoneOpen(z, (c) => !!S.done[c], stageDone));
+      if (obert && (cmCatchable(sp.id) || (sp.capture.cond.starter && stageDone(2)))) out.push({ kind: 'cm', text: T('Captura {0}: ja confia en tu. Viu a {1}.', [sp.forms[0].name, zoneNames(sp.id)]) });
+      else if (final) out.push({ kind: 'cmLock', text: T('Captura {0}: {1}', [sp.forms[0].name, txt(sp.capture.text)]) });
+    });
+    return out;
+  }
   // Condicions de captura i d'evolució: totes depenen del progrés real (no de la sort)
   function cmCond(cond) {
     const c = cond || {}, parts = [];
@@ -2724,7 +2749,7 @@
     S.cur = S.cur && GD.chapters[S.cur.id] ? S.cur : null;
     WORLD.open({
       S: () => S, save, toast, txt, esc, eur, applyFx, rank, bankrupt, payStudy, startChapter, projectScreen,
-      hubScreen: (tab) => hubScreen(tab), chapterState, projGate, projStatus,
+      hubScreen: (tab) => hubScreen(tab), chapterState, projGate, projStatus, cmPendents,
       speed: () => settings.speed, hudRefresh: () => WORLD.refresh(),
       cmReady: () => !!cmState().starter, cmVisible, cmCatchable, cmWildForm, cmWild, cmTrainer, cmTrainerFresh, cmGym,
       nbClients, nbNew, clientNotebook, portrait: (who) => ART.portrait(who, 'n')

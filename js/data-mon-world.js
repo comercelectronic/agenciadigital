@@ -27,6 +27,18 @@ GD.cmHabitat = {
   exportas: ['port'], globalia: ['port']
 };
 GD.cmZonesOf = (id) => GD.cmHabitat[id] || [];
+// Quan s'obre cada zona (ho fan servir el món i la campanya): done(capítol) i stageDone(etapa)
+GD.cmZoneRules = {
+  devesa: () => true,
+  vic: () => true,
+  tona: (done, stageDone) => stageDone(1) || done('1.5'),
+  gurb: (done) => done('2.1'),
+  fira: (done, stageDone) => stageDone(2),
+  montseny: (done, stageDone) => stageDone(2),
+  barcelona: (done, stageDone) => stageDone(4),
+  port: (done, stageDone) => stageDone(6)
+};
+GD.cmZoneOpen = (z, done, stageDone) => !!(GD.cmZoneRules[z] && GD.cmZoneRules[z](done, stageDone));
 GD.cmSpeciesIn = (zone) => GD.cmSpecies.filter(sp => GD.cmZonesOf(sp.id).includes(zone));
 
 // Nivell d'un Comerçmon salvatge: segueix el teu equip però no baixa del mínim de cada raresa

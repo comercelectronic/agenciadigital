@@ -691,15 +691,7 @@
   const st = () => S.world;
   const done = (c) => !!S.done[c];
   const stageDone = (n) => GD.stages[n - 1].chapters.every(done);
-  const unlock = {
-    tona: () => stageDone(1) || done('1.5'),
-    gurb: () => done('2.1'),
-    fira: () => stageDone(2),
-    devesa: () => true,
-    montseny: () => stageDone(2),
-    barcelona: () => stageDone(4),
-    port: () => stageDone(6)
-  };
+  const unlock = Object.fromEntries(Object.keys(GD.cmZoneRules).map(z => [z, () => GD.cmZoneOpen(z, done, stageDone)]));
   const LOCKED = () => ({ fira: T_('El recinte firal està tancat. Obrirà quan arribi la fira (etapa 3).'), port: T_('El port encara no és per a tu: supera l\'etapa 6 per obrir-te pas a l\'internacional.') });
 
   // Pistes que es poden descobrir explorant: activen la mateixa informació que les preguntes dels capítols
@@ -804,6 +796,8 @@
       const p = API.projGate(gc), h = HOME[p.who] || ['oficina', 7, 4, 'down'];
       return { kind: 'proj', id: p.id, who: p.who, map: h[0], x: h[1], y: h[2], status: API.projStatus(p), text: T_('Projecte real: {0}', [API.txt(p.title)]) };
     }
+    const cc = ids.find(c => API.chapterState(c) === 'cm');
+    if (cc) { const f = API.cmPendents(cc)[0]; return { kind: 'cm', id: cc, text: T_('Comerçmons: {0}', [f ? f.text : '']) }; }
     const lv = ids.find(c => API.chapterState(c) === 'level');
     if (lv) return { kind: 'level', id: lv, text: T_('Arriba al nivell {0} per continuar: fes projectes reals i ajuda els botiguers de Vic.', [GD.stages[GD.chapters[lv].stage - 1].minLevel]) };
     return null;
