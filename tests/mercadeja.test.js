@@ -25,15 +25,13 @@ const ME = require('../netlify/mercadeja-motor/engine.js');
 const crida = async (body) => { const r = await handler({ httpMethod: 'POST', body: JSON.stringify(body) }); return { st: r.statusCode, ...JSON.parse(r.body) }; };
 
 // Juga un repte com el joc (registrant les accions) i en fa el codi de resultat
-function jugaRepte(rep, nom, rondes) {
+function jugaRepte(rep, nom, dies) {
   const s = ME.crearPartida(ME.cfgRepte(rep, { nom, membres: ['A'] })); s.reg = [];
   const fa = (a) => { const x = ME.accio(s, a); if (!x.repetida && (x.ok || x.muta)) { const c = Object.assign({}, a); delete c.id; s.reg.push(c); } return x; };
-  const fia = (k, emp) => { s.reg.push({ ia: k, emp: emp == null ? null : emp }); return ME.aplica(s, { ia: k, emp }); };
-  fia('I');
-  while (s.fase !== 'final' && !(s.fase === 'resultats' && s.ronda >= rondes)) {
-    const e = s.empreses[s.torn];
-    if (s.fase === 'decisions') { if (e.humana) { fa({ tipus: 'campanya', emp: e.id, camp: 'xarxes' }); fa({ tipus: 'confirmar', emp: e.id }); } else fia('D', e.id); }
-    else if (s.fase === 'moviment') { if (!s.pendent) fa({ tipus: 'tirar', emp: e.id }); else if (e.humana) fa({ tipus: 'passar', emp: e.id }); else fia('R', e.id); }
+  s.reg.push({ ia: 'I' }); ME.aplica(s, { ia: 'I' });
+  while (s.fase !== 'final' && !(s.fase === 'resultats' && s.ronda >= dies)) {
+    if (s.fase === 'planificacio') { fa({ tipus: 'promo', promo: 'xarxes' }); fa({ tipus: 'comanda', prod: 'fruita', caixes: 3 }); fa({ tipus: 'obrir' }); }
+    else if (s.fase === 'botiga') { const st = Object.assign({}, s.dia.estocInici); fa({ tipus: 'tancar', res: s.dia.clients.map(c => { if (c.motiu) return [c.id, 0, c.motiu]; const v = Math.min(c.qty, st[c.prod] || 0); st[c.prod] -= v; return [c.id, v, v ? 0 : 3]; }) }); }
     else fa({ tipus: 'continuar' });
   }
   const p = { v: 1, cfg: s.config, reg: ME.compacta(s.reg), refl: { 0: 'Reflexió de prova' } };
@@ -58,12 +56,12 @@ function jugaRepte(rep, nom, rondes) {
   r = await crida({ action: 'enviar', repte: rep.codi, codi: 'MJ1Z' + zlib.deflateRawSync(Buffer.from(JSON.stringify(fals))).toString('base64url') });
   const v = (await crida({ action: 'ranking', repte: rep.codi })).files.find(x => x.equip === 'Equip Alfa');
   assert.ok(v.valor < 400000, 'el capital manipulat no entra al rànquing');
-  const trampa = JSON.parse(JSON.stringify(b.p)); trampa.reg.splice(5, 0, ['l', 0, 999999], ['k', 0], ['k', 0], ['k', 0], ['k', 0]);
+  const trampa = JSON.parse(JSON.stringify(b.p)); const kt = trampa.reg.findIndex(x => x[0] === 't'); trampa.reg[kt][1] = trampa.reg[kt][1].map(x => [x[0], 99, 0]);
   r = await crida({ action: 'enviar', repte: rep.codi, codi: 'MJ1Z' + zlib.deflateRawSync(Buffer.from(JSON.stringify(trampa))).toString('base64url') });
-  assert.strictEqual(r.verificat, false, 'les accions impossibles es detecten');
+  assert.ok(r.verificat === false || r.desat === false, 'uns resultats inventats no entren al rànquing');
 
   // Codi d'un altre repte
-  const altre = ME.llegirRepte(ME.codiRepte('moda', 4, 'mitja', 5));
+  const altre = ME.llegirRepte(ME.codiRepte('alimentacio', 4, 'mitja', 5));
   r = await crida({ action: 'enviar', repte: altre.codi, codi: a.codi }); assert.strictEqual(r.st, 400);
   r = await crida({ action: 'enviar', repte: rep.codi, codi: 'MJ1Zbrossa' }); assert.strictEqual(r.st, 400);
 
