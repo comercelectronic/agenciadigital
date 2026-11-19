@@ -24,7 +24,7 @@ const crida = async (body) => { const r = await handler({ httpMethod: 'POST', bo
   const tok = r.token;
   assert.strictEqual((await crida({ action: 'registre', usuari: 'pau.m', contrasenya: 'altra12', nom: 'X', classe: 'A' })).st, 409);
   assert.strictEqual((await crida({ action: 'entrar', usuari: 'pau.m', contrasenya: 'no' })).st, 401);
-  const partida = { v: 1, config: { nom: 'Pau', llavor: 5 }, nivell: 3, avisos: 1, llicons: { fefo: { ok: true }, codis: { ok: false } },
+  const partida = { v: 1, config: { nom: 'Pau', llavor: 5, magatzem: 'fred' }, nivell: 3, avisos: 1, llicons: { fefo: { ok: true }, codis: { ok: false } },
     historial: [{ torn: 1, nivell: 1, nota: 92, productivitat: 90, qualitat: 95, seguretat: 100, veredicte: 'bo', errors: [], greus: [] },
       { torn: 2, nivell: 1, nota: 88, productivitat: 85, qualitat: 90, seguretat: 100, veredicte: 'bo', canvi: 'ascens', errors: [['fefo', 'x']], greus: [] },
       { torn: 3, nivell: 2, nota: 40, productivitat: 70, qualitat: 30, seguretat: 20, veredicte: 'bronca', errors: [['fefo', 'x'], ['picking', 'y']], greus: [['seguretat', 'z']] }] };
@@ -34,7 +34,7 @@ const crida = async (body) => { const r = await handler({ httpMethod: 'POST', bo
   assert.strictEqual((await crida({ action: 'alumnes', password: 'no' })).st, 401);
   r = await crida({ action: 'alumnes', password: 'secret', classe: 'CM10-2A' });
   const p = r.alumnes[0].partida;
-  assert.strictEqual(p.nivell, 3); assert.strictEqual(p.torns, 3); assert.strictEqual(p.notaMitja, 73); assert.strictEqual(p.broncas, 1); assert.strictEqual(p.ascensos, 1);
+  assert.strictEqual(p.nivell, 3); assert.strictEqual(p.magatzem, 'fred'); assert.strictEqual(p.torns, 3); assert.strictEqual(p.notaMitja, 73); assert.strictEqual(p.broncas, 1); assert.strictEqual(p.ascensos, 1);
   assert.deepStrictEqual(p.errorsFreq[0], ['fefo', 2]); assert.strictEqual(p.llEnc, 1); assert.ok(!('historial' in p) || p.historial === undefined);
   r = await crida({ action: 'alumne', password: 'secret', usuari: 'pau.m' }); assert.strictEqual(r.resum.historial.length, 3);
   // Partida nova: l'anterior queda a l'historial de partides

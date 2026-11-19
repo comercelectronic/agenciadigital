@@ -32,12 +32,13 @@ const NIVELLS = ['Mosso de magatzem', 'Preparador de comandes', 'Carretoner', 'C
 const num = (v, min, max) => { const n = Math.round(+v); return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : min; };
 
 // Resum de la partida a partir de l'historial de torns (no es fia de cap resum que enviï el joc)
+const MAGATZEMS = ['aliment', 'fred', 'cross', 'ecom', 'recanvis'];
 function resum(p) {
   const h = (Array.isArray(p.historial) ? p.historial : []).slice(-400).map(x => ({ torn: num(x.torn, 0, 9999), nivell: num(x.nivell, 1, 5), nota: num(x.nota, 0, 100), productivitat: num(x.productivitat, 0, 100), qualitat: num(x.qualitat, 0, 100), seguretat: num(x.seguretat, 0, 100), veredicte: ['bo', 'regular', 'bronca'].includes(x.veredicte) ? x.veredicte : 'regular', canvi: ['ascens', 'acomiadament'].includes(x.canvi) ? x.canvi : null,
     errors: (Array.isArray(x.errors) ? x.errors : []).concat(Array.isArray(x.greus) ? x.greus : []).slice(0, 40).map(e => String((e || [])[0] || '').slice(0, 20)) }));
   const temes = {}; h.forEach(x => x.errors.forEach(t => { temes[t] = (temes[t] || 0) + 1; }));
   const ll = p.llicons && typeof p.llicons === 'object' ? Object.values(p.llicons) : [];
-  return { nom: String((p.config || {}).nom || '').slice(0, 30), nivell: num(p.nivell, 1, 5), nivellNom: NIVELLS[num(p.nivell, 1, 5) - 1], torns: h.length, avisos: num(p.avisos, 0, 3),
+  return { nom: String((p.config || {}).nom || '').slice(0, 30), magatzem: MAGATZEMS.includes((p.config || {}).magatzem) ? p.config.magatzem : 'aliment', nivell: num(p.nivell, 1, 5), nivellNom: NIVELLS[num(p.nivell, 1, 5) - 1], torns: h.length, avisos: num(p.avisos, 0, 3),
     notaMitja: h.length ? Math.round(h.reduce((a, x) => a + x.nota, 0) / h.length) : null, darreraNota: h.length ? h[h.length - 1].nota : null,
     broncas: h.filter(x => x.veredicte === 'bronca').length, ascensos: h.filter(x => x.canvi === 'ascens').length, acomiadaments: h.filter(x => x.canvi === 'acomiadament').length,
     acomiadat: !!(p.final && p.final.tipus === 'acomiadament'), errorsFreq: Object.entries(temes).sort((a, b) => b[1] - a[1]).slice(0, 4), llResp: ll.length, llEnc: ll.filter(x => x && x.ok).length,
