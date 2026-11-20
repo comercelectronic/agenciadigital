@@ -5,6 +5,8 @@
 //   alumnes { password, classe? }         → llista d'alumnes amb el resum (professorat, TEACHER_PASSWORD)
 //   alumne { password, usuari }           → historial de torns de l'alumne
 //   alumne-contrasenya { password, usuari, nova }
+//   ranquing { token }                    → rànquing del grup de l'alumne (si el professorat l'ha activat)
+//   grup-config { password, classe, ranquing } · ranquing-docent { password, classe }
 // Palet es juga en temps real: el servidor no pot tornar a jugar la partida, però en comprova la forma i en recalcula el resum.
 // Netlify Blobs: magatzem 'palet-comptes', claus "u/<usuari>" (compte) i "p/<usuari>" (partida).
 const crypto = require('crypto');
@@ -60,6 +62,28 @@ function resum(p) {
     historial: h.slice(-60).map(({ errors, ...x }) => Object.assign(x, { errors: errors.length })) };
 }
 
+// Rànquing de classe: puntuació combinada (nivell, nota mitjana, continguts assolits i taller) i punts de la setmana
+const FORA = ['4.3', '4.6', '5.5', '8.3'], SETMANA = 7 * 24 * 3600 * 1000;
+function assolits(cont) {
+  return Object.entries(cont || {}).filter(([k, x]) => !FORA.includes(k) && x && ((x.fets >= 3 && x.ok / x.fets >= 0.75) || (x.fets >= 1 && x.taller >= 65 && x.ok / x.fets >= 0.5))).length;
+}
+function punts(sv) {
+  const r = sv.resum || {}, p = sv.partida || {};
+  const taller = p.taller && typeof p.taller === 'object' ? Object.values(p.taller).slice(0, 10).reduce((a, n) => a + num(n, 0, 100), 0) : 0;
+  const total = (r.torns ? num(r.nivell, 1, 5) * 100 + 2 * (r.notaMitja || 0) : 0) + 10 * assolits(r.cont) + Math.min(40, Math.round(taller / 10));
+  const fa = Date.now() - SETMANA, setmana = (sv.tornsAt || []).filter(x => x.at >= fa).reduce((a, x) => a + num(x.nota, 0, 100), 0);
+  return { total, setmana, assolits: assolits(r.cont) };
+}
+const nomCurt = (n) => { const w = String(n || '').trim().split(/\s+/); return (w[0] || '?') + (w[1] ? ' ' + w[1][0].toUpperCase() + '.' : ''); };
+async function llistaGrup(accs, classe, getSave) {
+  const { blobs } = await accs.list({ prefix: 'u/' });
+  return (await Promise.all(blobs.map(async b => {
+    const a = await accs.get(b.key, { type: 'json' }).catch(() => null); if (!a || a.classe !== classe) return null;
+    const sv = await getSave(a.usuari); if (!sv || !sv.resum || !sv.resum.torns) return null;
+    return Object.assign({ usuari: a.usuari, nom: a.nom, nivellNom: sv.resum.nivellNom, torns: sv.resum.torns, notaMitja: sv.resum.notaMitja }, punts(sv));
+  }))).filter(Boolean);
+}
+
 exports.handler = async function (event) {
   if (event.httpMethod !== 'POST') return { statusCode: 405, body: 'Method Not Allowed' };
   if ((event.body || '').length > MAX) return json(413, { error: 'La partida és massa gran.' });
@@ -92,9 +116,15 @@ exports.handler = async function (event) {
     const sv = await getSave(usuari);
     return json(200, { token: makeToken(acc), compte: publicAcc(acc), partida: sv ? sv.partida : null, at: sv ? sv.at : null });
   }
-  if (action === 'carregar' || action === 'desar') {
+  if (action === 'carregar' || action === 'desar' || action === 'ranquing') {
     const t = readToken(body.token), acc = t ? await getAcc(t.u) : null;
     if (!acc || (acc.tv || 0) !== t.v) return json(401, { error: 'La sessió ha caducat. Torna a entrar.', sessio: true });
+    if (action === 'ranquing') {
+      const cfg = await accs.get('g/' + acc.classe, { type: 'json' }).catch(() => null);
+      if (!cfg || !cfg.ranquing) return json(200, { actiu: false, classe: acc.classe });
+      const ll = await llistaGrup(accs, acc.classe, getSave);
+      return json(200, { actiu: true, classe: acc.classe, alumnes: ll.map(x => ({ nom: nomCurt(x.nom), jo: x.usuari === acc.usuari, nivellNom: x.nivellNom, torns: x.torns, total: x.total, setmana: x.setmana, assolits: x.assolits })) });
+    }
     if (action === 'carregar') { const sv = await getSave(acc.usuari); return json(200, { compte: publicAcc(acc), partida: sv ? sv.partida : null, at: sv ? sv.at : null }); }
     const p = body.partida;
     if (!p || typeof p !== 'object' || p.v !== 1 || !Array.isArray(p.historial) || !p.config) return json(400, { error: 'Partida no vàlida.' });
@@ -103,13 +133,27 @@ exports.handler = async function (event) {
     const partides = (ant && ant.partides) || [];
     if (ant && ant.partida && ant.partida.config && ant.partida.config.llavor !== p.config.llavor && ant.resum && ant.resum.torns) partides.unshift(Object.assign({ at: ant.at }, ant.resum, { historial: undefined }));
     const at = Date.now();
-    await accs.setJSON('p/' + acc.usuari, { partida: p, at, resum: resum(p), partides: partides.slice(0, 10) });
+    // Hora de cada torn nou (per al rànquing de la setmana): només els torns que no hi eren
+    const mateixa = ant && ant.partida && ant.partida.config && ant.partida.config.llavor === p.config.llavor;
+    const tornsAt = mateixa ? (ant.tornsAt || []) : [], vist = new Set(tornsAt.map(x => x.torn));
+    p.historial.slice(-400).forEach(x => { const t = num(x && x.torn, 0, 9999); if (t && !vist.has(t)) { vist.add(t); tornsAt.push({ torn: t, at, nota: num(x.nota, 0, 100) }); } });
+    await accs.setJSON('p/' + acc.usuari, { partida: p, at, resum: resum(p), partides: partides.slice(0, 10), tornsAt: tornsAt.slice(-400) });
     if (!acc.darrer || at - new Date(acc.darrer).getTime() > 10 * 60 * 1000) { acc.darrer = now; await accs.setJSON('u/' + acc.usuari, acc); }
     return json(200, { ok: true, at });
   }
   // Professorat
   if (!teacherPassword()) return json(500, { error: 'El panell del professorat no està configurat (falta TEACHER_PASSWORD).' });
   if (body.password !== teacherPassword()) return json(401, { error: 'Contrasenya incorrecta.' });
+  if (action === 'grup-config') {
+    const classe = normClass(body.classe); if (!CLASS_RE.test(classe)) return json(400, { error: 'Grup no vàlid.' });
+    const cfg = Object.assign({}, await accs.get('g/' + classe, { type: 'json' }).catch(() => null), { ranquing: !!body.ranquing, at: now });
+    await accs.setJSON('g/' + classe, cfg); return json(200, { ok: true, classe, config: cfg });
+  }
+  if (action === 'ranquing-docent') {
+    const classe = normClass(body.classe); if (!CLASS_RE.test(classe)) return json(400, { error: 'Grup no vàlid.' });
+    const cfg = await accs.get('g/' + classe, { type: 'json' }).catch(() => null);
+    return json(200, { ok: true, classe, actiu: !!(cfg && cfg.ranquing), alumnes: await llistaGrup(accs, classe, getSave) });
+  }
   if (action === 'alumnes') {
     const filtre = body.classe ? normClass(body.classe) : '';
     const { blobs } = await accs.list({ prefix: 'u/' });
@@ -118,7 +162,9 @@ exports.handler = async function (event) {
       const sv = await getSave(a.usuari);
       return Object.assign(publicAcc(a), { partida: sv && sv.resum ? Object.assign({ at: sv.at }, sv.resum, { historial: undefined }) : null, partides: sv ? 1 + (sv.partides || []).length : 0 });
     }))).filter(Boolean).sort((a, b) => a.classe.localeCompare(b.classe) || a.nom.localeCompare(b.nom));
-    return json(200, { ok: true, alumnes: llista, grups: [...new Set(llista.map(a => a.classe))].sort() });
+    const grups = [...new Set(llista.map(a => a.classe))].sort();
+    const configs = {}; await Promise.all(grups.map(async g => { const c = await accs.get('g/' + g, { type: 'json' }).catch(() => null); configs[g] = { ranquing: !!(c && c.ranquing) }; }));
+    return json(200, { ok: true, alumnes: llista, grups, configs });
   }
   const usuari = normUser(body.usuari), acc = USER_RE.test(usuari) ? await getAcc(usuari) : null;
   if (!acc) return json(404, { error: 'No existeix aquest usuari.' });
