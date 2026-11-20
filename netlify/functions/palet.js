@@ -33,6 +33,20 @@ const num = (v, min, max) => { const n = Math.round(+v); return Number.isFinite(
 
 // Resum de la partida a partir de l'historial de torns (no es fia de cap resum que enviï el joc)
 const MAGATZEMS = ['aliment', 'fred', 'cross', 'ecom', 'recanvis'];
+// Continguts del temari (1.1 … 8.4) treballats: a partir de cada torn (cont), les lliçons i el taller d'habilitat
+const COD = /^[1-8]\.[1-9]$/;
+const LLICO_CONT = { recepcio: ['2.1', '2.2', '2.3'], codis: ['1.5'], criteris: ['1.6'], fefo: ['4.2'], picking: ['5.1'], paletitzar: ['5.4'], rutes: ['5.3'], carrega: ['5.6'], seguretat: ['7.1'], transpalet: ['6.1'], fred: ['3.2'], perillosos: ['3.4'], estanteries: ['1.3'], compacta: ['1.3'], cross: ['1.1'], ecom: ['5.2', '5.4'], fredtemps: ['3.2'], inventari: ['4.1', '4.4'] };
+const TALLER_CONT = { manual: ['7.2', '3.3'], extraccio: ['7.2', '3.3'], transpalet: ['6.1'], toro: ['6.2', '6.3', '6.4'] };
+function cobertura(p) {
+  const out = {}, o = (k) => (out[k] = out[k] || { fets: 0, ok: 0, teoria: null, taller: null });
+  (Array.isArray(p.historial) ? p.historial : []).slice(-400).forEach(x => {
+    const c = x && x.cont; if (!c || typeof c !== 'object') return;
+    Object.keys(c).slice(0, 60).forEach(k => { if (!COD.test(k)) return; const e = o(k); e.fets++; if (c[k] === 'ok') e.ok++; });
+  });
+  if (p.llicons && typeof p.llicons === 'object') Object.keys(p.llicons).slice(0, 60).forEach(id => (LLICO_CONT[id] || []).forEach(k => { const e = o(k); e.teoria = e.teoria || !!(p.llicons[id] && p.llicons[id].ok); }));
+  if (p.taller && typeof p.taller === 'object') Object.keys(p.taller).slice(0, 20).forEach(id => (TALLER_CONT[id] || []).forEach(k => { const e = o(k); e.taller = Math.max(e.taller || 0, num(p.taller[id], 0, 100)); }));
+  return out;
+}
 function resum(p) {
   const h = (Array.isArray(p.historial) ? p.historial : []).slice(-400).map(x => ({ torn: num(x.torn, 0, 9999), nivell: num(x.nivell, 1, 5), nota: num(x.nota, 0, 100), productivitat: num(x.productivitat, 0, 100), qualitat: num(x.qualitat, 0, 100), seguretat: num(x.seguretat, 0, 100), veredicte: ['bo', 'regular', 'bronca'].includes(x.veredicte) ? x.veredicte : 'regular', canvi: ['ascens', 'acomiadament'].includes(x.canvi) ? x.canvi : null,
     errors: (Array.isArray(x.errors) ? x.errors : []).concat(Array.isArray(x.greus) ? x.greus : []).slice(0, 40).map(e => String((e || [])[0] || '').slice(0, 20)) }));
@@ -42,6 +56,7 @@ function resum(p) {
     notaMitja: h.length ? Math.round(h.reduce((a, x) => a + x.nota, 0) / h.length) : null, darreraNota: h.length ? h[h.length - 1].nota : null,
     broncas: h.filter(x => x.veredicte === 'bronca').length, ascensos: h.filter(x => x.canvi === 'ascens').length, acomiadaments: h.filter(x => x.canvi === 'acomiadament').length,
     acomiadat: !!(p.final && p.final.tipus === 'acomiadament'), errorsFreq: Object.entries(temes).sort((a, b) => b[1] - a[1]).slice(0, 4), llResp: ll.length, llEnc: ll.filter(x => x && x.ok).length,
+    cont: cobertura(p),
     historial: h.slice(-60).map(({ errors, ...x }) => Object.assign(x, { errors: errors.length })) };
 }
 
