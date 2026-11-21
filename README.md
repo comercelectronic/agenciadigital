@@ -150,7 +150,7 @@ Les opcions de les decisions dels capítols i de les preguntes de «tria'n…» 
 
 ## Dates d'entrega per grup
 
-`js/data-entregues.js` té el calendari de cada grup (CM10-2B els dimarts, CM10-2A els dimecres, CM20-2 els dijous): una data per projecte i per web del Taller, fins a les 23:59 d'aquell dia. Per canviar una data o afegir un grup, edita aquest fitxer.
+`js/data-entregues.js` té el calendari de cada grup (calendari intensiu de dues entregues per setmana fins a finals de gener: CM10-2B i CM10-2A amb les mateixes dates, CM20-2 els dijous): una data per projecte i per web del Taller, fins a les 23:59 d'aquell dia. Per canviar una data o afegir un grup, edita aquest fitxer.
 
 - L'alumne veu les dates a Campanya, Projectes i Taller, amb avisos quan falten pocs dies.
 - Si passa la data sense entrega, el client reclama el 20 % del pagament màxim (com a mínim 100 €), baixa la confiança amb el client (−2) i la reputació (−2), i surt un avís del client enfadat. Si l'entrega més tard, només cobra el 50 % del que toca per la nota. Les xifres són a `GD.ENTREGA`.

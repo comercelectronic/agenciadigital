@@ -2,8 +2,9 @@
    Cada data és el darrer dia per entregar (fins a les 23:59 d'aquell dia, hora del dispositiu).
    Les claus són els identificadors de les tasques: projectes (GD.projects) i webs del Taller («web-N»).
    Per canviar una data, edita-la aquí (format AAAA-MM-DD). Per afegir un grup, copia'n un i canvia el codi.
-   Calendari compactat: s'acaba la setmana del 15 de març. Algunes setmanes tenen dues entregues (sovint un projecte
-   i la web del mateix client). S'han saltat les vacances de Nadal (21/12–7/1) i el festiu del 8/12. */
+   Calendari intensiu: dues entregues per setmana (projecte i web del mateix client, o dues webs) i s'acaba a finals de gener.
+   CM10-2B i CM10-2A van al mateix ritme (mateixes dates des de l'1/12); CM20-2, els dijous.
+   S'han saltat les vacances de Nadal (21/12–7/1) i el festiu del 8/12. */
 window.GD = window.GD || {};
 
 GD.entregues = {
@@ -12,48 +13,48 @@ GD.entregues = {
     'campanya-forn': '2026-11-17',
     'web-1': '2026-11-17',
     'local-jordi': '2026-12-01',
-    'b2b-miquel': '2026-12-09',
+    'b2b-miquel': '2026-12-01',
     'web-2': '2026-12-09',
-    'web-3': '2026-12-15',
-    'web-4': '2027-01-19',
-    'web-5': '2027-01-26',
-    'continguts-berta': '2027-02-02',
-    'web-6': '2027-02-23',
-    'franca-amelie': '2027-03-02',
-    'web-7': '2027-03-02',
-    'web-8': '2027-03-16'
+    'web-3': '2026-12-09',
+    'web-4': '2026-12-15',
+    'continguts-berta': '2026-12-15',
+    'web-5': '2027-01-12',
+    'web-6': '2027-01-12',
+    'franca-amelie': '2027-01-19',
+    'web-7': '2027-01-19',
+    'web-8': '2027-01-26'
   },
   'CM10-2A': {
     'pla-forn': '2026-11-24',
     'campanya-forn': '2026-11-24',
     'web-1': '2026-11-24',
-    'local-jordi': '2026-12-02',
-    'b2b-miquel': '2026-12-09',
+    'local-jordi': '2026-12-01',
+    'b2b-miquel': '2026-12-01',
     'web-2': '2026-12-09',
-    'web-3': '2026-12-16',
-    'web-4': '2027-01-20',
-    'web-5': '2027-01-27',
-    'continguts-berta': '2027-02-03',
-    'web-6': '2027-02-24',
-    'franca-amelie': '2027-03-03',
-    'web-7': '2027-03-03',
-    'web-8': '2027-03-17'
+    'web-3': '2026-12-09',
+    'web-4': '2026-12-15',
+    'continguts-berta': '2026-12-15',
+    'web-5': '2027-01-12',
+    'web-6': '2027-01-12',
+    'franca-amelie': '2027-01-19',
+    'web-7': '2027-01-19',
+    'web-8': '2027-01-26'
   },
   'CM20-2': {
     'pla-forn': '2026-11-12',
     'campanya-forn': '2026-11-12',
     'web-1': '2026-11-19',
     'local-jordi': '2026-12-03',
-    'b2b-miquel': '2026-12-10',
+    'b2b-miquel': '2026-12-03',
     'web-2': '2026-12-10',
-    'web-3': '2026-12-17',
-    'web-4': '2027-01-21',
-    'web-5': '2027-01-28',
-    'continguts-berta': '2027-02-04',
-    'web-6': '2027-02-25',
-    'franca-amelie': '2027-03-04',
-    'web-7': '2027-03-04',
-    'web-8': '2027-03-18'
+    'web-3': '2026-12-10',
+    'web-4': '2026-12-17',
+    'continguts-berta': '2026-12-17',
+    'web-5': '2027-01-14',
+    'web-6': '2027-01-14',
+    'franca-amelie': '2027-01-21',
+    'web-7': '2027-01-21',
+    'web-8': '2027-01-28'
   }
 };
 
